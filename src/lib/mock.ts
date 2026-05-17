@@ -268,6 +268,7 @@ export const TRANSITIONS: Record<RequestStage, Transition[]> = {
     { to: "bank_submitted", label: "إعادة التقديم بعد التعديل", roles: ORIGIN_ROLES, requiresEntityMatch: true },
   ],
   support_rejected: [], // terminal
+  bank_rejected: [], // terminal
   support_approved: [
     // SWIFT attach is a dedicated action (POST /swift) — not a generic transition
   ],
