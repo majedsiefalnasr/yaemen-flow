@@ -401,7 +401,7 @@ function RequestDetail() {
                   className="w-full justify-start"
                   onClick={() => nav({ to: "/customs/$id/print", params: { id: req.id } })}
                 >
-                  <FileSignature className="h-4 w-4 ml-2" /> إصدار إذن إصدار بيان جمركي
+                  <FileSignature className="h-4 w-4 ml-2" /> إصدار إذن بيان جمركي
                 </Button>
               )}
             </div>
