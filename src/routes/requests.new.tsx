@@ -321,7 +321,7 @@ const DOCS = [
   { name: "الفاتورة التجارية (Invoice)", required: true, status: "uploaded" },
   { name: "بوليصة الشحن (Bill of Lading)", required: true, status: "uploaded" },
   { name: "شهادة المنشأ (Certificate of Origin)", required: true, status: "uploaded" },
-  { name: "البيان الجمركي", required: true, status: "pending" },
+  { name: "إذن البيان الجمركي", required: true, status: "pending" },
   { name: "وثيقة سويفت (SWIFT)", required: false, status: "pending" },
   { name: "مستندات إضافية", required: false, status: "pending" },
 ];
