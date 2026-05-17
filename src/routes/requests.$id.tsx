@@ -17,7 +17,7 @@ import {
   canViewRequest, displayStatusFor, progressFor, progressForRole,
   type RequestStage,
 } from "@/lib/mock";
-import { requestsCell, transitionRequest, isLocked, isEditable, logAudit, claimSupportReview, isClaimedByOther } from "@/lib/governance";
+import { requestsCell, transitionRequest, isLocked, isEditable, logAudit, isClaimedByOther } from "@/lib/governance";
 import { WorkflowProgress } from "@/components/workflow/WorkflowProgress";
 import { VotingPanel } from "@/components/workflow/VotingPanel";
 import { AuditTimeline } from "@/components/workflow/AuditTimeline";
@@ -25,7 +25,7 @@ import { LockedBanner } from "@/components/workflow/LockedBanner";
 import { DocumentChecklist } from "@/components/workflow/DocumentChecklist";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export const Route = createFileRoute("/requests/$id")({ component: RequestDetail });
 
