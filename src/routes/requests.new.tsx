@@ -56,6 +56,7 @@ function NewRequest() {
     [allMerchants, user?.entityId],
   );
   const [form, setForm] = useState<FormState>(() => ({ ...INITIAL, importer: bankMerchants[0]?.name ?? "" }));
+  const [uploads, setUploads] = useState<Record<string, UploadedDoc>>({});
   const nav = useNavigate();
 
   // إنشاء الطلبات متاح لمدخل البنك ومسؤول البنك فقط.
@@ -106,6 +107,13 @@ function NewRequest() {
       createdBy: user?.id ?? "u5",
       lastUpdatedBy: user?.id ?? "u5",
       submittedBy: stage === "draft" ? undefined : (user?.id ?? "u5"),
+      documents: Object.entries(uploads).map(([name, u]) => ({
+        name,
+        fileName: u.file.name,
+        mime: u.file.type,
+        size: u.file.size,
+        dataUrl: u.dataUrl,
+      })),
     };
   }
 
@@ -168,7 +176,7 @@ function NewRequest() {
       <Card className="p-6 shadow-card border-0">
         {step === 0 && <Step1 form={form} update={update} />}
         {step === 1 && <Step2 form={form} update={update} />}
-        {step === 2 && <Step3 form={form} />}
+        {step === 2 && <Step3 form={form} uploads={uploads} setUploads={setUploads} />}
         {step === 3 && <Step4 form={form} />}
 
         <div className="flex justify-between mt-8 pt-6 border-t">
@@ -320,9 +328,13 @@ function Step2({ form, update }: StepProps) {
   );
 }
 
-type UploadedDoc = { file: File; url: string };
+type UploadedDoc = { file: File; url: string; dataUrl: string };
 
-function Step3({ form }: { form: FormState }) {
+function Step3({ form, uploads, setUploads }: {
+  form: FormState;
+  uploads: Record<string, UploadedDoc>;
+  setUploads: React.Dispatch<React.SetStateAction<Record<string, UploadedDoc>>>;
+}) {
   const licenseRequired = form.type === "oil" || form.type === "med";
   const docNames = useMemo(() => {
     const list = [
@@ -335,7 +347,6 @@ function Step3({ form }: { form: FormState }) {
     return list;
   }, [licenseRequired, form.type]);
 
-  const [uploads, setUploads] = useState<Record<string, UploadedDoc>>({});
   const inputsRef = useRef<Record<string, HTMLInputElement | null>>({});
   const [preview, setPreview] = useState<{ name: string; url: string; type: string } | null>(null);
 
@@ -349,11 +360,16 @@ function Step3({ form }: { form: FormState }) {
       toast.error("حجم الملف يتجاوز 10MB");
       return;
     }
-    setUploads((prev) => {
-      if (prev[name]) URL.revokeObjectURL(prev[name].url);
-      return { ...prev, [name]: { file, url: URL.createObjectURL(file) } };
-    });
-    toast.success(`تم رفع: ${file.name}`);
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = String(reader.result || "");
+      setUploads((prev) => {
+        if (prev[name]) URL.revokeObjectURL(prev[name].url);
+        return { ...prev, [name]: { file, url: URL.createObjectURL(file), dataUrl } };
+      });
+      toast.success(`تم رفع: ${file.name}`);
+    };
+    reader.readAsDataURL(file);
   }
 
   function remove(name: string) {
