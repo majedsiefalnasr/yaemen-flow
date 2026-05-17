@@ -171,6 +171,7 @@ function BankUsers() {
             )}
           </tbody>
         </table>
+        </div>
       </Card>
 
       <Dialog open={!!editing} onOpenChange={(v) => !v && setEditing(null)}>
