@@ -145,7 +145,17 @@ function RequestsList() {
       {/* Table */}
       <Card className="shadow-card border-0 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-sm min-w-[960px] table-fixed">
+            <colgroup>
+              <col className="w-[160px]" />
+              <col className="w-[200px]" />
+              <col className="w-[110px]" />
+              <col className="w-[130px]" />
+              <col className="w-[90px]" />
+              <col className="w-[140px]" />
+              <col className="w-[120px]" />
+              <col className="w-[90px]" />
+            </colgroup>
             <thead className="bg-muted/50">
               <tr className="text-right text-xs text-muted-foreground">
                 <th className="px-4 py-3 font-medium">المرجع</th>
@@ -161,7 +171,7 @@ function RequestsList() {
             <tbody>
               {data.map((r) => (
                 <tr key={r.id} className="border-t hover:bg-muted/30 transition-colors">
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3 align-top">
                     <div className="flex items-center gap-2 flex-wrap">
                       <Link to="/requests/$id" params={{ id: r.id }} className="font-mono text-xs font-semibold text-accent hover:underline">{r.ref}</Link>
                       {r.duplicate && (
@@ -181,27 +191,27 @@ function RequestsList() {
                         </Badge>
                       )}
                     </div>
-                    <div className="text-[10px] text-muted-foreground mt-0.5">{r.invoice}</div>
+                    <div className="text-[10px] text-muted-foreground mt-0.5 truncate">{r.invoice}</div>
                   </td>
-                  <td className="px-4 py-3">
-                    <div className="font-medium">{r.importer}</div>
-                    <div className="text-xs text-muted-foreground">{r.bank}</div>
+                  <td className="px-4 py-3 align-top">
+                    <div className="font-medium truncate">{r.importer}</div>
+                    <div className="text-xs text-muted-foreground truncate">{r.bank}</div>
                   </td>
-                  <td className="px-4 py-3 text-xs">{r.type}</td>
-                  <td className="px-4 py-3 font-semibold tabular-nums">
+                  <td className="px-4 py-3 text-xs align-top truncate">{r.type}</td>
+                  <td className="px-4 py-3 font-semibold tabular-nums align-top whitespace-nowrap">
                     {r.amount.toLocaleString("en-US")}
                     <span className="text-xs text-muted-foreground mr-1">{r.currency}</span>
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3 align-top">
                     <Badge className={cn("font-normal", RISK_COLORS[r.risk])}>{RISK_LABELS[r.risk]}</Badge>
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3 align-top">
                     {(() => {
                       const ds = user ? displayStatusFor(r.stage, user.role) : { label: r.stage, color: "" };
                       return <Badge className={cn("font-normal whitespace-nowrap", ds.color)}>{ds.label}</Badge>;
                     })()}
                   </td>
-                  <td className="px-4 py-3 w-32">
+                  <td className="px-4 py-3 align-top">
                     {(() => {
                       const p = user ? progressForRole(r.stage, user.role) : r.progress;
                       return (<>
@@ -210,7 +220,7 @@ function RequestsList() {
                       </>);
                     })()}
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3 align-top">
                     <Button asChild variant="ghost" size="sm">
                       <Link to="/requests/$id" params={{ id: r.id }}>عرض</Link>
                     </Button>
