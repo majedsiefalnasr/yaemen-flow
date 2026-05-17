@@ -3,9 +3,9 @@ import {
   LayoutDashboard, FileText, FilePlus2, Users, ShieldCheck, BarChart3,
   Vote, PackageCheck, Settings, Bell, Search, Sun, Moon, LogOut, Languages,
   Building2, ScrollText, AlertTriangle, ChevronLeft, UserCog, Network,
-  FileCheck2, KeyRound, Upload,
+  FileCheck2, KeyRound, Upload, Menu,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth, auth, ROLE_LABELS, type Role } from "@/lib/mock";
 import { notificationsCell, markAllRead } from "@/lib/governance";
 import { RoleSwitcher } from "@/components/workflow/RoleSwitcher";
@@ -20,6 +20,7 @@ import {
 import {
   Popover, PopoverContent, PopoverTrigger,
 } from "@/components/ui/popover";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 type NavItem = { to: string; label: string; icon: React.ComponentType<{ className?: string }>; roles?: Role[] };
 
@@ -46,6 +47,10 @@ export function AppShell() {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const nav = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Close mobile drawer on route change
+  useEffect(() => { setMobileOpen(false); }, [path]);
 
   if (!user) {
     return <Outlet />;
@@ -55,47 +60,44 @@ export function AppShell() {
   const notifs = notificationsCell.use();
   const unread = notifs.filter((n) => n.unread).length;
 
-  return (
-    <div dir="rtl" className="flex min-h-screen w-full bg-background text-foreground">
-      <aside
-        className={cn(
-          "sticky top-0 h-screen shrink-0 bg-sidebar text-sidebar-foreground transition-all duration-300 border-l border-sidebar-border",
-          collapsed ? "w-20" : "w-72",
-        )}
-      >
-        <div className="flex h-16 items-center gap-3 px-5 border-b border-sidebar-border">
-          <div className="grid h-10 w-10 place-items-center rounded-xl bg-sidebar-primary text-sidebar-primary-foreground font-bold">
-            ب م
-          </div>
-          {!collapsed && (
-            <div className="leading-tight">
-              <div className="font-bold">منصة الواردات</div>
-              <div className="text-[11px] text-sidebar-foreground/60">البنك المركزي اليمني</div>
-            </div>
-          )}
+  const SidebarBody = ({ inDrawer = false }: { inDrawer?: boolean }) => (
+    <>
+      <div className="flex h-16 items-center gap-3 px-5 border-b border-sidebar-border">
+        <div className="grid h-10 w-10 place-items-center rounded-xl bg-sidebar-primary text-sidebar-primary-foreground font-bold">
+          ب م
         </div>
-        <nav className="p-3 space-y-1 overflow-y-auto h-[calc(100vh-9rem)]">
-          {items.map((it) => {
-            const active = it.to === "/" ? path === "/" : path.startsWith(it.to);
-            return (
-              <Link
-                key={it.to}
-                to={it.to}
-                className={cn(
-                  "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all",
-                  active
-                    ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-soft"
-                    : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                )}
-              >
-                <it.icon className="h-5 w-5 shrink-0" />
-                {!collapsed && <span className="truncate">{it.label}</span>}
-                {!collapsed && active && <ChevronLeft className="h-4 w-4 ms-auto opacity-60" />}
-              </Link>
-            );
-          })}
-        </nav>
-
+        {(!collapsed || inDrawer) && (
+          <div className="leading-tight">
+            <div className="font-bold">منصة الواردات</div>
+            <div className="text-[11px] text-sidebar-foreground/60">البنك المركزي اليمني</div>
+          </div>
+        )}
+      </div>
+      <nav className={cn(
+        "p-3 space-y-1 overflow-y-auto",
+        inDrawer ? "h-[calc(100vh-9rem)]" : "h-[calc(100vh-9rem)]",
+      )}>
+        {items.map((it) => {
+          const active = it.to === "/" ? path === "/" : path.startsWith(it.to);
+          return (
+            <Link
+              key={it.to}
+              to={it.to}
+              className={cn(
+                "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all",
+                active
+                  ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-soft"
+                  : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+              )}
+            >
+              <it.icon className="h-5 w-5 shrink-0" />
+              {(!collapsed || inDrawer) && <span className="truncate">{it.label}</span>}
+              {(!collapsed || inDrawer) && active && <ChevronLeft className="h-4 w-4 ms-auto opacity-60" />}
+            </Link>
+          );
+        })}
+      </nav>
+      {!inDrawer && (
         <div className="absolute bottom-0 inset-x-0 p-3 border-t border-sidebar-border bg-sidebar">
           <button
             onClick={() => setCollapsed((c) => !c)}
@@ -104,11 +106,41 @@ export function AppShell() {
             {collapsed ? "توسيع ›" : "‹ طي الشريط الجانبي"}
           </button>
         </div>
+      )}
+    </>
+  );
+
+  return (
+    <div dir="rtl" className="flex min-h-screen w-full bg-background text-foreground">
+      {/* Desktop sidebar */}
+      <aside
+        className={cn(
+          "sticky top-0 h-screen shrink-0 bg-sidebar text-sidebar-foreground transition-all duration-300 border-l border-sidebar-border hidden lg:block relative",
+          collapsed ? "w-20" : "w-72",
+        )}
+      >
+        <SidebarBody />
       </aside>
 
+      {/* Mobile/Tablet drawer */}
+      <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+        <SheetContent side="right" className="p-0 w-72 bg-sidebar text-sidebar-foreground border-l border-sidebar-border">
+          <SidebarBody inDrawer />
+        </SheetContent>
+      </Sheet>
+
       <div className="flex flex-1 flex-col min-w-0">
-        <header className="sticky top-0 z-30 h-16 border-b bg-card/80 backdrop-blur-md flex items-center gap-3 px-6">
-          <div className="relative w-full max-w-md">
+        <header className="sticky top-0 z-30 h-16 border-b bg-card/80 backdrop-blur-md flex items-center gap-2 sm:gap-3 px-3 sm:px-6">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="lg:hidden shrink-0"
+            onClick={() => setMobileOpen(true)}
+            aria-label="فتح القائمة"
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+          <div className="relative w-full max-w-md hidden md:block">
             <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="ابحث عن طلب، تاجر، أو رقم فاتورة..."
@@ -116,13 +148,13 @@ export function AppShell() {
             />
           </div>
 
-          <div className="ms-auto flex items-center gap-3">
+          <div className="ms-auto flex items-center gap-1.5 sm:gap-3">
             <RoleSwitcher />
 
-          <Button variant="ghost" size="icon" onClick={() => auth.setLang(auth.lang === "ar" ? "en" : "ar")}>
+          <Button variant="ghost" size="icon" className="hidden sm:inline-flex" onClick={() => auth.setLang(auth.lang === "ar" ? "en" : "ar")}>
             <Languages className="h-5 w-5" />
           </Button>
-          <Button variant="ghost" size="icon" onClick={() => auth.toggleTheme()}>
+          <Button variant="ghost" size="icon" className="hidden sm:inline-flex" onClick={() => auth.toggleTheme()}>
             {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           </Button>
 
@@ -135,7 +167,7 @@ export function AppShell() {
                 )}
               </Button>
             </PopoverTrigger>
-            <PopoverContent align="end" className="w-96 p-0">
+            <PopoverContent align="end" className="w-[min(24rem,calc(100vw-1rem))] p-0">
               <div className="px-4 py-3 border-b flex items-center justify-between">
                 <div className="font-semibold">الإشعارات</div>
                 <div className="flex items-center gap-2">
@@ -196,15 +228,15 @@ export function AppShell() {
           </div>
         </header>
 
-        <main className="flex-1 p-6 lg:p-8 max-w-[1600px] w-full mx-auto">
+        <main className="flex-1 p-3 sm:p-5 lg:p-8 max-w-[1600px] w-full mx-auto min-w-0">
           <Outlet />
         </main>
 
-        <footer className="px-6 py-4 text-xs text-muted-foreground border-t flex items-center justify-between">
-          <div>© 2025 البنك المركزي اليمني — جميع الحقوق محفوظة</div>
-          <div className="flex items-center gap-2">
+        <footer className="px-3 sm:px-6 py-4 text-[10px] sm:text-xs text-muted-foreground border-t flex items-center justify-between gap-2 flex-wrap">
+          <div>© 2025 البنك المركزي اليمني</div>
+          <div className="flex items-center gap-2 shrink-0">
             <AlertTriangle className="h-3.5 w-3.5" />
-            بيئة عرض توضيحي (Prototype)
+            بيئة عرض توضيحي
           </div>
         </footer>
       </div>
