@@ -161,8 +161,8 @@ export const STAGE_LABELS: Record<RequestStage, string> = {
   swift_attached: "تم إرفاق السويفت",
   executive_voting: "تصويت اللجنة التنفيذية",
   executive_rejected: "مرفوض من اللجنة التنفيذية",
-  executive_approved: "بانتظار إنشاء إذن البيان الجمركي",
-  customs_released: "صدر إذن البيان الجمركي",
+  executive_approved: "بانتظار إنشاء إذن إصدار بيان جمركي",
+  customs_released: "صدر إذن إصدار بيان جمركي",
   completed: "مكتمل",
 };
 
@@ -512,7 +512,7 @@ export const NOTIFICATIONS = [
   { id: "n1", title: "طلب جديد بحاجة لمراجعتك الداخلية", body: "IMP-2025-1023 من قسم الإدخال", time: "منذ 5 دقائق", unread: true },
   { id: "n2", title: "تم اعتماد المساندة — أرفق السويفت", body: "IMP-2025-1019 بانتظار وثيقة السويفت", time: "منذ 32 دقيقة", unread: true },
   { id: "n3", title: "تنبيه: فاتورة مكررة", body: "INV-2024028 مرتبطة بطلبين", time: "منذ ساعة", unread: true },
-  { id: "n4", title: "صدر إذن البيان الجمركي", body: "IMP-2025-1011 – ميناء عدن", time: "اليوم 09:14", unread: false },
+  { id: "n4", title: "صدر إذن إصدار بيان جمركي", body: "IMP-2025-1011 – ميناء عدن", time: "اليوم 09:14", unread: false },
   { id: "n5", title: "إعادة طلب من المساندة", body: "نقص في شهادة المنشأ", time: "أمس", unread: false },
 ];
 
@@ -643,7 +643,7 @@ const SUPPORT_BUCKETS: DisplayBucket[] = [
 const EXECUTIVE_BUCKETS: DisplayBucket[] = [
   { key: "voting_queue", label: "بانتظار فتح التصويت", color: C.warning, stages: ["swift_attached"] },
   { key: "voting_open", label: "باب التصويت مفتوح", color: C.chart5, stages: ["executive_voting"] },
-  { key: "awaiting_customs", label: "بانتظار إنشاء إذن البيان الجمركي", color: C.accent, stages: ["executive_approved"] },
+  { key: "awaiting_customs", label: "بانتظار إنشاء إذن إصدار بيان جمركي", color: C.accent, stages: ["executive_approved"] },
   { key: "customs_done", label: "مكتمل", color: C.success, stages: ["customs_released", "completed"] },
   { key: "rejected", label: "مرفوض", color: C.destructive, stages: ["executive_rejected"] },
 ];

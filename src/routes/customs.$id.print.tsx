@@ -55,7 +55,7 @@ function CustomsPrint() {
           <Lock className="h-10 w-10 text-warning mx-auto mb-3" />
           <h2 className="font-bold text-lg mb-1">غير مصرح بمعاينة البيان</h2>
           <p className="text-sm text-muted-foreground mb-4">
-            معاينة وإصدار إذن البيان الجمركي متاحة لأعضاء اللجنة التنفيذية أو إدارة المنصة فقط.
+            معاينة وإصدار إذن بيان جمركي متاحة لأعضاء اللجنة التنفيذية أو إدارة المنصة فقط.
           </p>
           <Button asChild variant="outline">
             <Link to="/requests/$id" params={{ id: req.id }}>
@@ -93,14 +93,14 @@ function CustomsPrint() {
     );
     logAudit({
       userId: user.id, userName: user.name, role: user.role,
-      action: "إصدار إذن البيان الجمركي وإتمام الطلب",
+      action: "إصدار إذن بيان جمركي وإتمام الطلب",
       ref: req.ref,
       fromStage: "executive_approved",
       toStage: "completed",
       notes: `رقم البيان: ${customsNo}`,
     });
     notify({
-      title: `${req.ref}: صدر إذن البيان الجمركي — اكتمل الطلب`,
+      title: `${req.ref}: صدر إذن إصدار بيان جمركي — اكتمل الطلب`,
       body: `رقم البيان ${customsNo} — بواسطة ${user.name}`,
       audience: "all",
       href: `/customs/${req.id}/print`,
@@ -118,7 +118,7 @@ function CustomsPrint() {
             <div className="min-w-0">
               <h1 className="text-lg font-bold flex items-center gap-2">
                 <FileText className="h-5 w-5 text-accent" />
-                {issued ? "إذن البيان الجمركي" : "معاينة إذن البيان الجمركي"}
+                {issued ? "إذن إصدار بيان جمركي" : "معاينة إذن إصدار بيان جمركي"}
               </h1>
               <p className="text-xs text-muted-foreground mt-0.5">
                 طلب {req.ref} — {req.importer}
@@ -144,11 +144,11 @@ function CustomsPrint() {
                   <AlertDialogContent dir="rtl">
                     <AlertDialogHeader>
                       <AlertDialogTitle className="flex items-center gap-2">
-                        <Stamp className="h-5 w-5 text-accent" /> تأكيد إصدار إذن البيان الجمركي
+                        <Stamp className="h-5 w-5 text-accent" /> تأكيد إصدار إذن بيان جمركي
                       </AlertDialogTitle>
                       <AlertDialogDescription className="space-y-2 text-start">
                         <span className="block">
-                          سيتم توقيع وإصدار إذن البيان الجمركي للطلب <span className="font-mono font-semibold">{req.ref}</span> بشكل نهائي ولن يمكن التراجع.
+                          سيتم توقيع وإصدار إذن بيان جمركي للطلب <span className="font-mono font-semibold">{req.ref}</span> بشكل نهائي ولن يمكن التراجع.
                         </span>
                         <span className="block text-xs bg-warning/10 text-warning-foreground border border-warning/30 rounded p-2">
                           سيتم إكمال دورة الطلب وإغلاقها فور الإصدار.
@@ -188,7 +188,7 @@ function CustomsPrint() {
               <div className="flex-1 text-sm">
                 <div className="font-semibold">لا يمكن إصدار البيان حالياً</div>
                 <div className="text-xs text-muted-foreground">
-                  الطلب في مرحلة <span className="font-medium">{stageStatus.label}</span>. يجب اعتماد التصويت التنفيذي أولاً قبل إصدار إذن البيان الجمركي.
+                  الطلب في مرحلة <span className="font-medium">{stageStatus.label}</span>. يجب اعتماد التصويت التنفيذي أولاً قبل إصدار إذن بيان جمركي.
                 </div>
               </div>
             </div>
