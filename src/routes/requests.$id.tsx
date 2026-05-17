@@ -84,6 +84,10 @@ function RequestDetail() {
         const patch: Partial<typeof r> = { lastUpdatedBy: user!.id };
         if (to === "bank_submitted") patch.submittedBy = user!.id;
         if (to === "bank_internal_review" || to === "bank_approved") patch.internalReviewUserId = user!.id;
+        if (to === "support_review") {
+          patch.supportClaimedBy = user!.id;
+          patch.supportClaimedAt = new Date().toISOString();
+        }
         if (to === "support_approved" || to === "support_returned" || to === "support_rejected") {
           patch.supportReviewerId = user!.id;
         }
