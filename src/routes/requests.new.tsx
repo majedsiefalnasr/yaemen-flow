@@ -80,7 +80,7 @@ function NewRequest() {
     const stageOrderLen = 11;
     const progressByStage: Record<RequestStage, number> = {
       draft: 5, bank_submitted: 12, bank_internal_review: 22, bank_approved: 35,
-      support_review: 45, support_returned: 30, support_rejected: 100,
+      support_review: 45, support_returned: 30, support_rejected: 100, bank_rejected: 100,
       support_approved: 60, swift_attached: 70, executive_voting: 80,
       executive_rejected: 100, executive_approved: 90, customs_released: 96, completed: 100,
     };
