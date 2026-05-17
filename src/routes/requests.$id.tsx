@@ -77,6 +77,11 @@ function RequestDetail() {
   const editable = isEditable(req);
 
   function performTransition(to: string, label: string) {
+    const t = transitions.find((x) => x.to === to);
+    if (t?.requiresComment && !comment.trim()) {
+      toast.error("التعليق إلزامي لهذا الإجراء");
+      return;
+    }
     transitionRequest(req!, to as RequestStage, { id: user!.id, name: user!.name, role: user!.role }, comment || label);
     requestsCell.set((prev) =>
       prev.map((r) => {
@@ -400,9 +405,18 @@ function RequestDetail() {
 
             {transitions.length > 0 && (
               <div className="mt-4 pt-4 border-t space-y-2">
+                {transitions.some((t) => t.requiresComment) && (
+                  <p className="text-xs text-destructive">
+                    * التعليق إلزامي في حالة الإعادة للتعديل أو رفض الطلب
+                  </p>
+                )}
                 <Textarea
                   rows={2}
-                  placeholder="تعليق (اختياري)..."
+                  placeholder={
+                    transitions.some((t) => t.requiresComment)
+                      ? "اكتب سبب الإعادة أو الرفض..."
+                      : "تعليق (اختياري)..."
+                  }
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
                 />
