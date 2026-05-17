@@ -124,7 +124,7 @@ function BankUsers() {
               <th className="px-4 py-3">البريد</th>
               <th className="px-4 py-3">الدور</th>
               <th className="px-4 py-3">الحالة</th>
-              <th className="px-4 py-3 text-left">إجراءات</th>
+              <th className="px-4 py-3 text-left sticky left-0 bg-muted/40 z-10 shadow-[-6px_0_8px_-6px_rgba(0,0,0,0.08)]">إجراءات</th>
             </tr>
           </thead>
           <tbody>
@@ -146,7 +146,7 @@ function BankUsers() {
                     ? <Badge className="bg-destructive/15 text-destructive border-0">غير نشط</Badge>
                     : <Badge className="bg-success/15 text-success border-0">نشط</Badge>}
                 </td>
-                <td className="px-4 py-3">
+                <td className="px-4 py-3 sticky left-0 bg-card z-10 shadow-[-6px_0_8px_-6px_rgba(0,0,0,0.08)]">
                   <div className="flex gap-1 justify-end">
                     <Button size="sm" variant="ghost" onClick={() => setEditing(u)}>
                       <Edit className="h-3.5 w-3.5 ml-1" /> تعديل
