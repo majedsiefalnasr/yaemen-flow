@@ -158,7 +158,8 @@ function Reports() {
           <h3 className="font-semibold">تقارير مجدولة</h3>
           <Button variant="outline" size="sm"><Filter className="h-3.5 w-3.5 ml-1" /> فلتر</Button>
         </div>
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full text-sm min-w-[720px]">
           <thead className="text-xs text-muted-foreground text-right border-b">
             <tr>
               <th className="py-2.5">اسم التقرير</th>
@@ -187,6 +188,7 @@ function Reports() {
             ))}
           </tbody>
         </table>
+        </div>
       </Card>
     </div>
   );
