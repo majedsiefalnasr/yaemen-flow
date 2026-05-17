@@ -28,9 +28,9 @@ function Customs() {
   return (
     <div>
       <PageHeader
-        title="إصدار إذن البيان الجمركي"
+        title="إصدار إذن إصدار بيان جمركي"
         subtitle="إصدار وطباعة البيانات الجمركية للطلبات المعتمدة من اللجنة التنفيذية"
-        breadcrumbs={[{ label: "الرئيسية", to: "/" }, { label: "إذن البيان الجمركي" }]}
+        breadcrumbs={[{ label: "الرئيسية", to: "/" }, { label: "إذن إصدار بيان جمركي" }]}
       />
 
       <div className="grid lg:grid-cols-2 gap-6">
