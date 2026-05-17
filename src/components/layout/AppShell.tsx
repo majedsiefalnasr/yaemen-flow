@@ -30,7 +30,7 @@ const NAV: NavItem[] = [
   { to: "/requests/new", label: "تقديم طلب جديد", icon: FilePlus2, roles: ["bank_intake", "bank_admin"] },
   { to: "/merchants", label: "إدارة التجار", icon: Building2, roles: ["bank_admin", "platform_admin"] },
   
-  { to: "/customs", label: "البيان الجمركي", icon: PackageCheck, roles: ["committee_manager"] },
+  { to: "/customs", label: "إذن البيان الجمركي", icon: PackageCheck, roles: ["committee_manager"] },
   { to: "/reports", label: "التقارير والتحليلات", icon: BarChart3, roles: ["platform_admin", "support_member", "executive_member", "committee_manager", "bank_admin"] },
   { to: "/audit", label: "التدقيق والامتثال", icon: ScrollText, roles: ["platform_admin"] },
   { to: "/notifications", label: "الإشعارات", icon: Bell },

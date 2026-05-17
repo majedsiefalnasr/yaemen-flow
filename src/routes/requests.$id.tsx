@@ -361,7 +361,7 @@ function RequestDetail() {
                   }
                 />
                 {req.customsBy && (
-                  <ActorRow label="مُصدِر البيان الجمركي" userId={req.customsBy} extra={`رقم البيان ${req.customsNo}`} />
+                  <ActorRow label="مُصدِر إذن البيان الجمركي" userId={req.customsBy} extra={`رقم البيان ${req.customsNo}`} />
                 )}
               </Card>
             </TabsContent>
@@ -401,7 +401,7 @@ function RequestDetail() {
                   className="w-full justify-start"
                   onClick={() => nav({ to: "/customs/$id/print", params: { id: req.id } })}
                 >
-                  <FileSignature className="h-4 w-4 ml-2" /> إصدار البيان الجمركي
+                  <FileSignature className="h-4 w-4 ml-2" /> إصدار إذن البيان الجمركي
                 </Button>
               )}
             </div>
