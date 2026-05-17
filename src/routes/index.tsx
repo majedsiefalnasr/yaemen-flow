@@ -479,7 +479,7 @@ function PlatformAdminDashboard({ scoped }: { scoped: ImportRequest[] }) {
       <QuickActions actions={actions} />
 
       <div className="grid gap-4 lg:grid-cols-3 min-w-0">
-        <Card className="p-5 lg:col-span-2 shadow-card border-0">
+        <Card className="p-5 lg:col-span-2 shadow-card border-0 min-w-0">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="font-semibold">حركة الطلبات الشهرية</h3>
