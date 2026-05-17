@@ -35,7 +35,7 @@ function RequestDetail() {
   const { user } = useAuth();
   const nav = useNavigate();
   const [comment, setComment] = useState("");
-  const [previewDoc, setPreviewDoc] = useState<string | null>(null);
+  const [previewDoc, setPreviewDoc] = useState<{ name: string; fileName?: string; mime?: string; dataUrl?: string; size?: number } | null>(null);
   const REQUESTS = requestsCell.use();
 
   const req = REQUESTS.find((r) => r.id === id);
@@ -303,58 +303,68 @@ function RequestDetail() {
             </TabsContent>
 
             <TabsContent value="docs" className="mt-4 space-y-4">
-              <Card className="p-4 shadow-card border-0">
-                <DocumentChecklist
-                  stage={req.stage}
-                  uploaded={[
-                    "الفاتورة التجارية", "بوليصة الشحن", "شهادة المنشأ",
-                    ...(req.swiftFile ? ["وثيقة السويفت (MT103)"] : []),
-                  ]}
-                />
-              </Card>
-              <Card className="p-4 shadow-card border-0 space-y-2">
-                {[
-                  "الفاتورة التجارية", "بوليصة الشحن", "شهادة المنشأ",
-                  ...(req.swiftFile ? ["وثيقة سويفت"] : []),
-                ].map((d, i) => (
-                  <div key={d} className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/40 border">
+              {(() => {
+                const docs = req.documents && req.documents.length > 0
+                  ? req.documents
+                  : [
+                      { name: "الفاتورة التجارية", fileName: "doc_1.pdf", mime: "application/pdf", size: 2_400_000 },
+                      { name: "بوليصة الشحن", fileName: "doc_2.pdf", mime: "application/pdf", size: 2_400_000 },
+                      { name: "شهادة المنشأ", fileName: "doc_3.pdf", mime: "application/pdf", size: 2_400_000 },
+                      ...(req.swiftFile ? [{ name: "وثيقة سويفت", fileName: req.swiftFile.name, mime: "application/pdf", size: req.swiftFile.size }] : []),
+                    ];
+                return (
+                  <>
+                    <Card className="p-4 shadow-card border-0">
+                      <DocumentChecklist stage={req.stage} uploaded={docs.map((d) => d.name)} />
+                    </Card>
+                    <Card className="p-4 shadow-card border-0 space-y-2">
+                      {docs.map((d, i) => (
+                        <div key={d.name + i} className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/40 border">
                     <div className="flex items-center gap-3">
                       <div className="h-10 w-10 rounded-lg bg-destructive/10 text-destructive grid place-items-center">
                         <FileText className="h-5 w-5" />
                       </div>
                       <div>
-                        <div className="font-medium text-sm">{d}</div>
+                        <div className="font-medium text-sm">{d.name}</div>
                         <div className="text-[11px] text-muted-foreground flex items-center gap-2">
-                          <span>doc_{i + 1}.pdf · 2.4MB</span>
+                          <span>{(d as any).fileName ?? `doc_${i + 1}.pdf`} · {(((d as any).size ?? 2_400_000) / 1_048_576).toFixed(1)}MB</span>
                           <Badge variant="secondary" className="gap-1 h-4 text-[10px]"><ShieldCheck className="h-2.5 w-2.5" /> مفحوص</Badge>
                         </div>
                       </div>
                     </div>
                     <div className="flex gap-1">
-                      <Button size="sm" variant="ghost" onClick={() => setPreviewDoc(d)}><Eye className="h-4 w-4" /></Button>
+                      <Button size="sm" variant="ghost" onClick={() => setPreviewDoc(d as any)}><Eye className="h-4 w-4" /></Button>
                       <Button size="sm" variant="ghost"><Download className="h-4 w-4" /></Button>
                     </div>
                   </div>
-                ))}
-              </Card>
+                      ))}
+                    </Card>
+                  </>
+                );
+              })()}
               <Dialog open={!!previewDoc} onOpenChange={(o) => !o && setPreviewDoc(null)}>
                 <DialogContent className="max-w-3xl">
                   <DialogHeader>
-                    <DialogTitle>{previewDoc}</DialogTitle>
+                    <DialogTitle>{previewDoc?.name}</DialogTitle>
                     <DialogDescription>معاينة الوثيقة (نموذج تجريبي)</DialogDescription>
                   </DialogHeader>
-                  <div className="border rounded-lg bg-muted/30 aspect-[4/5] grid place-items-center text-center p-6">
-                    <div className="space-y-3">
-                      <div className="h-16 w-16 mx-auto rounded-lg bg-destructive/10 text-destructive grid place-items-center">
-                        <FileText className="h-8 w-8" />
+                  {previewDoc?.dataUrl ? (
+                    previewDoc.mime?.startsWith("image/") ? (
+                      <img src={previewDoc.dataUrl} alt={previewDoc.name} className="max-h-[70vh] w-full object-contain rounded-lg border" />
+                    ) : (
+                      <iframe src={previewDoc.dataUrl} title={previewDoc.name} className="w-full h-[70vh] rounded-lg border bg-white" />
+                    )
+                  ) : (
+                    <div className="border rounded-lg bg-muted/30 aspect-[4/5] grid place-items-center text-center p-6">
+                      <div className="space-y-3">
+                        <div className="h-16 w-16 mx-auto rounded-lg bg-destructive/10 text-destructive grid place-items-center">
+                          <FileText className="h-8 w-8" />
+                        </div>
+                        <div className="font-medium">{previewDoc?.name}</div>
+                        <div className="text-xs text-muted-foreground">ملف PDF · معاينة تجريبية</div>
                       </div>
-                      <div className="font-medium">{previewDoc}</div>
-                      <div className="text-xs text-muted-foreground">ملف PDF · 2.4MB · مفحوص</div>
-                      <Button size="sm" variant="outline" className="gap-2">
-                        <Download className="h-4 w-4" /> تحميل الملف
-                      </Button>
                     </div>
-                  </div>
+                  )}
                 </DialogContent>
               </Dialog>
             </TabsContent>
