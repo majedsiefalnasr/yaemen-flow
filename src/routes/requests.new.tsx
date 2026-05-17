@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   Upload, FileText, ChevronLeft, ChevronRight, Save, Send, Check,
   ShieldCheck, Eye, Trash2, FileCheck2,
@@ -319,63 +319,139 @@ function Step2({ form, update }: StepProps) {
   );
 }
 
+type UploadedDoc = { file: File; url: string };
+
 function Step3({ form }: { form: FormState }) {
   const licenseRequired = form.type === "oil" || form.type === "med";
-  const DOCS = [
-    { name: "الفاتورة الأولية (Proforma Invoice)", required: true, status: "uploaded" },
-    { name: "السجل التجاري", required: true, status: "uploaded" },
-    { name: "البطاقة الضريبية", required: true, status: "uploaded" },
-    ...(licenseRequired
-      ? [{ name: `الترخيص (${TYPE_LABEL[form.type]})`, required: true, status: "pending" as const }]
-      : []),
-    { name: "مستندات إضافية", required: false, status: "pending" as const },
-  ];
+  const docNames = useMemo(() => {
+    const list = [
+      { name: "الفاتورة الأولية (Proforma Invoice)", required: true },
+      { name: "السجل التجاري", required: true },
+      { name: "البطاقة الضريبية", required: true },
+    ];
+    if (licenseRequired) list.push({ name: `الترخيص (${TYPE_LABEL[form.type]})`, required: true });
+    list.push({ name: "مستندات إضافية", required: false });
+    return list;
+  }, [licenseRequired, form.type]);
+
+  const [uploads, setUploads] = useState<Record<string, UploadedDoc>>({});
+  const inputsRef = useRef<Record<string, HTMLInputElement | null>>({});
+  const [preview, setPreview] = useState<{ name: string; url: string; type: string } | null>(null);
+
+  function pick(name: string) {
+    inputsRef.current[name]?.click();
+  }
+
+  function onFile(name: string, file: File | undefined) {
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("حجم الملف يتجاوز 10MB");
+      return;
+    }
+    setUploads((prev) => {
+      if (prev[name]) URL.revokeObjectURL(prev[name].url);
+      return { ...prev, [name]: { file, url: URL.createObjectURL(file) } };
+    });
+    toast.success(`تم رفع: ${file.name}`);
+  }
+
+  function remove(name: string) {
+    setUploads((prev) => {
+      if (prev[name]) URL.revokeObjectURL(prev[name].url);
+      const { [name]: _, ...rest } = prev;
+      return rest;
+    });
+  }
+
   return (
     <div className="space-y-6">
       <h3 className="font-semibold">رفع الوثائق المطلوبة</h3>
       <div className="grid md:grid-cols-2 gap-4">
-        {DOCS.map((d) => (
-          <div key={d.name} className={cn(
-            "border-2 border-dashed rounded-xl p-5 transition-colors",
-            d.status === "uploaded" ? "border-success/40 bg-success/5" : "border-border hover:border-accent/40",
-          )}>
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <div className={cn(
-                  "h-11 w-11 rounded-lg grid place-items-center",
-                  d.status === "uploaded" ? "bg-success/15 text-success" : "bg-muted text-muted-foreground",
-                )}>
-                  {d.status === "uploaded" ? <FileCheck2 className="h-5 w-5" /> : <Upload className="h-5 w-5" />}
-                </div>
-                <div>
-                  <div className="font-medium text-sm">{d.name}</div>
-                  <div className="text-xs text-muted-foreground">
-                    {d.required ? "مطلوب" : "اختياري"} · PDF, JPG (حد أقصى 10MB)
+        {docNames.map((d) => {
+          const up = uploads[d.name];
+          const uploaded = !!up;
+          return (
+            <div key={d.name} className={cn(
+              "border-2 border-dashed rounded-xl p-5 transition-colors",
+              uploaded ? "border-success/40 bg-success/5" : "border-border hover:border-accent/40",
+            )}>
+              <input
+                ref={(el) => { inputsRef.current[d.name] = el; }}
+                type="file"
+                accept=".pdf,.jpg,.jpeg,.png"
+                className="hidden"
+                onChange={(e) => onFile(d.name, e.target.files?.[0])}
+              />
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className={cn(
+                    "h-11 w-11 rounded-lg grid place-items-center",
+                    uploaded ? "bg-success/15 text-success" : "bg-muted text-muted-foreground",
+                  )}>
+                    {uploaded ? <FileCheck2 className="h-5 w-5" /> : <Upload className="h-5 w-5" />}
+                  </div>
+                  <div>
+                    <div className="font-medium text-sm">{d.name}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {d.required ? "مطلوب" : "اختياري"} · PDF, JPG (حد أقصى 10MB)
+                    </div>
                   </div>
                 </div>
+                {d.required && <Badge variant="destructive" className="text-[10px]">إلزامي</Badge>}
               </div>
-              {d.required && <Badge variant="destructive" className="text-[10px]">إلزامي</Badge>}
+              {uploaded ? (
+                <div className="mt-4 pt-4 border-t border-success/20 flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <FileText className="h-4 w-4 text-success shrink-0" />
+                    <span className="font-medium truncate">{up.file.name}</span>
+                    <Badge variant="secondary" className="gap-1 text-[10px] shrink-0"><ShieldCheck className="h-3 w-3" /> آمن</Badge>
+                  </div>
+                  <div className="flex gap-1 shrink-0">
+                    <Button
+                      size="icon" variant="ghost" className="h-7 w-7"
+                      onClick={() => setPreview({ name: up.file.name, url: up.url, type: up.file.type })}
+                      aria-label="معاينة"
+                    >
+                      <Eye className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button
+                      size="icon" variant="ghost" className="h-7 w-7 text-destructive"
+                      onClick={() => remove(d.name)}
+                      aria-label="حذف"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <Button variant="outline" size="sm" className="mt-4 w-full" onClick={() => pick(d.name)}>
+                  <Upload className="h-4 w-4 ml-1" /> اضغط للرفع
+                </Button>
+              )}
             </div>
-            {d.status === "uploaded" ? (
-              <div className="mt-4 pt-4 border-t border-success/20 flex items-center justify-between text-xs">
-                <div className="flex items-center gap-2">
-                  <FileText className="h-4 w-4 text-success" />
-                  <span className="font-medium">document_2025.pdf</span>
-                  <Badge variant="secondary" className="gap-1 text-[10px]"><ShieldCheck className="h-3 w-3" /> آمن</Badge>
-                </div>
-                <div className="flex gap-1">
-                  <Button size="icon" variant="ghost" className="h-7 w-7"><Eye className="h-3.5 w-3.5" /></Button>
-                  <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive"><Trash2 className="h-3.5 w-3.5" /></Button>
-                </div>
-              </div>
-            ) : (
-              <Button variant="outline" size="sm" className="mt-4 w-full">
-                <Upload className="h-4 w-4 ml-1" /> اسحب الملف أو اضغط للرفع
-              </Button>
-            )}
-          </div>
-        ))}
+          );
+        })}
       </div>
+
+      <Dialog open={!!preview} onOpenChange={(v) => !v && setPreview(null)}>
+        <DialogContent dir="rtl" className="sm:max-w-3xl">
+          <DialogHeader>
+            <DialogTitle className="truncate">{preview?.name}</DialogTitle>
+          </DialogHeader>
+          {preview && (
+            preview.type.startsWith("image/") ? (
+              <img src={preview.url} alt={preview.name} className="max-h-[70vh] w-full object-contain rounded-md bg-muted" />
+            ) : preview.type === "application/pdf" ? (
+              <iframe src={preview.url} title={preview.name} className="w-full h-[70vh] rounded-md border" />
+            ) : (
+              <div className="text-sm text-muted-foreground p-6 text-center">
+                لا يمكن المعاينة داخل المتصفح.{" "}
+                <a href={preview.url} download={preview.name} className="text-primary underline">تنزيل الملف</a>
+              </div>
+            )
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
