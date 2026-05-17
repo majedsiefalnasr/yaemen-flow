@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import {
   useAuth,
   availableTransitions, canAttachSwift, canIssueCustoms, DEMO_USERS,
@@ -34,6 +35,7 @@ function RequestDetail() {
   const { user } = useAuth();
   const nav = useNavigate();
   const [comment, setComment] = useState("");
+  const [previewDoc, setPreviewDoc] = useState<string | null>(null);
   const REQUESTS = requestsCell.use();
 
   const req = REQUESTS.find((r) => r.id === id);
@@ -329,12 +331,32 @@ function RequestDetail() {
                       </div>
                     </div>
                     <div className="flex gap-1">
-                      <Button size="sm" variant="ghost"><Eye className="h-4 w-4" /></Button>
+                      <Button size="sm" variant="ghost" onClick={() => setPreviewDoc(d)}><Eye className="h-4 w-4" /></Button>
                       <Button size="sm" variant="ghost"><Download className="h-4 w-4" /></Button>
                     </div>
                   </div>
                 ))}
               </Card>
+              <Dialog open={!!previewDoc} onOpenChange={(o) => !o && setPreviewDoc(null)}>
+                <DialogContent className="max-w-3xl">
+                  <DialogHeader>
+                    <DialogTitle>{previewDoc}</DialogTitle>
+                    <DialogDescription>معاينة الوثيقة (نموذج تجريبي)</DialogDescription>
+                  </DialogHeader>
+                  <div className="border rounded-lg bg-muted/30 aspect-[4/5] grid place-items-center text-center p-6">
+                    <div className="space-y-3">
+                      <div className="h-16 w-16 mx-auto rounded-lg bg-destructive/10 text-destructive grid place-items-center">
+                        <FileText className="h-8 w-8" />
+                      </div>
+                      <div className="font-medium">{previewDoc}</div>
+                      <div className="text-xs text-muted-foreground">ملف PDF · 2.4MB · مفحوص</div>
+                      <Button size="sm" variant="outline" className="gap-2">
+                        <Download className="h-4 w-4" /> تحميل الملف
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </TabsContent>
 
             <TabsContent value="actors" className="mt-4">
