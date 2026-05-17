@@ -116,7 +116,7 @@ function RecentRequests({
                 <th className="py-2.5 font-medium">المبلغ</th>
                 <th className="py-2.5 font-medium">الحالة</th>
                 <th className="py-2.5 font-medium">التقدم</th>
-                <th className="py-2.5 font-medium text-left sticky left-0 bg-card z-10 shadow-[-6px_0_8px_-6px_rgba(0,0,0,0.08)]">إجراء</th>
+                <th className="py-2.5 font-medium text-left sticky left-0 bg-card z-10 shadow-[6px_0_8px_-6px_rgba(0,0,0,0.12)]">إجراء</th>
               </tr>
             </thead>
             <tbody>
@@ -148,7 +148,7 @@ function RecentRequests({
                         </>
                       ); })()}
                     </td>
-                    <td className="py-3 text-left align-top sticky left-0 bg-card z-10 shadow-[-6px_0_8px_-6px_rgba(0,0,0,0.08)]">
+                    <td className="py-3 text-left align-top sticky left-0 bg-card z-10 shadow-[6px_0_8px_-6px_rgba(0,0,0,0.12)]">
                       <Button asChild variant="ghost" size="sm" className="h-7 text-xs">
                         <Link to="/requests/$id" params={{ id: r.id }}>عرض</Link>
                       </Button>
