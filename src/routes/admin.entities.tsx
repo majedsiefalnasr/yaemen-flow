@@ -97,7 +97,7 @@ function EntitiesAdmin() {
               <th className="px-4 py-3">رقم الترخيص</th>
               <th className="px-4 py-3">SWIFT</th>
               <th className="px-4 py-3">الحالة</th>
-              <th className="px-4 py-3 text-left sticky left-0 bg-muted/40 z-10 shadow-[-6px_0_8px_-6px_rgba(0,0,0,0.08)]">إجراءات</th>
+              <th className="px-4 py-3 text-left sticky left-0 bg-muted/40 z-10 shadow-[6px_0_8px_-6px_rgba(0,0,0,0.12)]">إجراءات</th>
             </tr>
           </thead>
           <tbody>
@@ -116,7 +116,7 @@ function EntitiesAdmin() {
                     {e.status === "active" ? "نشط" : "موقوف"}
                   </Badge>
                 </td>
-                <td className="px-4 py-3 sticky left-0 bg-card z-10 shadow-[-6px_0_8px_-6px_rgba(0,0,0,0.08)]">
+                <td className="px-4 py-3 sticky left-0 bg-card z-10 shadow-[6px_0_8px_-6px_rgba(0,0,0,0.12)]">
                   <div className="flex gap-1 justify-end">
                     <Button size="sm" variant="ghost" onClick={() => setViewing(e)}><Eye className="h-3.5 w-3.5 ml-1" />عرض</Button>
                     <Button size="sm" variant="ghost" onClick={() => setEditing(e)}><Edit className="h-3.5 w-3.5 ml-1" />تعديل</Button>

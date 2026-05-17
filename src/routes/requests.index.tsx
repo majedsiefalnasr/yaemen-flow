@@ -165,7 +165,7 @@ function RequestsList() {
                 <th className="px-4 py-3 font-medium">المخاطر</th>
                 <th className="px-4 py-3 font-medium">الحالة</th>
                 <th className="px-4 py-3 font-medium">التقدم</th>
-                <th className="px-4 py-3 font-medium sticky left-0 bg-muted/50 z-10 shadow-[-6px_0_8px_-6px_rgba(0,0,0,0.08)]">إجراء</th>
+                <th className="px-4 py-3 font-medium sticky left-0 bg-muted/50 z-10 shadow-[6px_0_8px_-6px_rgba(0,0,0,0.12)]">إجراء</th>
               </tr>
             </thead>
             <tbody>
@@ -220,7 +220,7 @@ function RequestsList() {
                       </>);
                     })()}
                   </td>
-                  <td className="px-4 py-3 align-top sticky left-0 bg-card z-10 shadow-[-6px_0_8px_-6px_rgba(0,0,0,0.08)]">
+                  <td className="px-4 py-3 align-top sticky left-0 bg-card z-10 shadow-[6px_0_8px_-6px_rgba(0,0,0,0.12)]">
                     <Button asChild variant="ghost" size="sm">
                       <Link to="/requests/$id" params={{ id: r.id }}>عرض</Link>
                     </Button>
