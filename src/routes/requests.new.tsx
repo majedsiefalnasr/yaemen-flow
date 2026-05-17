@@ -166,7 +166,7 @@ function NewRequest() {
       <Card className="p-6 shadow-card border-0">
         {step === 0 && <Step1 form={form} update={update} />}
         {step === 1 && <Step2 form={form} update={update} />}
-        {step === 2 && <Step3 />}
+        {step === 2 && <Step3 form={form} />}
         {step === 3 && <Step4 form={form} />}
 
         <div className="flex justify-between mt-8 pt-6 border-t">
@@ -317,14 +317,17 @@ function Step2({ form, update }: StepProps) {
   );
 }
 
-const DOCS = [
-  { name: "الفاتورة التجارية (Invoice)", required: true, status: "uploaded" },
-  { name: "بوليصة الشحن (Bill of Lading)", required: true, status: "uploaded" },
-  { name: "شهادة المنشأ (Certificate of Origin)", required: true, status: "uploaded" },
-  { name: "مستندات إضافية", required: false, status: "pending" },
-];
-
-function Step3() {
+function Step3({ form }: { form: FormState }) {
+  const licenseRequired = form.type === "oil" || form.type === "med";
+  const DOCS = [
+    { name: "الفاتورة الأولية (Proforma Invoice)", required: true, status: "uploaded" },
+    { name: "السجل التجاري", required: true, status: "uploaded" },
+    { name: "البطاقة الضريبية", required: true, status: "uploaded" },
+    ...(licenseRequired
+      ? [{ name: `الترخيص (${TYPE_LABEL[form.type]})`, required: true, status: "pending" as const }]
+      : []),
+    { name: "مستندات إضافية", required: false, status: "pending" as const },
+  ];
   return (
     <div className="space-y-6">
       <h3 className="font-semibold">رفع الوثائق المطلوبة</h3>
