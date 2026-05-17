@@ -249,7 +249,8 @@ export const TRANSITIONS: Record<RequestStage, Transition[]> = {
   ],
   bank_internal_review: [
     { to: "bank_approved", label: "اعتماد المراجعة الداخلية وإحالة للمساندة", roles: ["bank_reviewer", "bank_admin"], requiresEntityMatch: true, forbidIntakeUser: true },
-    { to: "draft", label: "إعادة لإعادة الإدخال", roles: ["bank_reviewer", "bank_admin"], requiresEntityMatch: true, forbidIntakeUser: true, destructive: true },
+    { to: "draft", label: "إعادة لإعادة الإدخال", roles: ["bank_reviewer", "bank_admin"], requiresEntityMatch: true, forbidIntakeUser: true, requiresComment: true },
+    { to: "support_rejected", label: "رفض الطلب", roles: ["bank_reviewer", "bank_admin"], requiresEntityMatch: true, forbidIntakeUser: true, destructive: true, requiresComment: true },
   ],
   bank_approved: [
     { to: "support_review", label: "بدء المراجعة الداخلية", roles: ["support_member"] },
