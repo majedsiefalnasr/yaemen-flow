@@ -77,6 +77,11 @@ function RequestDetail() {
   const editable = isEditable(req);
 
   function performTransition(to: string, label: string) {
+    const t = transitions.find((x) => x.to === to);
+    if (t?.requiresComment && !comment.trim()) {
+      toast.error("التعليق إلزامي لهذا الإجراء");
+      return;
+    }
     transitionRequest(req!, to as RequestStage, { id: user!.id, name: user!.name, role: user!.role }, comment || label);
     requestsCell.set((prev) =>
       prev.map((r) => {
