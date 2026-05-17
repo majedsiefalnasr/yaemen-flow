@@ -52,7 +52,7 @@ function Customs() {
                 </div>
                 <Button size="sm" asChild>
                   <Link to="/customs/$id/print" params={{ id: r.id }}>
-                    <FileSignature className="h-3.5 w-3.5 ml-1" /> إصدار البيان
+                    <FileSignature className="h-3.5 w-3.5 ml-1" /> إصدار إذن بيان جمركي
                   </Link>
                 </Button>
               </div>
