@@ -141,6 +141,7 @@ export type RequestStage =
   | "support_review"          // CBY support_member reviewing
   | "support_returned"        // sent back to bank for fixes
   | "support_rejected"        // terminal — SWIFT step hidden
+  | "bank_rejected"           // terminal — rejected by bank internal review
   | "support_approved"        // returned to bank for SWIFT attachment
   | "swift_attached"          // SWIFT uploaded, data locked, awaiting voting
   | "executive_voting"        // executive committee voting (no support involvement)
@@ -157,6 +158,7 @@ export const STAGE_LABELS: Record<RequestStage, string> = {
   support_review: "قيد مراجعة اللجنة المساندة",
   support_returned: "مُعاد من المساندة للتعديل",
   support_rejected: "مرفوض من اللجنة المساندة",
+  bank_rejected: "مرفوض من المراجعة الداخلية بالبنك",
   support_approved: "اعتماد المساندة — بانتظار السويفت",
   swift_attached: "تم إرفاق السويفت",
   executive_voting: "تصويت اللجنة التنفيذية",
@@ -174,6 +176,7 @@ export const STAGE_COLORS: Record<RequestStage, string> = {
   support_review: "bg-warning/15 text-warning",
   support_returned: "bg-destructive/10 text-destructive",
   support_rejected: "bg-destructive/15 text-destructive",
+  bank_rejected: "bg-destructive/15 text-destructive",
   support_approved: "bg-accent/15 text-accent",
   swift_attached: "bg-info/15 text-info",
   executive_voting: "bg-chart-5/15 text-chart-5",
@@ -211,6 +214,7 @@ const STAGE_PROGRESS: Record<RequestStage, number> = {
   support_review: 50,
   support_returned: 20,        // returned to bank for edits
   support_rejected: 50,        // failed at support
+  bank_rejected: 25,           // failed at bank internal review
   support_approved: 65,
   swift_attached: 75,
   executive_voting: 85,
@@ -250,7 +254,7 @@ export const TRANSITIONS: Record<RequestStage, Transition[]> = {
   bank_internal_review: [
     { to: "bank_approved", label: "اعتماد المراجعة الداخلية وإحالة للمساندة", roles: ["bank_reviewer", "bank_admin"], requiresEntityMatch: true, forbidIntakeUser: true },
     { to: "draft", label: "إعادة لإعادة الإدخال", roles: ["bank_reviewer", "bank_admin"], requiresEntityMatch: true, forbidIntakeUser: true, requiresComment: true },
-    { to: "support_rejected", label: "رفض الطلب", roles: ["bank_reviewer", "bank_admin"], requiresEntityMatch: true, forbidIntakeUser: true, destructive: true, requiresComment: true },
+    { to: "bank_rejected", label: "رفض الطلب", roles: ["bank_reviewer", "bank_admin"], requiresEntityMatch: true, forbidIntakeUser: true, destructive: true, requiresComment: true },
   ],
   bank_approved: [
     { to: "support_review", label: "بدء المراجعة الداخلية", roles: ["support_member"] },
