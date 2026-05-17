@@ -207,9 +207,10 @@ type StepProps = { form: FormState; update: (p: Partial<FormState>) => void };
 
 function Step1({ form, update }: StepProps) {
   const { user } = useAuth();
+  const allMerchants = merchantsCell.use();
   const bankMerchants = useMemo(
-    () => MERCHANTS.filter((m) => m.status === "active" && (!user?.entityId || m.entityId === user.entityId)),
-    [user?.entityId],
+    () => allMerchants.filter((m) => m.status === "active" && (!user?.entityId || m.entityId === user.entityId)),
+    [allMerchants, user?.entityId],
   );
   return (
     <div className="space-y-6">
