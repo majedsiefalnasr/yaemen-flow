@@ -87,7 +87,7 @@ function RecentRequests({
   rows, role, title = "أحدث الطلبات", emptyText = "لا توجد طلبات بعد.",
 }: { rows: ImportRequest[]; role: Role; title?: string; emptyText?: string }) {
   return (
-    <Card className="p-5 shadow-card border-0">
+    <Card className="p-5 shadow-card border-0 min-w-0 overflow-hidden">
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-semibold">{title}</h3>
         <Link to="/requests" className="text-xs text-accent hover:underline flex items-center gap-1">
