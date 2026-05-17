@@ -23,13 +23,6 @@ const CBY_ROLES = ["platform_admin", "support_member", "executive_member", "comm
 // الأدوار التي يحق لها إنشاء طلب تمويل (مدخل البنك ومسؤول البنك فقط).
 const CAN_CREATE_ROLES = ["bank_intake", "bank_admin"] as const;
 
-const RISK_COLORS = {
-  low: "bg-success/10 text-success",
-  medium: "bg-warning/15 text-warning",
-  high: "bg-destructive/10 text-destructive",
-};
-const RISK_LABELS = { low: "منخفضة", medium: "متوسطة", high: "عالية" };
-
 function RequestsList() {
   const { user } = useAuth();
   const isEntityScoped = !!user && (ENTITY_SCOPED_ROLES as readonly string[]).includes(user.role);
@@ -145,13 +138,12 @@ function RequestsList() {
       {/* Table */}
       <Card className="shadow-card border-0 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm min-w-[960px] table-fixed">
+          <table className="w-full text-sm min-w-[850px] table-fixed">
             <colgroup>
               <col className="w-[160px]" />
               <col className="w-[200px]" />
               <col className="w-[110px]" />
               <col className="w-[130px]" />
-              <col className="w-[110px]" />
               <col className="w-[180px]" />
               <col className="w-[120px]" />
               <col className="w-[100px]" />
@@ -162,7 +154,6 @@ function RequestsList() {
                 <th className="px-4 py-3 font-medium">المستورد / البنك</th>
                 <th className="px-4 py-3 font-medium">النوع</th>
                 <th className="px-4 py-3 font-medium">المبلغ</th>
-                <th className="px-4 py-3 font-medium">المخاطر</th>
                 <th className="px-4 py-3 font-medium">الحالة</th>
                 <th className="px-4 py-3 font-medium">التقدم</th>
                 <th className="px-4 py-3 font-medium sticky left-0 bg-muted/50 z-10 shadow-[6px_0_8px_-6px_rgba(0,0,0,0.12)]">إجراء</th>
@@ -201,9 +192,6 @@ function RequestsList() {
                   <td className="px-4 py-3 font-semibold tabular-nums align-top whitespace-nowrap">
                     {r.amount.toLocaleString("en-US")}
                     <span className="text-xs text-muted-foreground mr-1">{r.currency}</span>
-                  </td>
-                  <td className="px-4 py-3 align-top whitespace-nowrap">
-                    <Badge className={cn("font-normal", RISK_COLORS[r.risk])}>{RISK_LABELS[r.risk]}</Badge>
                   </td>
                   <td className="px-4 py-3 align-top whitespace-nowrap">
                     {(() => {

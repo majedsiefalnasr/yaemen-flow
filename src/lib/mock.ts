@@ -250,7 +250,7 @@ export const TRANSITIONS: Record<RequestStage, Transition[]> = {
     { to: "draft", label: "إعادة لإعادة الإدخال", roles: ["bank_reviewer", "bank_admin"], requiresEntityMatch: true, forbidIntakeUser: true, destructive: true },
   ],
   bank_approved: [
-    { to: "support_review", label: "بدء مراجعة المساندة", roles: ["support_member"] },
+    { to: "support_review", label: "بدء المراجعة الداخلية", roles: ["support_member"] },
   ],
   support_review: [
     { to: "support_approved", label: "اعتماد المساندة", roles: ["support_member"] },
