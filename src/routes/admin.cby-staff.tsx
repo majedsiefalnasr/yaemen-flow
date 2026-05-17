@@ -144,7 +144,8 @@ function SystemUsers() {
       </Card>
 
       <Card className="shadow-card border-0 overflow-hidden">
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full text-sm min-w-[720px]">
           <thead className="bg-muted/40 text-xs text-muted-foreground">
             <tr className="text-right">
               <th className="px-4 py-3">المستخدم</th>
@@ -197,6 +198,7 @@ function SystemUsers() {
             )}
           </tbody>
         </table>
+        </div>
       </Card>
 
       <Dialog open={!!editing} onOpenChange={(v) => !v && setEditing(null)}>
