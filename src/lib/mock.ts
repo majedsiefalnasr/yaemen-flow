@@ -346,6 +346,7 @@ export type ImportRequest = {
   supportClaimedBy?: string;
   supportClaimedAt?: string;
   swiftFile?: { name: string; size: number; uploadedAt: string; uploadedBy: string };
+  documents?: { name: string; fileName: string; mime: string; dataUrl: string; size: number }[];
   customsNo?: string;
   customsAt?: string;
   customsBy?: string;
