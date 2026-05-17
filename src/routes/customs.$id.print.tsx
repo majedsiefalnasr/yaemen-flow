@@ -278,8 +278,8 @@ function PrintablePage({ req, watermark }: { req: any; watermark: boolean }) {
           <div className="text-xs">إدارة تنظيم وتمويل الواردات</div>
         </div>
         <div className="text-center">
-          <div className="text-base font-bold">بيان جمركي</div>
-          <div className="text-xs">Customs Declaration</div>
+          <div className="text-base font-bold">إذن إصدار بيان جمركي</div>
+          <div className="text-xs">Customs Declaration Permit</div>
           {issued && (
             <div className="mt-1 inline-flex items-center gap-1 text-[10px] border border-success text-success rounded px-2 py-0.5">
               <ShieldCheck className="h-3 w-3" /> موقّع إلكترونياً
