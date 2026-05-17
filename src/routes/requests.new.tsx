@@ -14,8 +14,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { useAuth, ENTITIES, MERCHANTS, type ImportRequest, type RequestStage } from "@/lib/mock";
-import { requestsCell, logAudit, notify } from "@/lib/governance";
+import { useAuth, ENTITIES, type ImportRequest, type RequestStage } from "@/lib/mock";
+import { requestsCell, merchantsCell, logAudit, notify } from "@/lib/governance";
 
 export const Route = createFileRoute("/requests/new")({ component: NewRequest });
 
@@ -49,9 +49,10 @@ const INITIAL: FormState = {
 function NewRequest() {
   const [step, setStep] = useState(0);
   const { user } = useAuth();
+  const allMerchants = merchantsCell.use();
   const bankMerchants = useMemo(
-    () => MERCHANTS.filter((m) => m.status === "active" && (!user?.entityId || m.entityId === user.entityId)),
-    [user?.entityId],
+    () => allMerchants.filter((m) => m.status === "active" && (!user?.entityId || m.entityId === user.entityId)),
+    [allMerchants, user?.entityId],
   );
   const [form, setForm] = useState<FormState>(() => ({ ...INITIAL, importer: bankMerchants[0]?.name ?? "" }));
   const nav = useNavigate();
