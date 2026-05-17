@@ -236,6 +236,8 @@ export type Transition = {
   forbidIntakeUser?: boolean;             // actor must not be intake user (separation of duties)
   requiresExecutive?: boolean;            // executive_member only
   destructive?: boolean;
+  /** If true, the actor MUST provide a comment before performing this transition. */
+  requiresComment?: boolean;
 };
 
 export const TRANSITIONS: Record<RequestStage, Transition[]> = {
@@ -254,8 +256,8 @@ export const TRANSITIONS: Record<RequestStage, Transition[]> = {
   ],
   support_review: [
     { to: "support_approved", label: "اعتماد المساندة", roles: ["support_member"] },
-    { to: "support_returned", label: "إعادة للبنك للتعديل", roles: ["support_member"] },
-    { to: "support_rejected", label: "رفض الطلب", roles: ["support_member"], destructive: true },
+    { to: "support_returned", label: "إعادة للبنك للتعديل", roles: ["support_member"], requiresComment: true },
+    { to: "support_rejected", label: "رفض الطلب", roles: ["support_member"], destructive: true, requiresComment: true },
   ],
   support_returned: [
     { to: "bank_submitted", label: "إعادة التقديم بعد التعديل", roles: ORIGIN_ROLES, requiresEntityMatch: true },
