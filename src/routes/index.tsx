@@ -99,7 +99,7 @@ function RecentRequests({
           <Inbox className="h-8 w-8 mx-auto opacity-50 mb-2" /> {emptyText}
         </div>
       ) : (
-        <div className="overflow-x-auto -mx-5 px-5">
+        <div className="overflow-x-auto">
           <table className="w-full text-sm min-w-[720px] table-fixed">
             <colgroup>
               <col className="w-[150px]" />
