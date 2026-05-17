@@ -99,8 +99,16 @@ function RecentRequests({
           <Inbox className="h-8 w-8 mx-auto opacity-50 mb-2" /> {emptyText}
         </div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+        <div className="overflow-x-auto -mx-5 px-5">
+          <table className="w-full text-sm min-w-[720px] table-fixed">
+            <colgroup>
+              <col className="w-[150px]" />
+              <col className="w-[160px]" />
+              <col className="w-[120px]" />
+              <col className="w-[120px]" />
+              <col className="w-[110px]" />
+              <col className="w-[70px]" />
+            </colgroup>
             <thead>
               <tr className="text-right text-xs text-muted-foreground border-b">
                 <th className="py-2.5 font-medium">المرجع</th>
@@ -117,7 +125,7 @@ function RecentRequests({
                 const votingOpen = r.stage === "executive_voting" && (role === "executive_member" || role === "committee_manager");
                 return (
                   <tr key={r.id} className="border-b last:border-0 hover:bg-muted/40">
-                    <td className="py-3">
+                    <td className="py-3 align-top">
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <Link to="/requests/$id" params={{ id: r.id }} className="font-mono text-xs text-accent hover:underline">{r.ref}</Link>
                         {votingOpen && (
@@ -127,12 +135,12 @@ function RecentRequests({
                         )}
                       </div>
                     </td>
-                    <td className="py-3 max-w-[180px] truncate">{r.importer}</td>
-                    <td className="py-3 font-semibold tabular-nums">
+                    <td className="py-3 truncate align-top">{r.importer}</td>
+                    <td className="py-3 font-semibold tabular-nums align-top whitespace-nowrap">
                       {r.amount.toLocaleString("en-US")} <span className="text-xs text-muted-foreground">{r.currency}</span>
                     </td>
-                    <td className="py-3"><Badge className={cn("font-normal", ds.color)}>{ds.label}</Badge></td>
-                    <td className="py-3 w-32">
+                    <td className="py-3 align-top"><Badge className={cn("font-normal whitespace-nowrap", ds.color)}>{ds.label}</Badge></td>
+                    <td className="py-3 align-top">
                       {(() => { const p = progressForRole(r.stage, role); return (
                         <>
                           <Progress value={p} className="h-1.5" />
@@ -140,7 +148,7 @@ function RecentRequests({
                         </>
                       ); })()}
                     </td>
-                    <td className="py-3 text-left">
+                    <td className="py-3 text-left align-top">
                       <Button asChild variant="ghost" size="sm" className="h-7 text-xs">
                         <Link to="/requests/$id" params={{ id: r.id }}>عرض</Link>
                       </Button>
