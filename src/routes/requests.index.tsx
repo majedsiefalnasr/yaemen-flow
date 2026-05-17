@@ -23,13 +23,6 @@ const CBY_ROLES = ["platform_admin", "support_member", "executive_member", "comm
 // الأدوار التي يحق لها إنشاء طلب تمويل (مدخل البنك ومسؤول البنك فقط).
 const CAN_CREATE_ROLES = ["bank_intake", "bank_admin"] as const;
 
-const RISK_COLORS = {
-  low: "bg-success/10 text-success",
-  medium: "bg-warning/15 text-warning",
-  high: "bg-destructive/10 text-destructive",
-};
-const RISK_LABELS = { low: "منخفضة", medium: "متوسطة", high: "عالية" };
-
 function RequestsList() {
   const { user } = useAuth();
   const isEntityScoped = !!user && (ENTITY_SCOPED_ROLES as readonly string[]).includes(user.role);
