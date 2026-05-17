@@ -105,7 +105,7 @@ function CustomsPrint() {
       audience: "all",
       href: `/customs/${req.id}/print`,
     });
-    toast.success(`تم إصدار البيان رقم ${customsNo} بنجاح`);
+    toast.success(`تم إصدار إذن بيان جمركي رقم ${customsNo} بنجاح`);
     setIssuing(false);
   }
 
@@ -138,7 +138,7 @@ function CustomsPrint() {
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button disabled={issuing} className="bg-accent hover:bg-accent/90">
-                      <FileSignature className="h-4 w-4 ml-1" /> إصدار البيان رسمياً
+                      <FileSignature className="h-4 w-4 ml-1" /> إصدار إذن بيان جمركي رسمياً
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent dir="rtl">
@@ -172,7 +172,7 @@ function CustomsPrint() {
             <div className="mt-4 flex items-center gap-3 rounded-lg border border-success/30 bg-success/5 p-3">
               <CheckCircle2 className="h-5 w-5 text-success shrink-0" />
               <div className="flex-1 text-sm">
-                <div className="font-semibold text-success">تم إصدار البيان بنجاح</div>
+                <div className="font-semibold text-success">تم إصدار إذن بيان جمركي بنجاح</div>
                 <div className="text-xs text-muted-foreground">
                   رقم البيان <span className="font-mono font-semibold">{req.customsNo}</span>
                   {" · "}
@@ -186,7 +186,7 @@ function CustomsPrint() {
             <div className="mt-4 flex items-center gap-3 rounded-lg border border-warning/30 bg-warning/5 p-3">
               <AlertTriangle className="h-5 w-5 text-warning shrink-0" />
               <div className="flex-1 text-sm">
-                <div className="font-semibold">لا يمكن إصدار البيان حالياً</div>
+                <div className="font-semibold">لا يمكن إصدار إذن بيان جمركي حالياً</div>
                 <div className="text-xs text-muted-foreground">
                   الطلب في مرحلة <span className="font-medium">{stageStatus.label}</span>. يجب اعتماد التصويت التنفيذي أولاً قبل إصدار إذن بيان جمركي.
                 </div>
@@ -198,7 +198,7 @@ function CustomsPrint() {
               <div className="flex-1 text-sm">
                 <div className="font-semibold">جاهز للإصدار</div>
                 <div className="text-xs text-muted-foreground">
-                  راجع المعاينة أدناه ثم اضغط "إصدار البيان رسمياً" لتوقيع وإغلاق الطلب نهائياً.
+                  راجع المعاينة أدناه ثم اضغط "إصدار إذن بيان جمركي رسمياً" لتوقيع وإغلاق الطلب نهائياً.
                 </div>
               </div>
             </div>
