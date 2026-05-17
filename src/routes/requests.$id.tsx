@@ -65,18 +65,6 @@ function RequestDetail() {
     );
   }
 
-  // Auto-claim: when a support reviewer opens an unclaimed request in the
-  // support queue, lock it to them automatically (no banner / no button).
-  useEffect(() => {
-    if (
-      user.role === "support_member" &&
-      !req.supportClaimedBy &&
-      (req.stage === "bank_approved" || req.stage === "support_review")
-    ) {
-      claimSupportReview(req, { id: user.id, name: user.name, role: user.role });
-    }
-  }, [req.id, req.stage, req.supportClaimedBy, user.id, user.role, user.name]);
-
   const claimedByOther = user.role === "support_member" && isClaimedByOther(req, user.id);
   const transitions = claimedByOther ? [] : availableTransitions(req, user);
   const canSwift = canAttachSwift(req, user);
