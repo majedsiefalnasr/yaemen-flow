@@ -167,7 +167,7 @@ function Reports() {
               <th className="py-2.5">المستلمون</th>
               <th className="py-2.5">آخر تشغيل</th>
               <th className="py-2.5">الحالة</th>
-              <th className="py-2.5"></th>
+              <th className="py-2.5 sticky left-0 bg-card z-10 shadow-[-6px_0_8px_-6px_rgba(0,0,0,0.08)]"></th>
             </tr>
           </thead>
           <tbody>
@@ -183,7 +183,7 @@ function Reports() {
                 <td className="py-3 text-xs">{r}</td>
                 <td className="py-3 text-xs text-muted-foreground">{t}</td>
                 <td className="py-3"><Badge variant={s === "نشط" ? "secondary" : "outline"}>{s}</Badge></td>
-                <td className="py-3"><Button size="sm" variant="ghost"><Download className="h-3.5 w-3.5" /></Button></td>
+                <td className="py-3 sticky left-0 bg-card z-10 shadow-[-6px_0_8px_-6px_rgba(0,0,0,0.08)]"><Button size="sm" variant="ghost"><Download className="h-3.5 w-3.5" /></Button></td>
               </tr>
             ))}
           </tbody>

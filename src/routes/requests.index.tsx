@@ -151,10 +151,10 @@ function RequestsList() {
               <col className="w-[200px]" />
               <col className="w-[110px]" />
               <col className="w-[130px]" />
-              <col className="w-[90px]" />
-              <col className="w-[140px]" />
+              <col className="w-[110px]" />
+              <col className="w-[180px]" />
               <col className="w-[120px]" />
-              <col className="w-[90px]" />
+              <col className="w-[100px]" />
             </colgroup>
             <thead className="bg-muted/50">
               <tr className="text-right text-xs text-muted-foreground">
@@ -165,7 +165,7 @@ function RequestsList() {
                 <th className="px-4 py-3 font-medium">المخاطر</th>
                 <th className="px-4 py-3 font-medium">الحالة</th>
                 <th className="px-4 py-3 font-medium">التقدم</th>
-                <th className="px-4 py-3 font-medium">إجراء</th>
+                <th className="px-4 py-3 font-medium sticky left-0 bg-muted/50 z-10 shadow-[-6px_0_8px_-6px_rgba(0,0,0,0.08)]">إجراء</th>
               </tr>
             </thead>
             <tbody>
@@ -202,10 +202,10 @@ function RequestsList() {
                     {r.amount.toLocaleString("en-US")}
                     <span className="text-xs text-muted-foreground mr-1">{r.currency}</span>
                   </td>
-                  <td className="px-4 py-3 align-top">
+                  <td className="px-4 py-3 align-top whitespace-nowrap">
                     <Badge className={cn("font-normal", RISK_COLORS[r.risk])}>{RISK_LABELS[r.risk]}</Badge>
                   </td>
-                  <td className="px-4 py-3 align-top">
+                  <td className="px-4 py-3 align-top whitespace-nowrap">
                     {(() => {
                       const ds = user ? displayStatusFor(r.stage, user.role) : { label: r.stage, color: "" };
                       return <Badge className={cn("font-normal whitespace-nowrap", ds.color)}>{ds.label}</Badge>;
@@ -220,7 +220,7 @@ function RequestsList() {
                       </>);
                     })()}
                   </td>
-                  <td className="px-4 py-3 align-top">
+                  <td className="px-4 py-3 align-top sticky left-0 bg-card z-10 shadow-[-6px_0_8px_-6px_rgba(0,0,0,0.08)]">
                     <Button asChild variant="ghost" size="sm">
                       <Link to="/requests/$id" params={{ id: r.id }}>عرض</Link>
                     </Button>

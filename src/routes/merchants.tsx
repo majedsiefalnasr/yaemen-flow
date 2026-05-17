@@ -155,7 +155,7 @@ function Merchants() {
                   <th className="p-3 font-semibold">البنك التابع له</th>
                   <th className="p-3 font-semibold">الحالة</th>
                   <th className="p-3 font-semibold tabular-nums">المعاملات</th>
-                  <th className="p-3 font-semibold w-12"></th>
+                  <th className="p-3 font-semibold w-12 sticky left-0 bg-muted/40 z-10 shadow-[-6px_0_8px_-6px_rgba(0,0,0,0.08)]"></th>
                 </tr>
               </thead>
               <tbody className="divide-y">
@@ -177,7 +177,7 @@ function Merchants() {
                       </Badge>
                     </td>
                     <td className="p-3 tabular-nums font-semibold">{m.transactions}</td>
-                    <td className="p-3">
+                    <td className="p-3 sticky left-0 bg-card z-10 shadow-[-6px_0_8px_-6px_rgba(0,0,0,0.08)]">
                       <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => setViewing(m)} aria-label="عرض التفاصيل">
                         <Eye className="h-4 w-4" />
                       </Button>

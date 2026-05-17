@@ -105,9 +105,9 @@ function RecentRequests({
               <col className="w-[150px]" />
               <col className="w-[160px]" />
               <col className="w-[120px]" />
-              <col className="w-[120px]" />
+              <col className="w-[160px]" />
               <col className="w-[110px]" />
-              <col className="w-[70px]" />
+              <col className="w-[90px]" />
             </colgroup>
             <thead>
               <tr className="text-right text-xs text-muted-foreground border-b">
@@ -116,7 +116,7 @@ function RecentRequests({
                 <th className="py-2.5 font-medium">المبلغ</th>
                 <th className="py-2.5 font-medium">الحالة</th>
                 <th className="py-2.5 font-medium">التقدم</th>
-                <th className="py-2.5 font-medium text-left">إجراء</th>
+                <th className="py-2.5 font-medium text-left sticky left-0 bg-card z-10 shadow-[-6px_0_8px_-6px_rgba(0,0,0,0.08)]">إجراء</th>
               </tr>
             </thead>
             <tbody>
@@ -139,7 +139,7 @@ function RecentRequests({
                     <td className="py-3 font-semibold tabular-nums align-top whitespace-nowrap">
                       {r.amount.toLocaleString("en-US")} <span className="text-xs text-muted-foreground">{r.currency}</span>
                     </td>
-                    <td className="py-3 align-top"><Badge className={cn("font-normal whitespace-nowrap", ds.color)}>{ds.label}</Badge></td>
+                    <td className="py-3 align-top whitespace-nowrap"><Badge className={cn("font-normal whitespace-nowrap", ds.color)}>{ds.label}</Badge></td>
                     <td className="py-3 align-top">
                       {(() => { const p = progressForRole(r.stage, role); return (
                         <>
@@ -148,7 +148,7 @@ function RecentRequests({
                         </>
                       ); })()}
                     </td>
-                    <td className="py-3 text-left align-top">
+                    <td className="py-3 text-left align-top sticky left-0 bg-card z-10 shadow-[-6px_0_8px_-6px_rgba(0,0,0,0.08)]">
                       <Button asChild variant="ghost" size="sm" className="h-7 text-xs">
                         <Link to="/requests/$id" params={{ id: r.id }}>عرض</Link>
                       </Button>
