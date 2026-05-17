@@ -64,7 +64,7 @@ function RolesAdmin() {
         subtitle="تكوين صلاحيات كل دور — التغييرات تُحفظ تلقائياً وتُسجَّل في سجل التدقيق"
       />
       <Card className="p-0 shadow-card border-0 overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="w-full text-sm min-w-[640px]">
           <thead className="bg-muted/40">
             <tr>
               <th className="text-right p-3 sticky right-0 bg-muted/40 min-w-[260px]">الصلاحية</th>
