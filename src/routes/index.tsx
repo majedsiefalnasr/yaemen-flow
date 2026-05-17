@@ -87,7 +87,7 @@ function RecentRequests({
   rows, role, title = "أحدث الطلبات", emptyText = "لا توجد طلبات بعد.",
 }: { rows: ImportRequest[]; role: Role; title?: string; emptyText?: string }) {
   return (
-    <Card className="p-5 shadow-card border-0">
+    <Card className="p-5 shadow-card border-0 min-w-0 overflow-hidden">
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-semibold">{title}</h3>
         <Link to="/requests" className="text-xs text-accent hover:underline flex items-center gap-1">
@@ -274,9 +274,9 @@ function IntakeDashboard({ scoped, userId }: { scoped: ImportRequest[]; userId: 
         </Card>
       )}
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <RecentRequests rows={myDrafts} role="bank_intake" title="مسوداتي" emptyText="لا توجد مسودات حالياً." />
-        <RecentRequests rows={scoped.slice(0, 5)} role="bank_intake" title="آخر نشاطي" />
+      <div className="grid gap-4 lg:grid-cols-2 min-w-0">
+        <div className="min-w-0"><RecentRequests rows={myDrafts} role="bank_intake" title="مسوداتي" emptyText="لا توجد مسودات حالياً." /></div>
+        <div className="min-w-0"><RecentRequests rows={scoped.slice(0, 5)} role="bank_intake" title="آخر نشاطي" /></div>
       </div>
     </>
   );
@@ -478,8 +478,8 @@ function PlatformAdminDashboard({ scoped }: { scoped: ImportRequest[] }) {
       <KpiGrid kpis={kpis} />
       <QuickActions actions={actions} />
 
-      <div className="grid gap-4 lg:grid-cols-3">
-        <Card className="p-5 lg:col-span-2 shadow-card border-0">
+      <div className="grid gap-4 lg:grid-cols-3 min-w-0">
+        <Card className="p-5 lg:col-span-2 shadow-card border-0 min-w-0">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="font-semibold">حركة الطلبات الشهرية</h3>
@@ -508,7 +508,7 @@ function PlatformAdminDashboard({ scoped }: { scoped: ImportRequest[] }) {
           </ResponsiveContainer>
         </Card>
 
-        <Card className="p-5 shadow-card border-0">
+        <Card className="p-5 shadow-card border-0 min-w-0">
           <h3 className="font-semibold mb-1">توزيع فئات الواردات</h3>
           <p className="text-xs text-muted-foreground mb-4">حسب نوع البضاعة</p>
           <ResponsiveContainer width="100%" height={240}>
@@ -533,11 +533,11 @@ function PlatformAdminDashboard({ scoped }: { scoped: ImportRequest[] }) {
         </Card>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-3">
-        <div className="lg:col-span-2">
+      <div className="grid gap-4 lg:grid-cols-3 min-w-0">
+        <div className="lg:col-span-2 min-w-0">
           <RecentRequests rows={scoped.slice(0, 6)} role="platform_admin" />
         </div>
-        <Card className="p-5 shadow-card border-0">
+        <Card className="p-5 shadow-card border-0 min-w-0">
           <h3 className="font-semibold mb-4">تنبيهات الامتثال</h3>
           <div className="space-y-3">
             {[
