@@ -18,7 +18,7 @@ import {
   canViewRequest, displayStatusFor, progressFor, progressForRole,
   type RequestStage,
 } from "@/lib/mock";
-import { requestsCell, transitionRequest, isLocked, isEditable, logAudit, isClaimedByOther } from "@/lib/governance";
+import { requestsCell, transitionRequest, isLocked, isEditable, logAudit, isClaimedByOther, auditCell } from "@/lib/governance";
 import { WorkflowProgress } from "@/components/workflow/WorkflowProgress";
 import { VotingPanel } from "@/components/workflow/VotingPanel";
 import { AuditTimeline } from "@/components/workflow/AuditTimeline";
@@ -37,6 +37,7 @@ function RequestDetail() {
   const [comment, setComment] = useState("");
   const [previewDoc, setPreviewDoc] = useState<{ name: string; fileName?: string; mime?: string; dataUrl?: string; size?: number } | null>(null);
   const REQUESTS = requestsCell.use();
+  const AUDIT = auditCell.use();
 
   const req = REQUESTS.find((r) => r.id === id);
   if (!user) return null;
@@ -77,6 +78,17 @@ function RequestDetail() {
     user.entityId === req.entityId;
   const locked = isLocked(req);
   const editable = isEditable(req);
+
+  // Latest reason/comment recorded when the request moved into a given stage.
+  const reasonFor = (toStage: RequestStage): string | undefined => {
+    const entry = AUDIT.find((a) => a.ref === req.ref && a.toStage === toStage && a.notes);
+    return entry?.notes;
+  };
+  const returnedReason = req.stage === "support_returned" ? reasonFor("support_returned") : undefined;
+  const supportRejectedReason = req.stage === "support_rejected" ? reasonFor("support_rejected") : undefined;
+  const execRejectedReason = req.stage === "executive_rejected" ? reasonFor("executive_rejected") : undefined;
+  const bankRejectedReason = req.stage === "bank_rejected" ? reasonFor("bank_rejected") : undefined;
+  const bankReturnedReason = req.stage === "draft" ? reasonFor("draft") : undefined;
 
   function performTransition(to: string, label: string) {
     const t = transitions.find((x) => x.to === to);
@@ -201,6 +213,46 @@ function RequestDetail() {
                 يمكنك مراجعة الملاحظات وتعديل البيانات والمستندات ثم إعادة إرساله، أو الإبقاء على الطلب في وضعه الحالي.
                 راجع سجل التدقيق لمعرفة سبب الإعادة.
               </div>
+              {returnedReason && (
+                <div className="mt-2 text-sm bg-card border border-amber-200 rounded-md px-3 py-2">
+                  <span className="font-semibold text-amber-700">سبب الإعادة: </span>
+                  <span>{returnedReason}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {/* بانر الإعادة من المراجع الداخلي بالبنك (draft) */}
+      {req.stage === "draft" && bankReturnedReason && (
+        <Card className="p-4 mb-4 border-amber-300 bg-amber-50/70 shadow-card border-r-4 border-r-amber-500">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <div className="font-semibold text-amber-700">الطلب مُعاد لإعادة الإدخال من المراجع الداخلي</div>
+              <div className="mt-2 text-sm bg-card border border-amber-200 rounded-md px-3 py-2">
+                <span className="font-semibold text-amber-700">سبب الإعادة: </span>
+                <span>{bankReturnedReason}</span>
+              </div>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {/* بانر الرفض من المراجع الداخلي بالبنك */}
+      {req.stage === "bank_rejected" && (
+        <Card className="p-4 mb-4 border-rose-300 bg-rose-50/70 shadow-card border-r-4 border-r-rose-600">
+          <div className="flex items-start gap-3">
+            <XCircle className="h-5 w-5 text-rose-600 shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <div className="font-semibold text-rose-700">مرفوض من المراجعة الداخلية بالبنك</div>
+              {bankRejectedReason && (
+                <div className="mt-2 text-sm bg-card border border-rose-200 rounded-md px-3 py-2">
+                  <span className="font-semibold text-rose-700">سبب الرفض: </span>
+                  <span>{bankRejectedReason}</span>
+                </div>
+              )}
             </div>
           </div>
         </Card>
@@ -216,6 +268,12 @@ function RequestDetail() {
               <div className="text-xs text-muted-foreground mt-1">
                 هذا قرار نهائي ولا يمكن إعادة إرسال الطلب نفسه مرة أخرى. لتقديم طلب جديد، يلزم إنشاء طلب مستقل ببيانات مختلفة.
               </div>
+              {execRejectedReason && (
+                <div className="mt-2 text-sm bg-card border border-rose-200 rounded-md px-3 py-2">
+                  <span className="font-semibold text-rose-700">سبب الرفض: </span>
+                  <span>{execRejectedReason}</span>
+                </div>
+              )}
             </div>
           </div>
         </Card>
@@ -231,6 +289,12 @@ function RequestDetail() {
               <div className="text-xs text-muted-foreground mt-1">
                 لا يمكن متابعة هذا الطلب ضمن مساره الحالي. يمكنك الإبقاء عليه للأرشفة أو إنشاء طلب جديد بعد معالجة سبب الرفض.
               </div>
+              {supportRejectedReason && (
+                <div className="mt-2 text-sm bg-card border border-rose-200 rounded-md px-3 py-2">
+                  <span className="font-semibold text-rose-700">سبب الرفض: </span>
+                  <span>{supportRejectedReason}</span>
+                </div>
+              )}
             </div>
           </div>
         </Card>
