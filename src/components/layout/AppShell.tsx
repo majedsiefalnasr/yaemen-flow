@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAuth, auth, ROLE_LABELS, type Role } from "@/lib/mock";
-import { notificationsCell, markAllRead } from "@/lib/governance";
+import { notificationsCell, markAllRead, can, type Permission } from "@/lib/governance";
 import { RoleSwitcher } from "@/components/workflow/RoleSwitcher";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -22,22 +22,22 @@ import {
 } from "@/components/ui/popover";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
-type NavItem = { to: string; label: string; icon: React.ComponentType<{ className?: string }>; roles?: Role[] };
+type NavItem = { to: string; label: string; icon: React.ComponentType<{ className?: string }>; roles?: Role[]; perm?: Permission };
 
 const NAV: NavItem[] = [
   { to: "/", label: "اللوحة الرئيسية", icon: LayoutDashboard },
   { to: "/requests", label: "طلبات التمويل", icon: FileText },
   { to: "/requests/new", label: "تقديم طلب جديد", icon: FilePlus2, roles: ["bank_intake", "bank_admin"] },
-  { to: "/merchants", label: "إدارة التجار", icon: Building2, roles: ["bank_admin", "platform_admin"] },
+  { to: "/merchants", label: "إدارة التجار", icon: Building2, perm: "merchants.manage" },
   
   { to: "/customs", label: "إذن إصدار بيان جمركي", icon: PackageCheck, roles: ["committee_manager"] },
-  { to: "/reports", label: "التقارير والتحليلات", icon: BarChart3, roles: ["platform_admin", "support_member", "executive_member", "committee_manager", "bank_admin"] },
-  { to: "/audit", label: "التدقيق والامتثال", icon: ScrollText, roles: ["platform_admin"] },
+  { to: "/reports", label: "التقارير والتحليلات", icon: BarChart3, perm: "reports.view" },
+  { to: "/audit", label: "التدقيق والامتثال", icon: ScrollText, perm: "audit.view" },
   { to: "/notifications", label: "الإشعارات", icon: Bell },
-  { to: "/admin/entities", label: "إدارة البنوك", icon: Network, roles: ["platform_admin"] },
+  { to: "/admin/entities", label: "إدارة البنوك", icon: Network, perm: "entities.manage" },
   { to: "/admin/cby-staff", label: "مستخدمي النظام", icon: UserCog, roles: ["platform_admin"] },
-  { to: "/admin/workflow-docs", label: "قواعد المستندات", icon: FileCheck2, roles: ["platform_admin"] },
-  { to: "/admin/roles", label: "الأدوار والصلاحيات", icon: KeyRound, roles: ["platform_admin"] },
+  { to: "/admin/workflow-docs", label: "قواعد المستندات", icon: FileCheck2, perm: "docrules.manage" },
+  { to: "/admin/roles", label: "الأدوار والصلاحيات", icon: KeyRound, perm: "roles.manage" },
   { to: "/bank/users", label: "موظفو الجهة", icon: Users, roles: ["bank_admin"] },
   { to: "/settings", label: "إعدادات النظام", icon: Settings, roles: ["platform_admin"] },
 ];
@@ -56,7 +56,11 @@ export function AppShell() {
     return <Outlet />;
   }
 
-  const items = NAV.filter((i) => !i.roles || i.roles.includes(user.role));
+  const items = NAV.filter((i) => {
+    if (i.perm) return can(user.role, i.perm);
+    if (i.roles) return i.roles.includes(user.role);
+    return true;
+  });
   const notifs = notificationsCell.use();
   const unread = notifs.filter((n) => n.unread).length;
 
