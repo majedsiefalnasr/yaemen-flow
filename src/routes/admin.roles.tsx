@@ -5,7 +5,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { rolePermsCell, PERMISSION_LABELS, type Permission } from "@/lib/governance";
 import { ROLE_LABELS, useAuth, type Role } from "@/lib/mock";
-import { toast } from "sonner";
 
 import { RoleGuard } from "@/components/workflow/RoleGuard";
 
@@ -42,26 +41,14 @@ function RolesAdmin() {
   if (!user || user.role !== "platform_admin") {
     return <div className="p-8 text-sm text-muted-foreground">هذه الصفحة متاحة لمسؤول البنك المركزي فقط.</div>;
   }
-  function toggle(role: Role, perm: Permission) {
-    rolePermsCell.set((prev) => {
-      const set = new Set(prev[role] ?? []);
-      if (set.has(perm)) set.delete(perm); else set.add(perm);
-      const next = { ...prev, [role]: [...set] };
-      toast.success("تم تحديث الصلاحيات");
-      return next;
-    });
-  }
   function isChecked(role: Role, perm: Permission): boolean {
     return (map[role] ?? []).includes(perm);
-  }
-  function handleToggle(role: Role, perm: Permission) {
-    toggle(role, perm);
   }
   return (
     <div>
       <PageHeader
         title="مصفوفة الأدوار والصلاحيات"
-        subtitle="تكوين صلاحيات كل دور — التغييرات تُحفظ تلقائياً وتُسجَّل في سجل التدقيق"
+        subtitle="عرض صلاحيات كل دور (للقراءة فقط في الوقت الحالي)"
       />
       <Card className="p-0 shadow-card border-0 overflow-x-auto">
         <table className="w-full text-sm min-w-[640px]">
@@ -87,7 +74,7 @@ function RolesAdmin() {
                     <td key={r} className="p-3 text-center align-top">
                       <Checkbox
                         checked={isChecked(r, p)}
-                        onCheckedChange={() => handleToggle(r, p)}
+                        disabled
                       />
                     </td>
                   ))}
