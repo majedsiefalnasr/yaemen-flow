@@ -15,7 +15,7 @@ import { RoleGuard } from "@/components/workflow/RoleGuard";
 
 export const Route = createFileRoute("/reports")({
   component: () => (
-    <RoleGuard allow={["platform_admin", "support_member", "executive_member", "bank_admin"]}>
+    <RoleGuard perm="reports.view">
       <Reports />
     </RoleGuard>
   ),
