@@ -12,7 +12,7 @@ import { RoleGuard } from "@/components/workflow/RoleGuard";
 
 export const Route = createFileRoute("/audit")({
   component: () => (
-    <RoleGuard allow={["platform_admin"]} message="سجل التدقيق متاح لمسؤول النظام فقط.">
+    <RoleGuard perm="audit.view" message="سجل التدقيق متاح للأدوار التي تملك صلاحية عرضه.">
       <Audit />
     </RoleGuard>
   ),
