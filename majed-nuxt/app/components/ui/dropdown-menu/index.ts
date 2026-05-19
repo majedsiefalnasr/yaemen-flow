@@ -1,0 +1,6 @@
+import { DropdownMenuRoot, DropdownMenuTrigger, DropdownMenuPortal, DropdownMenuContent as RDMC, DropdownMenuItem as RDMI, DropdownMenuLabel as RDML, DropdownMenuSeparator as RDMS } from 'reka-ui'
+export { DropdownMenuRoot as DropdownMenu, DropdownMenuTrigger, DropdownMenuPortal }
+export { default as DropdownMenuContent } from './DropdownMenuContent.vue'
+export { default as DropdownMenuItem } from './DropdownMenuItem.vue'
+export { default as DropdownMenuLabel } from './DropdownMenuLabel.vue'
+export { default as DropdownMenuSeparator } from './DropdownMenuSeparator.vue'
