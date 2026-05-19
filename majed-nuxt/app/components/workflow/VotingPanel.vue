@@ -13,12 +13,14 @@ import { toast } from 'vue-sonner'
 
 const props = defineProps<{ req: ImportRequest }>()
 const { user } = storeToRefs(useAuthStore())
-useCell(votesCell); useCell(voteHistoryCell); useCell(finalizationsCell)
+const votesRef = useCell(votesCell)
+const finalsRef = useCell(finalizationsCell)
+useCell(voteHistoryCell)
 const cfg = useCell(execConfigCell)
 const justif = ref('')
 
-const final = computed(() => isFinalized(props.req.id))
-const tallyData = computed(() => tally(props.req.id))
+const final = computed(() => { void finalsRef.value; return isFinalized(props.req.id) })
+const tallyData = computed(() => { void votesRef.value; return tally(props.req.id) })
 const counts = computed(() => tallyData.value.counts)
 const votes = computed(() => tallyData.value.votes)
 const members = computed(() => cfg.value.memberIds.map((id) => DEMO_USERS.find((u) => u.id === id)).filter(Boolean) as typeof DEMO_USERS)
