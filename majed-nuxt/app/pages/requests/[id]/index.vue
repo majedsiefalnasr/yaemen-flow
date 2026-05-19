@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, defineComponent, h } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import {
@@ -113,6 +113,27 @@ const sideRows = computed(() => req.value ? [
 function actorByUserId(uid?: string) {
   return uid ? DEMO_USERS.find((u) => u.id === uid) : undefined
 }
+
+const ActorRow = defineComponent({
+  name: 'ActorRow',
+  props: { label: { type: String, required: true }, userId: String, extra: String },
+  setup(props) {
+    return () => {
+      const u = props.userId ? DEMO_USERS.find((x) => x.id === props.userId) : undefined
+      return h('div', { class: 'flex items-center justify-between border-b pb-2 last:border-0' }, [
+        h('div', { class: 'flex items-center gap-3' }, [
+          h('div', { class: 'h-8 w-8 rounded-full bg-primary text-primary-foreground grid place-items-center text-[10px] font-bold' }, u?.avatar ?? '—'),
+          h('div', null, [
+            h('div', { class: 'text-xs text-muted-foreground' }, props.label),
+            h('div', { class: 'text-sm font-medium' }, u?.name ?? 'بانتظار التنفيذ'),
+            props.extra ? h('div', { class: 'text-[11px] text-muted-foreground' }, props.extra) : null,
+          ]),
+        ]),
+        u ? h(Badge as any, { variant: 'secondary', class: 'text-[10px]' }, () => u.org) : null,
+      ])
+    }
+  },
+})
 
 function performTransition(to: string, label: string) {
   if (!req.value || !user.value) return
@@ -450,31 +471,3 @@ function goCustoms() {
     </div>
   </div>
 </template>
-
-<script lang="ts">
-import { defineComponent, h } from 'vue'
-import { Badge } from '@/components/ui/badge'
-import { DEMO_USERS } from '@/lib/mock'
-
-export const ActorRow = defineComponent({
-  name: 'ActorRow',
-  props: { label: { type: String, required: true }, userId: String, extra: String },
-  setup(props) {
-    return () => {
-      const u = props.userId ? DEMO_USERS.find((x) => x.id === props.userId) : undefined
-      return h('div', { class: 'flex items-center justify-between border-b pb-2 last:border-0' }, [
-        h('div', { class: 'flex items-center gap-3' }, [
-          h('div', { class: 'h-8 w-8 rounded-full bg-primary text-primary-foreground grid place-items-center text-[10px] font-bold' }, u?.avatar ?? '—'),
-          h('div', null, [
-            h('div', { class: 'text-xs text-muted-foreground' }, props.label),
-            h('div', { class: 'text-sm font-medium' }, u?.name ?? 'بانتظار التنفيذ'),
-            props.extra ? h('div', { class: 'text-[11px] text-muted-foreground' }, props.extra) : null,
-          ]),
-        ]),
-        u ? h(Badge as any, { variant: 'secondary', class: 'text-[10px]' }, () => u.org) : null,
-      ])
-    }
-  },
-})
-export default {}
-</script>
