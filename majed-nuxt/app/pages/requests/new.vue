@@ -9,8 +9,11 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { requestsCell } from '@/lib/governance'
+import { useAuthStore } from '@/stores/auth'
+import { progressFor } from '@/lib/mock'
 
 const router = useRouter()
+const auth = useAuthStore()
 const importer = ref('')
 const supplier = ref('')
 const amount = ref(0)
@@ -21,13 +24,17 @@ const notes = ref('')
 function submit(e: Event) {
   e.preventDefault()
   const id = `r-${Date.now()}`
+  const u = auth.user
   requestsCell.set([...requestsCell.get(), {
-    id, ref: `IMP-${Math.floor(Math.random() * 9000 + 1000)}`,
+    id, ref: `IMP-${new Date().getFullYear()}-${Math.floor(Math.random() * 9000 + 1000)}`,
     importer: importer.value, supplier: supplier.value,
-    amount: amount.value, currency: currency.value, category: category.value,
-    bankId: 'e1', bankName: 'البنك اليمني للإنشاء والتعمير',
-    stage: 'draft', createdAt: new Date().toISOString().slice(0, 10),
-    docs: [], votes: [], notes: notes.value || undefined,
+    amount: amount.value, currency: currency.value as 'USD' | 'EUR' | 'SAR',
+    type: category.value || 'أخرى',
+    entityId: 'e1', bank: 'البنك اليمني للإنشاء والتعمير',
+    invoice: `INV-${Date.now()}`, port: 'ميناء عدن',
+    stage: 'draft', createdAt: new Date().toISOString(),
+    progress: progressFor('draft'), risk: 'low',
+    intakeUserId: u?.id ?? '', createdBy: u?.id ?? '', lastUpdatedBy: u?.id ?? '',
   }])
   toast.success('تم حفظ المسودة')
   router.push(`/requests/${id}`)
