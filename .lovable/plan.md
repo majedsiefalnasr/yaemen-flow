@@ -1,67 +1,97 @@
-# خطة مواءمة Yemen Flow Hub مع المواصفات الكاملة
+# خطة: استبدال الواجهة بـ Nuxt 4 + shadcn-vue
 
-البروتوتايب الحالي يغطي معظم المواصفات (الأدوار، المراحل، التصويت، إصدار البيان، RTL/عربي، حالة مشتركة عبر الجلسات). الخطة التالية تغلق الفجوات المتبقية لتطابق نص الـ brief حرفيًا.
+## ⚠️ تحذير حرج قبل البدء
 
-## الفجوات المُحدَّدة مقابل المواصفات
+مشروع Lovable مبني على قالب **TanStack Start (React)** — وهو القالب الوحيد المدعوم رسمياً على المنصة. تحويله إلى Nuxt 4 يعني:
 
-| # | المواصفة | الحالة الحالية | الإجراء |
-|---|---------|---------------|--------|
-| 1 | **Support Claiming / Locking** — أول عضو مساندة يطالب بالطلب يقفله على الباقين | غير موجود — كل أعضاء المساندة يرون نفس الطابور دون قفل | إضافة `claimedBy` على الطلب + زر "حجز للمراجعة" + شارة "محجوز بواسطة …" + منع باقي أعضاء المساندة من اتخاذ إجراء |
-| 2 | **Committee Director** — دور منفصل يحل التعادل في التصويت | لا يوجد دور منفصل؛ مدير اللجنة هو نفسه عضو | إضافة Role `committee_director` + مستخدم تجريبي + لوحة "حسم التعادل" تظهر فقط عند تساوي الأصوات |
-| 3 | **CBY Admin / Customs Officer** — إصدار البيان الجمركي وإدارة المستخدمين والبنوك ومراجعة الـ audit | إصدار البيان حاليًا بيد عضو اللجنة التنفيذية | فصل صلاحية إصدار البيان إلى `platform_admin` (= CBY Admin)، وإبقاء التصويت فقط لأعضاء اللجنة |
-| 4 | **SWIFT Officer dashboard** | يوجد زر رفع داخل الطلب فقط | إضافة طابور مخصص `/swift` يعرض الطلبات في حالة "support_approved" فقط لـ `bank_swift` |
-| 5 | **Voting realism** — كل عضو يصوّت مرة واحدة، عدّاد لحظي | يعمل لكن لا يمنع التصويت المزدوج بوضوح ولا يُظهر "صوّت/لم يصوّت" لكل عضو | تحسين `VotingPanel` ليعرض حالة كل عضو + قفل بعد التصويت + حسم تلقائي عند اكتمال النصاب |
-| 6 | **مراحل العرض الكاملة** — إضافة "Support Review In Progress" (مرحلة الحجز) للوضوح في الـ timeline | غير ممثلة كحدث | تسجيل حدث "حُجز للمراجعة بواسطة X" في Audit Timeline |
-| 7 | **Reports & Analytics** | الصفحة موجودة لكن سطحية | إضافة 4 KPIs ديناميكية تُحسب من الـ store (إجمالي/معتمد/مرفوض/متوسط زمن المعالجة) + رسم بسيط حسب المرحلة |
-| 8 | **Audit log عام لكل النظام** لـ CBY Admin | `AuditTimeline` لكل طلب فقط | إضافة `/audit` global feed مرتب زمنيًا |
-| 9 | **Notifications dynamic** | الصفحة ثابتة | ربطها بأحداث الـ store (طلب جديد في طابوري، تم حجز طلبي، صدر قرار) |
-| 10 | **RTL polish** | الأساس صحيح | مراجعة سريعة للأيقونات الاتجاهية (chevrons, arrows) واستبدال `mr-/ml-` ببدائل منطقية في الأماكن المتبقية |
+1. **الـ Preview المباشر داخل Lovable سيتوقف عن العمل بشكل شبه مؤكد** — نظام البناء والـ dev server في Lovable مربوط بـ Vite + TanStack وليس Nuxt/Nitro.
+2. **النشر (Publish) عبر Lovable لن يعمل** — قالب النشر متوقع React SSR على Cloudflare Workers، وليس Nuxt/Nitro.
+3. **أدوات Lovable Cloud / Auth / السكانر الأمني** كلها مصممة لـ React وستفقد التكامل.
+4. **vite.config.ts و wrangler.jsonc و src/server.ts و src/start.ts** كلها روابط للقالب الحالي.
 
-## ترتيب التنفيذ
+عملياً: بعد التحويل، المشروع سيصبح "كود Nuxt مخزّن في Lovable" بدون قدرة على المعاينة أو النشر من داخل المنصة — يجب تشغيله محلياً (`npm run dev`) أو نشره خارجياً (Vercel/Netlify).
 
-1. **بنية البيانات (`src/lib/mock.ts` + `governance.ts`)**
-   - إضافة Role `committee_director` + مستخدم تجريبي.
-   - إضافة حقول `claimedBy`, `claimedAt`, `customsIssuedBy` على الطلب.
-   - تحديث `displayStatusFor` و `bucketsFor` للأدوار الجديدة.
-   - تعديل `TRANSITIONS` لفصل "إصدار البيان" إلى `platform_admin` فقط.
+**توصيتي:** إذا الهدف Vue stack، الأفضل عمل الـ Nuxt كمشروع منفصل خارج Lovable. لكن بناءً على اختيارك "استبدال كامل"، الخطة بالأسفل تنفذ ذلك.
 
-2. **Support Claiming**
-   - زر "حجز للمراجعة" في `requests.$id.tsx` لأعضاء المساندة في مرحلة `support_review`.
-   - بعد الحجز: باقي أعضاء المساندة يرون شارة قفل ولا يستطيعون اتخاذ إجراء.
-   - في `requests.index.tsx` عرض شارة "محجوز بواسطة …".
+---
 
-3. **SWIFT Queue**
-   - صفحة `/swift` جديدة (`requests.swift-queue.tsx`) لطابور `bank_swift` فقط.
-   - إضافة عنصر تنقل في `AppShell` للدور.
+## ما سيتم تنفيذه
 
-4. **Voting refactor**
-   - في `VotingPanel`: عرض قائمة الأعضاء مع حالة (وافق/رفض/امتنع/لم يصوّت).
-   - منع التصويت المزدوج عبر `hasVoted(userId, requestId)`.
-   - عند اكتمال أصوات كل الأعضاء: حسم تلقائي بالأغلبية، وعند التعادل تنتقل الحالة إلى `tie_break` ويظهر زر للمدير فقط.
+### 1. هيكل المشروع
+- حذف: `src/` بالكامل، `vite.config.ts`، `wrangler.jsonc`، `src/server.ts/start.ts/router.tsx/routeTree.gen.ts`، `.lovable/project.json` يُحدّث.
+- إضافة: `nuxt.config.ts`، `app.vue`، `app/` (Nuxt 4 srcDir الجديد) يحوي `pages/`, `layouts/`, `components/`, `composables/`, `stores/`, `lib/`, `assets/`.
+- `package.json` يُعاد كتابته كاملاً بالاعتماديات المطلوبة.
 
-5. **Committee Director**
-   - لوحة "حسم التعادل" داخل `voting.$id.tsx` تظهر فقط لـ `committee_director` عند `tie_break`.
+### 2. الاعتماديات
+```
+nuxt ^4.4.5, vue ^3.5 (Vue 4 لم يصدر بعد — سنستخدم Vue 3.5 وهو ما يدعمه Nuxt 4)
+@nuxtjs/tailwindcss-vite + tailwindcss ^4.1, @tailwindcss/vite
+shadcn-vue ^2.7.3 + reka-ui (المتطلب) + class-variance-authority + clsx + tailwind-merge
+@pinia/nuxt + pinia ^2.3, @vueuse/nuxt + @vueuse/core ^13.1
+vee-validate + @vee-validate/zod + zod ^3
+lucide-vue-next
+@nuxtjs/google-fonts (للخط Cairo)
+```
 
-6. **CBY Admin = Customs Officer**
-   - نقل أزرار "إصدار البيان" من `executive_member` إلى `platform_admin`.
-   - صفحة `/customs` تصبح طابور `platform_admin` للطلبات في `executive_approved`.
+### 3. نقل الـ Routes (1:1 مع src/routes الحالية)
+| React (Tan Stack) | Nuxt 4 |
+|---|---|
+| `index.tsx` | `pages/index.vue` |
+| `login.tsx` | `pages/login.vue` |
+| `requests.index.tsx` | `pages/requests/index.vue` |
+| `requests.new.tsx` | `pages/requests/new.vue` |
+| `requests.$id.tsx` | `pages/requests/[id].vue` |
+| `requests.$id.swift.tsx` | `pages/requests/[id]/swift.vue` |
+| `customs.tsx`, `customs.$id.print.tsx` | `pages/customs/index.vue`, `pages/customs/[id]/print.vue` |
+| `admin.*` (4 ملفات) | `pages/admin/*.vue` |
+| `audit, bank.users, merchants, notifications, profile, reports, settings` | `pages/{name}.vue` لكل واحد |
 
-7. **Reports + Global Audit + Notifications dynamic**
-   - حساب KPIs من `requestsCell`.
-   - `/audit` يقرأ من سجل أحداث global في `governance.ts`.
-   - `/notifications` يُولّد إشعارات من نفس السجل مفلترة حسب المستخدم/الدور.
+المجموع: **20 صفحة**.
 
-8. **مراجعة RTL سريعة** على الشاشات المعدّلة.
+### 4. نقل المكونات والمنطق
+- `src/components/layout/AppShell.tsx` → `app/layouts/default.vue` + `components/layout/AppShell.vue`.
+- `src/components/workflow/*` (7 ملفات: AuditTimeline, DocumentChecklist, LockedBanner, RoleGuard, RoleSwitcher, VotingPanel, WorkflowProgress) → `components/workflow/*.vue`.
+- `src/components/ui/*` (shadcn React) → استبدال بمكونات `shadcn-vue` المثبتة عبر CLI ثم تخصيصها لتطابق الستايل الحالي.
+- `src/lib/mock.ts, db.ts, governance.ts, utils.ts, error-capture.ts, error-page.ts` → نسخ كـ TypeScript pure إلى `app/lib/` (المنطق React-agnostic فيتم نقله مباشرة؛ أي hooks تتحول إلى composables).
+- `src/hooks/use-mobile.tsx` → `app/composables/useMobile.ts` (موجود بالفعل في VueUse: `useMediaQuery`).
 
-9. **تقرير تنفيذ نهائي** يربط كل عنصر في الـ brief بالملف/الشاشة المطابقة.
+### 5. State Management
+- استبدال أي state محلي React بـ Pinia stores تحت `app/stores/`:
+  - `auth.ts` (الدور الحالي للمستخدم — للـ RoleSwitcher)
+  - `requests.ts` (mock requests + audit log)
+  - `merchants.ts`
+  - `notifications.ts`
 
-## ملاحظات تقنية
+### 6. التصميم
+- الحفاظ على نفس tokens من `src/styles.css` (oklch palette + RTL + خط Cairo) عبر `app/assets/css/main.css` بنفس متغيرات `@theme` من Tailwind v4.
+- `app.vue` يضع `dir="rtl" lang="ar"` على `<html>` عبر `useHead`.
+- shadcn-vue components تستخدم نفس CSS variables → نفس المظهر بصرياً.
+- animations: `tw-animate-css` (الموصى به من shadcn-vue) للـ Accordion/Dialog/Dropdown.
 
-- لا توجد حاجة لـ Lovable Cloud؛ كل الحالة في `requestsCell` (in-memory store + `useSyncExternalStore`) تستمر خلال الجلسة كما يطلب الـ brief.
-- لن نُغيّر منظومة `displayStatusFor` المعتمدة لإخفاء التعقيد عن أدوار البنك.
-- كل إجراء جديد سيكتب حدثًا في `AuditTimeline` للحفاظ على واقعية الـ timeline.
+### 7. Forms
+- استبدال أي react-hook-form بـ **VeeValidate + @vee-validate/zod** مع مكونات `<Form>`, `<FormField>` الخاصة بـ shadcn-vue.
+- نموذج `requests/new.vue` (الأكبر) يستخدم نفس schema الموجود.
 
-## الملفات المتأثرة (تقدير)
+### 8. التحقق
+- بعد البناء: تشغيل `npm install && npm run dev` محلياً للتأكد أن Nuxt يبني.
+- لا يمكن التحقق داخل preview الـ Lovable لأن البنية التحتية لا تدعم Nuxt.
 
-- تعديل: `src/lib/mock.ts`, `src/lib/governance.ts`, `src/components/workflow/VotingPanel.tsx`, `src/components/layout/AppShell.tsx`, `src/routes/requests.$id.tsx`, `src/routes/requests.index.tsx`, `src/routes/voting.$id.tsx`, `src/routes/customs.tsx`, `src/routes/customs.$id.print.tsx`, `src/routes/reports.tsx`, `src/routes/audit.tsx`, `src/routes/notifications.tsx`.
-- جديد: `src/routes/requests.swift-queue.tsx` (طابور SWIFT المخصص).
+---
+
+## التفاصيل التقنية
+
+- **Nuxt 4 srcDir**: المحتوى يذهب تحت `app/` بدلاً من جذر المشروع (تغيير افتراضي من Nuxt 3).
+- **shadcn-vue init**: يتم تشغيله مرة عبر `npx shadcn-vue@latest init` لإنشاء `components.json` + الإعدادات.
+- **RTL**: لا يحتاج plugin خاص — Tailwind v4 يدعم logical properties، والأيقونات من lucide تعكس تلقائياً مع `dir="rtl"`.
+- **Vue 4**: غير موجود حالياً (آخر مستقر 3.5.x). الخطة تستخدم Vue 3.5 وهو ما يتطلبه Nuxt 4 فعلياً.
+- **Mock data**: يبقى reactive عبر Pinia مع `localStorage` persistence (نفس سلوك `src/lib/db.ts` الحالي).
+
+## الملفات التي ستُحذف
+كل `src/`، `vite.config.ts`، `wrangler.jsonc`، `server-railway.mjs`، `Dockerfile` (سيتجدد لو لزم).
+
+## النطاق التقديري
+~50 ملف جديد، حجم العمل كبير جداً (نقل 20 صفحة + 7 components workflow + 30+ shadcn component + كل المنطق). يُنصح التنفيذ على دفعات لكن طلبت 1:1 كامل، فسيتم في تنفيذ واحد متتالي.
+
+---
+
+**هل توافق على المتابعة رغم أن الـ preview والـ publish في Lovable سيتوقفان؟** أو تفضل أعيد التفكير (مثلاً: نسخة Nuxt في مجلد منفصل بدون لمس React)?
