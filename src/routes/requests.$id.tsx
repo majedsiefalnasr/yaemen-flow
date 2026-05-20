@@ -371,9 +371,9 @@ function RequestDetail() {
                 const docs = req.documents && req.documents.length > 0
                   ? req.documents
                   : [
-                      { name: "الفاتورة التجارية", fileName: "doc_1.pdf", mime: "application/pdf", size: 2_400_000 },
-                      { name: "بوليصة الشحن", fileName: "doc_2.pdf", mime: "application/pdf", size: 2_400_000 },
-                      { name: "شهادة المنشأ", fileName: "doc_3.pdf", mime: "application/pdf", size: 2_400_000 },
+                      { name: "الفاتورة الأولية (Proforma Invoice)", fileName: "proforma_invoice.pdf", mime: "application/pdf", size: 2_400_000 },
+                      { name: "السجل التجاري", fileName: "commercial_register.pdf", mime: "application/pdf", size: 1_800_000 },
+                      { name: "البطاقة الضريبية", fileName: "tax_card.pdf", mime: "application/pdf", size: 1_200_000 },
                       ...(req.swiftFile ? [{ name: "وثيقة سويفت", fileName: req.swiftFile.name, mime: "application/pdf", size: req.swiftFile.size }] : []),
                     ];
                 return (
