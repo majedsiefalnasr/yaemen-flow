@@ -461,7 +461,7 @@ export function resetDemoData() {
 }
 
 // ---------- Editable / Locked helpers ----------
-export const EDITABLE_STAGES: RequestStage[] = ["draft", "support_returned"];
+export const EDITABLE_STAGES: RequestStage[] = ["draft", "support_returned", "bank_returned"];
 
 export function isEditable(req: ImportRequest): boolean {
   return EDITABLE_STAGES.includes(req.stage);
