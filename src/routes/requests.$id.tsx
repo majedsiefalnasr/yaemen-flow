@@ -88,7 +88,7 @@ function RequestDetail() {
   const supportRejectedReason = req.stage === "support_rejected" ? reasonFor("support_rejected") : undefined;
   const execRejectedReason = req.stage === "executive_rejected" ? reasonFor("executive_rejected") : undefined;
   const bankRejectedReason = req.stage === "bank_rejected" ? reasonFor("bank_rejected") : undefined;
-  const bankReturnedReason = req.stage === "draft" ? reasonFor("draft") : undefined;
+  const bankReturnedReason = req.stage === "bank_returned" ? reasonFor("bank_returned") : undefined;
 
   function performTransition(to: string, label: string) {
     const t = transitions.find((x) => x.to === to);
@@ -224,17 +224,19 @@ function RequestDetail() {
         </Card>
       )}
 
-      {/* بانر الإعادة من المراجع الداخلي بالبنك (draft) */}
-      {req.stage === "draft" && bankReturnedReason && (
+      {/* بانر الإعادة من المراجع الداخلي بالبنك */}
+      {req.stage === "bank_returned" && (
         <Card className="p-4 mb-4 border-amber-300 bg-amber-50/70 shadow-card border-r-4 border-r-amber-500">
           <div className="flex items-start gap-3">
             <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
             <div className="flex-1">
               <div className="font-semibold text-amber-700">الطلب مُعاد لإعادة الإدخال من المراجع الداخلي</div>
-              <div className="mt-2 text-sm bg-card border border-amber-200 rounded-md px-3 py-2">
-                <span className="font-semibold text-amber-700">سبب الإعادة: </span>
-                <span>{bankReturnedReason}</span>
-              </div>
+              {bankReturnedReason && (
+                <div className="mt-2 text-sm bg-card border border-amber-200 rounded-md px-3 py-2">
+                  <span className="font-semibold text-amber-700">سبب الإعادة: </span>
+                  <span>{bankReturnedReason}</span>
+                </div>
+              )}
             </div>
           </div>
         </Card>
