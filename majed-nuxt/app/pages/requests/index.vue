@@ -4,7 +4,7 @@ import { storeToRefs } from 'pinia'
 import { useAuthStore } from '@/stores/auth'
 import { useCell } from '@/composables/useCell'
 import { requestsCell } from '@/lib/governance'
-import { visibleRequestsFor, displayStatusFor, progressForRole } from '@/lib/mock'
+import { queueRequestsFor, displayStatusFor, progressForRole } from '@/lib/mock'
 import PageHeader from '@/components/layout/PageHeader.vue'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -17,7 +17,7 @@ const all = useCell(requestsCell)
 const q = ref('')
 const list = computed(() => {
   if (!user.value) return []
-  const v = visibleRequestsFor(user.value, all.value)
+  const v = queueRequestsFor(user.value, all.value)
   if (!q.value) return v
   const s = q.value.toLowerCase()
   return v.filter((r) => r.ref.toLowerCase().includes(s) || r.importer.toLowerCase().includes(s))
