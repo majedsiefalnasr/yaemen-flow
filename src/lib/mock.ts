@@ -5,12 +5,12 @@ import { useSyncExternalStore } from "react";
 // ============================================================
 
 export type Role =
-  | "platform_admin"   // CBY system admin: manages entities + CBY staff
-  | "bank_admin"       // entity admin: manages bank internal users
-  | "bank_intake"      // creates/submits requests on behalf of merchants
-  | "bank_reviewer"    // performs the bank's internal review (step 2)
-  | "bank_swift"       // attaches the SWIFT document after CBY support approval
-  | "support_member"   // CBY support committee reviewer
+  | "platform_admin" // CBY system admin: manages entities + CBY staff
+  | "bank_admin" // entity admin: manages bank internal users
+  | "bank_intake" // creates/submits requests on behalf of merchants
+  | "bank_reviewer" // performs the bank's internal review (step 2)
+  | "bank_swift" // attaches the SWIFT document after CBY support approval
+  | "support_member" // CBY support committee reviewer
   | "executive_member" // CBY executive committee voter
   | "committee_manager"; // CBY executive committee MANAGER (opens/closes voting + issues customs)
 
@@ -45,9 +45,30 @@ export type Entity = {
 };
 
 export const ENTITIES: Entity[] = [
-  { id: "e1", type: "bank", name: "البنك اليمني للإنشاء والتعمير", swiftCode: "YBRDYESA", licenseNo: "BNK-001", status: "active" },
-  { id: "e2", type: "bank", name: "بنك التضامن الإسلامي", swiftCode: "TSIBYESA", licenseNo: "BNK-002", status: "active" },
-  { id: "e3", type: "bank", name: "بنك سبأ الإسلامي", swiftCode: "SBAIYESA", licenseNo: "BNK-003", status: "active" },
+  {
+    id: "e1",
+    type: "bank",
+    name: "البنك اليمني للإنشاء والتعمير",
+    swiftCode: "YBRDYESA",
+    licenseNo: "BNK-001",
+    status: "active",
+  },
+  {
+    id: "e2",
+    type: "bank",
+    name: "بنك التضامن الإسلامي",
+    swiftCode: "TSIBYESA",
+    licenseNo: "BNK-002",
+    status: "active",
+  },
+  {
+    id: "e3",
+    type: "bank",
+    name: "بنك سبأ الإسلامي",
+    swiftCode: "SBAIYESA",
+    licenseNo: "BNK-003",
+    status: "active",
+  },
 ];
 
 // ============================================================
@@ -59,34 +80,139 @@ export type User = {
   name: string;
   email: string;
   role: Role;
-  entityId: string | null;   // null for CBY/platform users
+  entityId: string | null; // null for CBY/platform users
   org: string;
   avatar: string;
-  active?: boolean;          // defaults to true
+  active?: boolean; // defaults to true
   phone?: string;
 };
 
 export const DEMO_USERS: User[] = [
   // 1) مسؤول النظام
-  { id: "u1", name: "ياسر الحضرمي", email: "admin@cby.gov.ye", role: "platform_admin", entityId: null, org: "البنك المركزي – إدارة الأنظمة", avatar: "يح" },
+  {
+    id: "u1",
+    name: "ياسر الحضرمي",
+    email: "admin@cby.gov.ye",
+    role: "platform_admin",
+    entityId: null,
+    org: "البنك المركزي – إدارة الأنظمة",
+    avatar: "يح",
+  },
   // 2) مسؤول البنك التجاري
-  { id: "u4", name: "أحمد المقطري", email: "admin@ybank.ye", role: "bank_admin", entityId: "e1", org: "البنك اليمني للإنشاء والتعمير", avatar: "أم" },
+  {
+    id: "u4",
+    name: "أحمد المقطري",
+    email: "admin@ybank.ye",
+    role: "bank_admin",
+    entityId: "e1",
+    org: "البنك اليمني للإنشاء والتعمير",
+    avatar: "أم",
+  },
   // 3) موظف ادخال البنك التجاري
-  { id: "u5", name: "علي القاضي", email: "intake@ybank.ye", role: "bank_intake", entityId: "e1", org: "البنك اليمني – إدخال", avatar: "عق" },
+  {
+    id: "u5",
+    name: "علي القاضي",
+    email: "intake@ybank.ye",
+    role: "bank_intake",
+    entityId: "e1",
+    org: "البنك اليمني – إدخال",
+    avatar: "عق",
+  },
   // 4) مراجع داخلي بالبنك التجاري
-  { id: "u6", name: "نوال الحاج", email: "reviewer@ybank.ye", role: "bank_reviewer", entityId: "e1", org: "البنك اليمني – مراجعة داخلية", avatar: "نح" },
+  {
+    id: "u6",
+    name: "نوال الحاج",
+    email: "reviewer@ybank.ye",
+    role: "bank_reviewer",
+    entityId: "e1",
+    org: "البنك اليمني – مراجعة داخلية",
+    avatar: "نح",
+  },
   // 5) عضو اللجنة المساندة
-  { id: "u2", name: "محمد الشامي", email: "m.shami@cby.gov.ye", role: "support_member", entityId: null, org: "البنك المركزي – لجنة مساندة", avatar: "مش" },
+  {
+    id: "u2",
+    name: "محمد الشامي",
+    email: "m.shami@cby.gov.ye",
+    role: "support_member",
+    entityId: null,
+    org: "البنك المركزي – لجنة مساندة",
+    avatar: "مش",
+  },
+  {
+    id: "u3",
+    name: "إيمان الصبري",
+    email: "e.sabri@cby.gov.ye",
+    role: "support_member",
+    entityId: null,
+    org: "البنك المركزي – لجنة مساندة",
+    avatar: "إص",
+  },
   // 6) موظف السويفت بالبنك التجاري
-  { id: "u7", name: "سامي العتمي", email: "swift@ybank.ye", role: "bank_swift", entityId: "e1", org: "البنك اليمني – قسم السويفت", avatar: "سع" },
+  {
+    id: "u7",
+    name: "سامي العتمي",
+    email: "swift@ybank.ye",
+    role: "bank_swift",
+    entityId: "e1",
+    org: "البنك اليمني – قسم السويفت",
+    avatar: "سع",
+  },
   // 7) مدير اللجنة التنفيذية
-  { id: "u9",  name: "د. هدى الإرياني",  email: "huda@cby.gov.ye",   role: "committee_manager", entityId: null, org: "البنك المركزي – مدير اللجنة التنفيذية", avatar: "هإ" },
+  {
+    id: "u9",
+    name: "د. هدى الإرياني",
+    email: "huda@cby.gov.ye",
+    role: "committee_manager",
+    entityId: null,
+    org: "البنك المركزي – مدير اللجنة التنفيذية",
+    avatar: "هإ",
+  },
   // 8-12) أعضاء اللجنة التنفيذية 1..5
-  { id: "u10", name: "م. سامي الذماري",   email: "sami@cby.gov.ye",   role: "executive_member", entityId: null, org: "البنك المركزي – عضو اللجنة التنفيذية 1", avatar: "سذ" },
-  { id: "u11", name: "د. ندى الكبسي",     email: "nada@cby.gov.ye",   role: "executive_member", entityId: null, org: "البنك المركزي – عضو اللجنة التنفيذية 2", avatar: "نك" },
-  { id: "u12", name: "أ. فهد الشرعبي",    email: "fahd@cby.gov.ye",   role: "executive_member", entityId: null, org: "البنك المركزي – عضو اللجنة التنفيذية 3", avatar: "فش" },
-  { id: "u13", name: "د. أمينة العزب",    email: "amina@cby.gov.ye",  role: "executive_member", entityId: null, org: "البنك المركزي – عضو اللجنة التنفيذية 4", avatar: "أع" },
-  { id: "u14", name: "م. خالد الأنسي",    email: "khaled@cby.gov.ye", role: "executive_member", entityId: null, org: "البنك المركزي – عضو اللجنة التنفيذية 5", avatar: "خأ" },
+  {
+    id: "u10",
+    name: "م. سامي الذماري",
+    email: "sami@cby.gov.ye",
+    role: "executive_member",
+    entityId: null,
+    org: "البنك المركزي – عضو اللجنة التنفيذية 1",
+    avatar: "سذ",
+  },
+  {
+    id: "u11",
+    name: "د. ندى الكبسي",
+    email: "nada@cby.gov.ye",
+    role: "executive_member",
+    entityId: null,
+    org: "البنك المركزي – عضو اللجنة التنفيذية 2",
+    avatar: "نك",
+  },
+  {
+    id: "u12",
+    name: "أ. فهد الشرعبي",
+    email: "fahd@cby.gov.ye",
+    role: "executive_member",
+    entityId: null,
+    org: "البنك المركزي – عضو اللجنة التنفيذية 3",
+    avatar: "فش",
+  },
+  {
+    id: "u13",
+    name: "د. أمينة العزب",
+    email: "amina@cby.gov.ye",
+    role: "executive_member",
+    entityId: null,
+    org: "البنك المركزي – عضو اللجنة التنفيذية 4",
+    avatar: "أع",
+  },
+  {
+    id: "u14",
+    name: "م. خالد الأنسي",
+    email: "khaled@cby.gov.ye",
+    role: "executive_member",
+    entityId: null,
+    org: "البنك المركزي – عضو اللجنة التنفيذية 5",
+    avatar: "خأ",
+  },
 ];
 
 // ============================================================
@@ -96,7 +222,11 @@ export const DEMO_USERS: User[] = [
 let currentUser: User | null = null;
 let lang: "ar" | "en" = "ar";
 let theme: "light" | "dark" = "light";
-let snapshot: { user: User | null; lang: "ar" | "en"; theme: "light" | "dark" } = { user: currentUser, lang, theme };
+let snapshot: { user: User | null; lang: "ar" | "en"; theme: "light" | "dark" } = {
+  user: currentUser,
+  lang,
+  theme,
+};
 const serverSnapshot = { user: null as User | null, lang: "ar" as const, theme: "light" as const };
 const listeners = new Set<() => void>();
 const emit = () => {
@@ -105,12 +235,27 @@ const emit = () => {
 };
 
 export const auth = {
-  get user() { return currentUser; },
-  get lang() { return lang; },
-  get theme() { return theme; },
-  login(u: User) { currentUser = u; emit(); },
-  logout() { currentUser = null; emit(); },
-  setLang(l: "ar" | "en") { lang = l; emit(); },
+  get user() {
+    return currentUser;
+  },
+  get lang() {
+    return lang;
+  },
+  get theme() {
+    return theme;
+  },
+  login(u: User) {
+    currentUser = u;
+    emit();
+  },
+  logout() {
+    currentUser = null;
+    emit();
+  },
+  setLang(l: "ar" | "en") {
+    lang = l;
+    emit();
+  },
   toggleTheme() {
     theme = theme === "light" ? "dark" : "light";
     if (typeof document !== "undefined") {
@@ -118,7 +263,10 @@ export const auth = {
     }
     emit();
   },
-  subscribe(l: () => void) { listeners.add(l); return () => listeners.delete(l); },
+  subscribe(l: () => void) {
+    listeners.add(l);
+    return () => listeners.delete(l);
+  },
 };
 
 export function useAuth() {
@@ -135,20 +283,20 @@ export function useAuth() {
 
 export type RequestStage =
   | "draft"
-  | "bank_submitted"          // step 1 done — awaiting internal review
-  | "bank_internal_review"    // a different bank user is reviewing
-  | "bank_approved"           // internal review approved — sent to CBY support
-  | "support_review"          // CBY support_member reviewing
-  | "support_returned"        // sent back to bank for fixes
-  | "support_rejected"        // terminal — SWIFT step hidden
-  | "bank_returned"           // returned by bank internal review to intake for fixes
-  | "bank_rejected"           // terminal — rejected by bank internal review
-  | "support_approved"        // returned to bank for SWIFT attachment
-  | "swift_attached"          // SWIFT uploaded, data locked, awaiting voting
-  | "executive_voting"        // executive committee voting (no support involvement)
-  | "executive_rejected"      // terminal
-  | "executive_approved"      // ready for customs declaration
-  | "customs_released"        // customs declaration issued
+  | "bank_submitted" // step 1 done — awaiting internal review
+  | "bank_internal_review" // a different bank user is reviewing
+  | "bank_approved" // internal review approved — sent to CBY support
+  | "support_review" // CBY support_member reviewing
+  | "support_returned" // sent back to bank for fixes
+  | "support_rejected" // terminal — SWIFT step hidden
+  | "bank_returned" // returned by bank internal review to intake for fixes
+  | "bank_rejected" // terminal — rejected by bank internal review
+  | "support_approved" // returned to bank for SWIFT attachment
+  | "swift_attached" // SWIFT uploaded, data locked, awaiting voting
+  | "executive_voting" // executive committee voting (no support involvement)
+  | "executive_rejected" // terminal
+  | "executive_approved" // ready for customs declaration
+  | "customs_released" // customs declaration issued
   | "completed";
 
 export const STAGE_LABELS: Record<RequestStage, string> = {
@@ -215,14 +363,14 @@ const STAGE_PROGRESS: Record<RequestStage, number> = {
   bank_internal_review: 25,
   bank_approved: 35,
   support_review: 50,
-  support_returned: 20,        // returned to bank for edits
-  support_rejected: 50,        // failed at support
-  bank_returned: 18,           // returned by bank reviewer to intake
-  bank_rejected: 25,           // failed at bank internal review
+  support_returned: 20, // returned to bank for edits
+  support_rejected: 50, // failed at support
+  bank_returned: 18, // returned by bank reviewer to intake
+  bank_rejected: 25, // failed at bank internal review
   support_approved: 65,
   swift_attached: 75,
   executive_voting: 85,
-  executive_rejected: 85,      // failed at exec
+  executive_rejected: 85, // failed at exec
   executive_approved: 92,
   customs_released: 100,
   completed: 100,
@@ -240,9 +388,9 @@ export type Transition = {
   to: RequestStage;
   label: string;
   roles: Role[];
-  requiresEntityMatch?: boolean;          // actor must share entity with originator
-  forbidIntakeUser?: boolean;             // actor must not be intake user (separation of duties)
-  requiresExecutive?: boolean;            // executive_member only
+  requiresEntityMatch?: boolean; // actor must share entity with originator
+  forbidIntakeUser?: boolean; // actor must not be intake user (separation of duties)
+  requiresExecutive?: boolean; // executive_member only
   destructive?: boolean;
   /** If true, the actor MUST provide a comment before performing this transition. */
   requiresComment?: boolean;
@@ -250,29 +398,82 @@ export type Transition = {
 
 export const TRANSITIONS: Record<RequestStage, Transition[]> = {
   draft: [
-    { to: "bank_submitted", label: "تقديم للمراجعة الداخلية", roles: ORIGIN_ROLES, requiresEntityMatch: true },
+    {
+      to: "bank_submitted",
+      label: "تقديم للمراجعة الداخلية",
+      roles: ORIGIN_ROLES,
+      requiresEntityMatch: true,
+    },
   ],
   bank_submitted: [
-    { to: "bank_internal_review", label: "بدء المراجعة الداخلية", roles: ["bank_reviewer", "bank_admin"], requiresEntityMatch: true, forbidIntakeUser: true },
+    {
+      to: "bank_internal_review",
+      label: "بدء المراجعة الداخلية",
+      roles: ["bank_reviewer", "bank_admin"],
+      requiresEntityMatch: true,
+      forbidIntakeUser: true,
+    },
   ],
   bank_internal_review: [
-    { to: "bank_approved", label: "اعتماد المراجعة الداخلية وإحالة للمساندة", roles: ["bank_reviewer", "bank_admin"], requiresEntityMatch: true, forbidIntakeUser: true },
-    { to: "bank_returned", label: "إعادة لإعادة الإدخال", roles: ["bank_reviewer", "bank_admin"], requiresEntityMatch: true, forbidIntakeUser: true, requiresComment: true },
-    { to: "bank_rejected", label: "رفض الطلب", roles: ["bank_reviewer", "bank_admin"], requiresEntityMatch: true, forbidIntakeUser: true, destructive: true, requiresComment: true },
+    {
+      to: "bank_approved",
+      label: "اعتماد المراجعة الداخلية وإحالة للمساندة",
+      roles: ["bank_reviewer", "bank_admin"],
+      requiresEntityMatch: true,
+      forbidIntakeUser: true,
+    },
+    {
+      to: "bank_returned",
+      label: "إعادة لإعادة الإدخال",
+      roles: ["bank_reviewer", "bank_admin"],
+      requiresEntityMatch: true,
+      forbidIntakeUser: true,
+      requiresComment: true,
+    },
+    {
+      to: "bank_rejected",
+      label: "رفض الطلب",
+      roles: ["bank_reviewer", "bank_admin"],
+      requiresEntityMatch: true,
+      forbidIntakeUser: true,
+      destructive: true,
+      requiresComment: true,
+    },
   ],
   bank_approved: [
     { to: "support_review", label: "بدء المراجعة الداخلية", roles: ["support_member"] },
   ],
   support_review: [
     { to: "support_approved", label: "اعتماد المساندة", roles: ["support_member"] },
-    { to: "support_returned", label: "إعادة للبنك للتعديل", roles: ["support_member"], requiresComment: true },
-    { to: "support_rejected", label: "رفض الطلب", roles: ["support_member"], destructive: true, requiresComment: true },
+    {
+      to: "support_returned",
+      label: "إعادة للبنك للتعديل",
+      roles: ["support_member"],
+      requiresComment: true,
+    },
+    {
+      to: "support_rejected",
+      label: "رفض الطلب",
+      roles: ["support_member"],
+      destructive: true,
+      requiresComment: true,
+    },
   ],
   support_returned: [
-    { to: "bank_submitted", label: "إعادة التقديم بعد التعديل", roles: ORIGIN_ROLES, requiresEntityMatch: true },
+    {
+      to: "bank_submitted",
+      label: "إعادة التقديم بعد التعديل",
+      roles: ORIGIN_ROLES,
+      requiresEntityMatch: true,
+    },
   ],
   bank_returned: [
-    { to: "bank_submitted", label: "إعادة التقديم بعد التعديل", roles: ORIGIN_ROLES, requiresEntityMatch: true },
+    {
+      to: "bank_submitted",
+      label: "إعادة التقديم بعد التعديل",
+      roles: ORIGIN_ROLES,
+      requiresEntityMatch: true,
+    },
   ],
   support_rejected: [], // terminal
   bank_rejected: [], // terminal
@@ -327,7 +528,7 @@ export type ImportRequest = {
   id: string;
   ref: string;
   importer: string;
-  entityId: string;        // originating bank/exchange entity
+  entityId: string; // originating bank/exchange entity
   bank: string;
   amount: number;
   currency: "USD" | "EUR" | "SAR";
@@ -352,16 +553,36 @@ export type ImportRequest = {
   /** Support committee member who claimed the request — locks others out. */
   supportClaimedBy?: string;
   supportClaimedAt?: string;
-  swiftFile?: { name: string; size: number; uploadedAt: string; uploadedBy: string };
+  swiftFile?: {
+    name: string;
+    size: number;
+    uploadedAt: string;
+    uploadedBy: string;
+    mime?: string;
+    storageKey?: string;
+  };
   documents?: { name: string; fileName: string; mime: string; dataUrl: string; size: number }[];
   customsNo?: string;
   customsAt?: string;
   customsBy?: string;
 };
 
-const types = ["مواد غذائية", "أدوية ومستلزمات طبية", "مشتقات نفطية", "قطع غيار", "مواد بناء", "إلكترونيات"];
+const types = [
+  "مواد غذائية",
+  "أدوية ومستلزمات طبية",
+  "مشتقات نفطية",
+  "قطع غيار",
+  "مواد بناء",
+  "إلكترونيات",
+];
 const ports = ["ميناء عدن", "ميناء الحديدة", "ميناء المكلا", "منفذ الوديعة"];
-const importers = ["شركة هائل سعيد أنعم", "مجموعة الشيباني", "شركة ثابت إخوان", "شركة الكميم للأدوية", "مجموعة الأهدل"];
+const importers = [
+  "شركة هائل سعيد أنعم",
+  "مجموعة الشيباني",
+  "شركة ثابت إخوان",
+  "شركة الكميم للأدوية",
+  "مجموعة الأهدل",
+];
 const suppliers = ["Cargill Inc.", "Pfizer Ltd.", "Saudi Aramco Trading", "Siemens AG", "Bayer AG"];
 
 /**
@@ -369,11 +590,28 @@ const suppliers = ["Cargill Inc.", "Pfizer Ltd.", "Saudi Aramco Trading", "Sieme
  * spread across multiple banks, importers, currencies, and risk levels.
  * This replaces the previous random generator so every screen has
  * meaningful coverage out of the box.
+ *
+ * In addition to stage coverage, the rows below intentionally include
+ * role-specific testing scenarios:
+ * - support queue claimed by me vs another reviewer
+ * - SWIFT attached by both the SWIFT officer and the bank admin
+ * - executive sessions with partial votes and a full tie
+ * - returned/rejected branches with proper actor attribution
  */
+type SupportSeedUserId = "u2" | "u3";
+type SwiftSeedUserId = "u4" | "u7";
+type ExecutiveSeedUserId = "u9" | "u10" | "u11" | "u12" | "u13" | "u14";
+type SeedVote = {
+  voterId: ExecutiveSeedUserId;
+  vote: "approve" | "reject" | "abstain";
+  justification?: string;
+  offsetHours?: number;
+};
+
 type SeedRow = {
   stage: RequestStage;
   importer: string;
-  entity: 0 | 1 | 2;          // index into ENTITIES
+  entity: 0 | 1 | 2; // index into ENTITIES
   amount: number;
   currency: "USD" | "EUR" | "SAR";
   type: string;
@@ -382,131 +620,630 @@ type SeedRow = {
   risk: "low" | "medium" | "high";
   duplicate?: boolean;
   intake: "u4" | "u5";
-  voteOpen?: boolean;          // true → stage = executive_voting (session open)
+  voteOpen?: boolean; // true → stage = executive_voting (session open)
+  supportClaimedBy?: SupportSeedUserId;
+  supportReviewerId?: SupportSeedUserId;
+  swiftUploadedBy?: SwiftSeedUserId;
+  votes?: SeedVote[];
 };
 
 const SEED_ROWS: SeedRow[] = [
   // ─── draft × 2 ─────────────────────────────────────────────────────
-  { stage: "draft", importer: importers[0], entity: 0, amount: 120000, currency: "USD", type: types[0], supplier: suppliers[0], port: ports[0], risk: "low", intake: "u5" },
-  { stage: "draft", importer: importers[1], entity: 1, amount: 340000, currency: "USD", type: types[3], supplier: suppliers[3], port: ports[1], risk: "medium", intake: "u4" },
+  {
+    stage: "draft",
+    importer: importers[0],
+    entity: 0,
+    amount: 120000,
+    currency: "USD",
+    type: types[0],
+    supplier: suppliers[0],
+    port: ports[0],
+    risk: "low",
+    intake: "u5",
+  },
+  {
+    stage: "draft",
+    importer: importers[1],
+    entity: 1,
+    amount: 340000,
+    currency: "USD",
+    type: types[3],
+    supplier: suppliers[3],
+    port: ports[1],
+    risk: "medium",
+    intake: "u4",
+  },
 
   // ─── bank_submitted × 2 ────────────────────────────────────────────
-  { stage: "bank_submitted", importer: importers[2], entity: 0, amount: 510000, currency: "USD", type: types[1], supplier: suppliers[1], port: ports[0], risk: "medium", intake: "u5" },
-  { stage: "bank_submitted", importer: importers[3], entity: 2, amount: 89000,  currency: "EUR", type: types[1], supplier: suppliers[4], port: ports[2], risk: "low", intake: "u4" },
+  {
+    stage: "bank_submitted",
+    importer: importers[2],
+    entity: 0,
+    amount: 510000,
+    currency: "USD",
+    type: types[1],
+    supplier: suppliers[1],
+    port: ports[0],
+    risk: "medium",
+    intake: "u5",
+  },
+  {
+    stage: "bank_submitted",
+    importer: importers[3],
+    entity: 2,
+    amount: 89000,
+    currency: "EUR",
+    type: types[1],
+    supplier: suppliers[4],
+    port: ports[2],
+    risk: "low",
+    intake: "u4",
+  },
 
   // ─── bank_internal_review × 2 ──────────────────────────────────────
-  { stage: "bank_internal_review", importer: importers[4], entity: 1, amount: 720000, currency: "USD", type: types[2], supplier: suppliers[2], port: ports[1], risk: "high", intake: "u5" },
-  { stage: "bank_internal_review", importer: importers[0], entity: 0, amount: 145000, currency: "SAR", type: types[5], supplier: suppliers[3], port: ports[3], risk: "low", intake: "u4" },
+  {
+    stage: "bank_internal_review",
+    importer: importers[4],
+    entity: 1,
+    amount: 720000,
+    currency: "USD",
+    type: types[2],
+    supplier: suppliers[2],
+    port: ports[1],
+    risk: "high",
+    intake: "u5",
+  },
+  {
+    stage: "bank_internal_review",
+    importer: importers[0],
+    entity: 0,
+    amount: 145000,
+    currency: "SAR",
+    type: types[5],
+    supplier: suppliers[3],
+    port: ports[3],
+    risk: "low",
+    intake: "u4",
+  },
 
   // ─── bank_approved × 2 (waiting for support) ───────────────────────
-  { stage: "bank_approved", importer: importers[1], entity: 2, amount: 980000, currency: "USD", type: types[0], supplier: suppliers[0], port: ports[0], risk: "medium", intake: "u5" },
-  { stage: "bank_approved", importer: importers[2], entity: 0, amount: 230000, currency: "EUR", type: types[4], supplier: suppliers[3], port: ports[1], risk: "low", intake: "u4" },
+  {
+    stage: "bank_approved",
+    importer: importers[1],
+    entity: 2,
+    amount: 980000,
+    currency: "USD",
+    type: types[0],
+    supplier: suppliers[0],
+    port: ports[0],
+    risk: "medium",
+    intake: "u5",
+  },
+  {
+    stage: "bank_approved",
+    importer: importers[2],
+    entity: 0,
+    amount: 230000,
+    currency: "EUR",
+    type: types[4],
+    supplier: suppliers[3],
+    port: ports[1],
+    risk: "low",
+    intake: "u4",
+  },
 
   // ─── support_review × 2 (claimed by support member) ────────────────
-  { stage: "support_review", importer: importers[3], entity: 1, amount: 415000, currency: "USD", type: types[1], supplier: suppliers[1], port: ports[2], risk: "medium", intake: "u5" },
-  { stage: "support_review", importer: importers[4], entity: 2, amount: 1250000, currency: "USD", type: types[2], supplier: suppliers[2], port: ports[0], risk: "high", duplicate: true, intake: "u4" },
+  {
+    stage: "support_review",
+    importer: importers[3],
+    entity: 1,
+    amount: 415000,
+    currency: "USD",
+    type: types[1],
+    supplier: suppliers[1],
+    port: ports[2],
+    risk: "medium",
+    intake: "u5",
+    supportClaimedBy: "u2",
+    supportReviewerId: "u2",
+  },
+  {
+    stage: "support_review",
+    importer: importers[4],
+    entity: 2,
+    amount: 1250000,
+    currency: "USD",
+    type: types[2],
+    supplier: suppliers[2],
+    port: ports[0],
+    risk: "high",
+    duplicate: true,
+    intake: "u4",
+    supportClaimedBy: "u3",
+    supportReviewerId: "u3",
+  },
 
   // ─── support_returned × 2 ──────────────────────────────────────────
-  { stage: "support_returned", importer: importers[0], entity: 0, amount: 67000, currency: "EUR", type: types[5], supplier: suppliers[4], port: ports[3], risk: "low", intake: "u5" },
-  { stage: "support_returned", importer: importers[1], entity: 1, amount: 295000, currency: "USD", type: types[3], supplier: suppliers[3], port: ports[1], risk: "medium", intake: "u4" },
+  {
+    stage: "support_returned",
+    importer: importers[0],
+    entity: 0,
+    amount: 67000,
+    currency: "EUR",
+    type: types[5],
+    supplier: suppliers[4],
+    port: ports[3],
+    risk: "low",
+    intake: "u5",
+  },
+  {
+    stage: "support_returned",
+    importer: importers[1],
+    entity: 1,
+    amount: 295000,
+    currency: "USD",
+    type: types[3],
+    supplier: suppliers[3],
+    port: ports[1],
+    risk: "medium",
+    intake: "u4",
+  },
 
   // ─── bank_returned × 2 (returned by bank reviewer to intake) ───────
-  { stage: "bank_returned", importer: importers[2], entity: 0, amount: 132000, currency: "USD", type: types[0], supplier: suppliers[0], port: ports[0], risk: "low", intake: "u5" },
-  { stage: "bank_returned", importer: importers[3], entity: 1, amount: 410000, currency: "EUR", type: types[3], supplier: suppliers[3], port: ports[2], risk: "medium", intake: "u4" },
+  {
+    stage: "bank_returned",
+    importer: importers[2],
+    entity: 0,
+    amount: 132000,
+    currency: "USD",
+    type: types[0],
+    supplier: suppliers[0],
+    port: ports[0],
+    risk: "low",
+    intake: "u5",
+  },
+  {
+    stage: "bank_returned",
+    importer: importers[3],
+    entity: 1,
+    amount: 410000,
+    currency: "EUR",
+    type: types[3],
+    supplier: suppliers[3],
+    port: ports[2],
+    risk: "medium",
+    intake: "u4",
+  },
 
   // ─── support_rejected × 2 ──────────────────────────────────────────
-  { stage: "support_rejected", importer: importers[2], entity: 2, amount: 780000, currency: "USD", type: types[2], supplier: suppliers[2], port: ports[0], risk: "high", intake: "u5" },
-  { stage: "support_rejected", importer: importers[3], entity: 0, amount: 158000, currency: "SAR", type: types[1], supplier: suppliers[1], port: ports[2], risk: "medium", intake: "u4" },
+  {
+    stage: "support_rejected",
+    importer: importers[2],
+    entity: 2,
+    amount: 780000,
+    currency: "USD",
+    type: types[2],
+    supplier: suppliers[2],
+    port: ports[0],
+    risk: "high",
+    intake: "u5",
+  },
+  {
+    stage: "support_rejected",
+    importer: importers[3],
+    entity: 0,
+    amount: 158000,
+    currency: "SAR",
+    type: types[1],
+    supplier: suppliers[1],
+    port: ports[2],
+    risk: "medium",
+    intake: "u4",
+  },
 
   // ─── support_approved × 2 (waiting for SWIFT) ──────────────────────
-  { stage: "support_approved", importer: importers[4], entity: 1, amount: 640000, currency: "USD", type: types[0], supplier: suppliers[0], port: ports[1], risk: "low", intake: "u5" },
-  { stage: "support_approved", importer: importers[0], entity: 0, amount: 1100000, currency: "USD", type: types[2], supplier: suppliers[2], port: ports[0], risk: "medium", intake: "u4" },
+  {
+    stage: "support_approved",
+    importer: importers[4],
+    entity: 1,
+    amount: 640000,
+    currency: "USD",
+    type: types[0],
+    supplier: suppliers[0],
+    port: ports[1],
+    risk: "low",
+    intake: "u5",
+  },
+  {
+    stage: "support_approved",
+    importer: importers[0],
+    entity: 0,
+    amount: 1100000,
+    currency: "USD",
+    type: types[2],
+    supplier: suppliers[2],
+    port: ports[0],
+    risk: "medium",
+    intake: "u4",
+  },
 
   // ─── swift_attached × 2 (queued for voting) ────────────────────────
-  { stage: "swift_attached", importer: importers[1], entity: 2, amount: 420000, currency: "EUR", type: types[5], supplier: suppliers[4], port: ports[3], risk: "low", intake: "u5" },
-  { stage: "swift_attached", importer: importers[2], entity: 1, amount: 875000, currency: "USD", type: types[3], supplier: suppliers[3], port: ports[1], risk: "medium", intake: "u4" },
+  {
+    stage: "swift_attached",
+    importer: importers[1],
+    entity: 2,
+    amount: 420000,
+    currency: "EUR",
+    type: types[5],
+    supplier: suppliers[4],
+    port: ports[3],
+    risk: "low",
+    intake: "u5",
+    swiftUploadedBy: "u7",
+  },
+  {
+    stage: "swift_attached",
+    importer: importers[2],
+    entity: 1,
+    amount: 875000,
+    currency: "USD",
+    type: types[3],
+    supplier: suppliers[3],
+    port: ports[1],
+    risk: "medium",
+    intake: "u4",
+    swiftUploadedBy: "u4",
+  },
 
   // ─── executive_voting × 2 (voting session OPEN) ────────────────────
-  { stage: "executive_voting", importer: importers[3], entity: 0, amount: 1530000, currency: "USD", type: types[2], supplier: suppliers[2], port: ports[0], risk: "high", duplicate: true, intake: "u5", voteOpen: true },
-  { stage: "executive_voting", importer: importers[4], entity: 2, amount: 360000, currency: "USD", type: types[1], supplier: suppliers[1], port: ports[2], risk: "medium", intake: "u4", voteOpen: true },
+  {
+    stage: "executive_voting",
+    importer: importers[3],
+    entity: 0,
+    amount: 1530000,
+    currency: "USD",
+    type: types[2],
+    supplier: suppliers[2],
+    port: ports[0],
+    risk: "high",
+    duplicate: true,
+    intake: "u5",
+    voteOpen: true,
+    votes: [
+      { voterId: "u10", vote: "approve", justification: "استيفاء الوثائق", offsetHours: 1 },
+      { voterId: "u11", vote: "approve", justification: "المخاطر مقبولة", offsetHours: 2 },
+      { voterId: "u12", vote: "reject", justification: "نحتاج تحقق إضافي", offsetHours: 3 },
+      { voterId: "u13", vote: "abstain", justification: "بانتظار رأي فني", offsetHours: 4 },
+    ],
+  },
+  {
+    stage: "executive_voting",
+    importer: importers[4],
+    entity: 2,
+    amount: 360000,
+    currency: "USD",
+    type: types[1],
+    supplier: suppliers[1],
+    port: ports[2],
+    risk: "medium",
+    intake: "u4",
+    voteOpen: true,
+    votes: [
+      { voterId: "u9", vote: "reject", justification: "الضمانات غير كافية", offsetHours: 1 },
+      { voterId: "u10", vote: "approve", justification: "مطابق للمعايير", offsetHours: 2 },
+      { voterId: "u11", vote: "approve", justification: "توصية بالاعتماد", offsetHours: 3 },
+      { voterId: "u12", vote: "reject", justification: "ملاحظات على المورد", offsetHours: 4 },
+      { voterId: "u13", vote: "approve", justification: "الدورة مكتملة", offsetHours: 5 },
+      { voterId: "u14", vote: "reject", justification: "السقف الائتماني مرتفع", offsetHours: 6 },
+    ],
+  },
 
   // ─── executive_rejected × 2 ────────────────────────────────────────
-  { stage: "executive_rejected", importer: importers[0], entity: 1, amount: 980000, currency: "USD", type: types[2], supplier: suppliers[2], port: ports[1], risk: "high", intake: "u5" },
-  { stage: "executive_rejected", importer: importers[1], entity: 0, amount: 245000, currency: "EUR", type: types[3], supplier: suppliers[3], port: ports[3], risk: "medium", intake: "u4" },
+  {
+    stage: "executive_rejected",
+    importer: importers[0],
+    entity: 1,
+    amount: 980000,
+    currency: "USD",
+    type: types[2],
+    supplier: suppliers[2],
+    port: ports[1],
+    risk: "high",
+    intake: "u5",
+  },
+  {
+    stage: "executive_rejected",
+    importer: importers[1],
+    entity: 0,
+    amount: 245000,
+    currency: "EUR",
+    type: types[3],
+    supplier: suppliers[3],
+    port: ports[3],
+    risk: "medium",
+    intake: "u4",
+  },
 
   // ─── executive_approved × 2 (awaiting customs declaration) ─────────
-  { stage: "executive_approved", importer: importers[2], entity: 2, amount: 715000, currency: "USD", type: types[0], supplier: suppliers[0], port: ports[0], risk: "low", intake: "u5" },
-  { stage: "executive_approved", importer: importers[3], entity: 1, amount: 488000, currency: "USD", type: types[1], supplier: suppliers[1], port: ports[1], risk: "medium", intake: "u4" },
+  {
+    stage: "executive_approved",
+    importer: importers[2],
+    entity: 2,
+    amount: 715000,
+    currency: "USD",
+    type: types[0],
+    supplier: suppliers[0],
+    port: ports[0],
+    risk: "low",
+    intake: "u5",
+  },
+  {
+    stage: "executive_approved",
+    importer: importers[3],
+    entity: 1,
+    amount: 488000,
+    currency: "USD",
+    type: types[1],
+    supplier: suppliers[1],
+    port: ports[1],
+    risk: "medium",
+    intake: "u4",
+  },
 
   // ─── customs_released × 2 ──────────────────────────────────────────
-  { stage: "customs_released", importer: importers[4], entity: 0, amount: 920000, currency: "USD", type: types[2], supplier: suppliers[2], port: ports[2], risk: "low", intake: "u5" },
-  { stage: "customs_released", importer: importers[0], entity: 2, amount: 175000, currency: "SAR", type: types[5], supplier: suppliers[4], port: ports[3], risk: "low", intake: "u4" },
+  {
+    stage: "customs_released",
+    importer: importers[4],
+    entity: 0,
+    amount: 920000,
+    currency: "USD",
+    type: types[2],
+    supplier: suppliers[2],
+    port: ports[2],
+    risk: "low",
+    intake: "u5",
+  },
+  {
+    stage: "customs_released",
+    importer: importers[0],
+    entity: 2,
+    amount: 175000,
+    currency: "SAR",
+    type: types[5],
+    supplier: suppliers[4],
+    port: ports[3],
+    risk: "low",
+    intake: "u4",
+  },
 
   // ─── completed × 2 ─────────────────────────────────────────────────
-  { stage: "completed", importer: importers[1], entity: 1, amount: 540000, currency: "USD", type: types[0], supplier: suppliers[0], port: ports[0], risk: "low", intake: "u5" },
-  { stage: "completed", importer: importers[2], entity: 0, amount: 1280000, currency: "USD", type: types[3], supplier: suppliers[3], port: ports[1], risk: "medium", intake: "u4" },
+  {
+    stage: "completed",
+    importer: importers[1],
+    entity: 1,
+    amount: 540000,
+    currency: "USD",
+    type: types[0],
+    supplier: suppliers[0],
+    port: ports[0],
+    risk: "low",
+    intake: "u5",
+  },
+  {
+    stage: "completed",
+    importer: importers[2],
+    entity: 0,
+    amount: 1280000,
+    currency: "USD",
+    type: types[3],
+    supplier: suppliers[3],
+    port: ports[1],
+    risk: "medium",
+    intake: "u4",
+  },
 ];
 
-export const REQUESTS: ImportRequest[] = SEED_ROWS.map((row, i) => {
-  const entity = ENTITIES[row.entity];
-  const stageReached = STAGE_ORDER.indexOf(row.stage);
-  const baseDate = new Date(2026, 4, ((i % 28) + 1));
-  return {
-    id: `r${i + 1}`,
-    ref: `IMP-2026-${String(2000 + i)}`,
-    importer: row.importer,
-    entityId: entity.id,
-    bank: entity.name,
-    amount: row.amount,
-    currency: row.currency,
-    type: row.type,
-    supplier: row.supplier,
-    invoice: `INV-2026-${String(10000 + i * 11)}`,
-    port: row.port,
-    stage: row.stage,
-    createdAt: baseDate.toISOString(),
-    progress: progressFor(row.stage),
-    risk: row.risk,
-    duplicate: row.duplicate,
-    intakeUserId: row.intake,
-    createdBy: row.intake,
-    lastUpdatedBy: stageReached >= 6 ? "u7" : stageReached >= 3 ? "u6" : row.intake,
-    submittedBy: stageReached >= 1 ? row.intake : undefined,
-    internalReviewUserId: stageReached >= 3 ? "u6" : undefined,
-    supportReviewerId: stageReached >= 4 ? "u2" : undefined,
-    supportClaimedBy: row.stage === "support_review" ? "u2" : undefined,
-    supportClaimedAt: row.stage === "support_review" ? baseDate.toISOString() : undefined,
-    executiveDecisionBy: stageReached >= 8 ? "u9" : undefined,
-    swiftFile: stageReached >= STAGE_ORDER.indexOf("swift_attached")
-      ? { name: `SWIFT-MT103-${2000 + i}.pdf`, size: 184320, uploadedAt: baseDate.toISOString(), uploadedBy: "u7" }
-      : undefined,
-    customsNo: stageReached >= STAGE_ORDER.indexOf("customs_released") ? `CD-2026-${String(7000 + i)}` : undefined,
-    customsAt: stageReached >= STAGE_ORDER.indexOf("customs_released") ? baseDate.toISOString() : undefined,
-    customsBy: stageReached >= STAGE_ORDER.indexOf("customs_released") ? "u9" : undefined,
-  };
-});
+const SUBMITTED_STAGES = new Set<RequestStage>([
+  "bank_submitted",
+  "bank_internal_review",
+  "bank_approved",
+  "support_review",
+  "support_returned",
+  "support_rejected",
+  "bank_returned",
+  "bank_rejected",
+  "support_approved",
+  "swift_attached",
+  "executive_voting",
+  "executive_rejected",
+  "executive_approved",
+  "customs_released",
+  "completed",
+]);
+const INTERNAL_REVIEW_STAGES = new Set<RequestStage>([
+  "bank_internal_review",
+  "bank_approved",
+  "support_review",
+  "support_returned",
+  "support_rejected",
+  "bank_returned",
+  "bank_rejected",
+  "support_approved",
+  "swift_attached",
+  "executive_voting",
+  "executive_rejected",
+  "executive_approved",
+  "customs_released",
+  "completed",
+]);
+const SUPPORT_HANDLED_STAGES = new Set<RequestStage>([
+  "support_review",
+  "support_returned",
+  "support_rejected",
+  "support_approved",
+  "swift_attached",
+  "executive_voting",
+  "executive_rejected",
+  "executive_approved",
+  "customs_released",
+  "completed",
+]);
+const SWIFT_ATTACHED_STAGES = new Set<RequestStage>([
+  "swift_attached",
+  "executive_voting",
+  "executive_rejected",
+  "executive_approved",
+  "customs_released",
+  "completed",
+]);
+const EXECUTIVE_DECISION_STAGES = new Set<RequestStage>([
+  "executive_rejected",
+  "executive_approved",
+  "customs_released",
+  "completed",
+]);
+const CUSTOMS_DONE_STAGES = new Set<RequestStage>(["customs_released", "completed"]);
+
+const REQUEST_SEED_META = SEED_ROWS.map((row, i) => ({
+  row,
+  index: i,
+  requestId: `r${i + 1}`,
+  ref: `IMP-2026-${String(2000 + i)}`,
+  baseDate: new Date(2026, 4, (i % 28) + 1),
+}));
+
+export const REQUESTS: ImportRequest[] = REQUEST_SEED_META.map(
+  ({ row, index, requestId, ref, baseDate }) => {
+    const entity = ENTITIES[row.entity];
+    const submitted = SUBMITTED_STAGES.has(row.stage);
+    const internallyReviewed = INTERNAL_REVIEW_STAGES.has(row.stage);
+    const supportHandled = SUPPORT_HANDLED_STAGES.has(row.stage);
+    const swiftAttached = SWIFT_ATTACHED_STAGES.has(row.stage);
+    const executiveDecided = EXECUTIVE_DECISION_STAGES.has(row.stage);
+    const customsDone = CUSTOMS_DONE_STAGES.has(row.stage);
+    const supportReviewerId =
+      row.supportReviewerId ?? (supportHandled ? (row.supportClaimedBy ?? "u2") : undefined);
+    const supportClaimedBy =
+      row.stage === "support_review" ? (row.supportClaimedBy ?? "u2") : undefined;
+    const swiftUploadedBy = swiftAttached ? (row.swiftUploadedBy ?? "u7") : undefined;
+    const executiveDecisionBy = executiveDecided ? "u9" : undefined;
+    const customsBy = customsDone ? "u9" : undefined;
+    const lastUpdatedBy =
+      customsBy ??
+      executiveDecisionBy ??
+      swiftUploadedBy ??
+      supportReviewerId ??
+      (internallyReviewed ? "u6" : submitted ? row.intake : row.intake);
+
+    return {
+      id: requestId,
+      ref,
+      importer: row.importer,
+      entityId: entity.id,
+      bank: entity.name,
+      amount: row.amount,
+      currency: row.currency,
+      type: row.type,
+      supplier: row.supplier,
+      invoice: `INV-2026-${String(10000 + index * 11)}`,
+      port: row.port,
+      stage: row.stage,
+      createdAt: baseDate.toISOString(),
+      progress: progressFor(row.stage),
+      risk: row.risk,
+      duplicate: row.duplicate,
+      intakeUserId: row.intake,
+      createdBy: row.intake,
+      lastUpdatedBy,
+      submittedBy: submitted ? row.intake : undefined,
+      internalReviewUserId: internallyReviewed ? "u6" : undefined,
+      supportReviewerId,
+      supportClaimedBy,
+      supportClaimedAt:
+        row.stage === "support_review" && supportClaimedBy
+          ? new Date(baseDate.getTime() + 2 * 3600_000).toISOString()
+          : undefined,
+      executiveDecisionBy,
+      swiftFile: swiftAttached
+        ? {
+            name: `SWIFT-MT103-${2000 + index}.pdf`,
+            size: 184320,
+            uploadedAt: new Date(baseDate.getTime() + 4 * 3600_000).toISOString(),
+            uploadedBy: swiftUploadedBy ?? "u7",
+            mime: "application/pdf",
+          }
+        : undefined,
+      customsNo: customsDone ? `CD-2026-${String(7000 + index)}` : undefined,
+      customsAt: customsDone
+        ? new Date(baseDate.getTime() + 8 * 3600_000).toISOString()
+        : undefined,
+      customsBy,
+    };
+  },
+);
+
+export const SEED_VOTES = REQUEST_SEED_META.flatMap(({ row, requestId, baseDate }) =>
+  (row.votes ?? []).map((vote, voteIndex) => ({
+    requestId,
+    voterId: vote.voterId,
+    vote: vote.vote,
+    justification: vote.justification,
+    ts: new Date(baseDate.getTime() + (vote.offsetHours ?? voteIndex + 1) * 3600_000).toISOString(),
+  })),
+);
+
+export const SEED_VOTE_HISTORY = SEED_VOTES.map((vote, index) => ({
+  id: `vh_seed_${index + 1}`,
+  ...vote,
+}));
 
 export type Merchant = {
-  id: string; name: string; tax: string; cr: string; address: string;
-  contact: string; category: string; status: "active" | "suspended"; transactions: number;
-  entityId?: string;   // bank the merchant is registered with
+  id: string;
+  name: string;
+  tax: string;
+  cr: string;
+  address: string;
+  contact: string;
+  category: string;
+  status: "active" | "suspended";
+  transactions: number;
+  entityId?: string; // bank the merchant is registered with
 };
 export const MERCHANTS: Merchant[] = importers.map((n, i) => ({
-  id: `m${i + 1}`, name: n,
-  tax: `4${String(100000 + i * 7777)}`, cr: `CR-${String(50000 + i * 13)}`,
+  id: `m${i + 1}`,
+  name: n,
+  tax: `4${String(100000 + i * 7777)}`,
+  cr: `CR-${String(50000 + i * 13)}`,
   address: ["صنعاء – شارع الزبيري", "عدن – كريتر", "الحديدة – شارع صنعاء", "المكلا", "تعز"][i % 5],
-  contact: `+9677${String(11000000 + i * 9999)}`, category: types[i % types.length],
-  status: i === 4 ? "suspended" : "active", transactions: 3 + i * 4,
+  contact: `+9677${String(11000000 + i * 9999)}`,
+  category: types[i % types.length],
+  status: i === 4 ? "suspended" : "active",
+  transactions: 3 + i * 4,
   entityId: ENTITIES[i % ENTITIES.length].id,
 }));
 
 export type AuditLog = {
-  id: string; user: string; action: string; ts: string; ip: string; device: string; ref: string;
+  id: string;
+  user: string;
+  action: string;
+  ts: string;
+  ip: string;
+  device: string;
+  ref: string;
 };
 export const AUDIT: AuditLog[] = Array.from({ length: 25 }, (_, i) => ({
   id: `a${i}`,
   user: DEMO_USERS[i % DEMO_USERS.length].name,
-  action: ["تسجيل دخول", "إنشاء طلب", "اعتماد مراجعة داخلية", "اعتماد المساندة", "رفع سويفت", "تصويت", "إصدار بيان جمركي", "تصدير تقرير"][i % 8],
+  action: [
+    "تسجيل دخول",
+    "إنشاء طلب",
+    "اعتماد مراجعة داخلية",
+    "اعتماد المساندة",
+    "رفع سويفت",
+    "تصويت",
+    "إصدار بيان جمركي",
+    "تصدير تقرير",
+  ][i % 8],
   ts: new Date(Date.now() - i * 3600000).toISOString(),
   ip: `196.${10 + (i % 200)}.${i % 255}.${(i * 13) % 255}`,
   device: ["Chrome / Win", "Edge / Win", "Safari / macOS", "Firefox / Linux"][i % 4],
@@ -529,11 +1266,41 @@ export const MONTHLY = [
 export const CATEGORY_DIST = types.map((name, i) => ({ name, value: [32, 22, 18, 12, 9, 7][i] }));
 
 export const NOTIFICATIONS = [
-  { id: "n1", title: "طلب جديد بحاجة لمراجعتك الداخلية", body: "IMP-2025-1023 من قسم الإدخال", time: "منذ 5 دقائق", unread: true },
-  { id: "n2", title: "تم اعتماد المساندة — أرفق السويفت", body: "IMP-2025-1019 بانتظار وثيقة السويفت", time: "منذ 32 دقيقة", unread: true },
-  { id: "n3", title: "تنبيه: فاتورة مكررة", body: "INV-2024028 مرتبطة بطلبين", time: "منذ ساعة", unread: true },
-  { id: "n4", title: "صدر إذن إصدار بيان جمركي", body: "IMP-2025-1011 – ميناء عدن", time: "اليوم 09:14", unread: false },
-  { id: "n5", title: "إعادة طلب من المساندة", body: "نقص في شهادة المنشأ", time: "أمس", unread: false },
+  {
+    id: "n1",
+    title: "طلب جديد بحاجة لمراجعتك الداخلية",
+    body: "IMP-2025-1023 من قسم الإدخال",
+    time: "منذ 5 دقائق",
+    unread: true,
+  },
+  {
+    id: "n2",
+    title: "تم اعتماد المساندة — أرفق السويفت",
+    body: "IMP-2025-1019 بانتظار وثيقة السويفت",
+    time: "منذ 32 دقيقة",
+    unread: true,
+  },
+  {
+    id: "n3",
+    title: "تنبيه: فاتورة مكررة",
+    body: "INV-2024028 مرتبطة بطلبين",
+    time: "منذ ساعة",
+    unread: true,
+  },
+  {
+    id: "n4",
+    title: "صدر إذن إصدار بيان جمركي",
+    body: "IMP-2025-1011 – ميناء عدن",
+    time: "اليوم 09:14",
+    unread: false,
+  },
+  {
+    id: "n5",
+    title: "إعادة طلب من المساندة",
+    body: "نقص في شهادة المنشأ",
+    time: "أمس",
+    unread: false,
+  },
 ];
 
 // ============================================================
@@ -541,18 +1308,28 @@ export const NOTIFICATIONS = [
 // ============================================================
 
 const SUPPORT_VISIBLE_STAGES: RequestStage[] = [
-  "bank_approved", "support_review", "support_returned",
-  "support_approved", "support_rejected",
+  "bank_approved",
+  "support_review",
+  "support_returned",
+  "support_approved",
+  "support_rejected",
 ];
 const EXEC_VISIBLE_STAGES: RequestStage[] = [
-  "swift_attached", "executive_voting",
-  "executive_approved", "executive_rejected",
-  "customs_released", "completed",
+  "swift_attached",
+  "executive_voting",
+  "executive_approved",
+  "executive_rejected",
+  "customs_released",
+  "completed",
 ];
 const SWIFT_VISIBLE_STAGES: RequestStage[] = [
-  "support_approved", "swift_attached",
-  "executive_voting", "executive_approved",
-  "executive_rejected", "customs_released", "completed",
+  "support_approved",
+  "swift_attached",
+  "executive_voting",
+  "executive_approved",
+  "executive_rejected",
+  "customs_released",
+  "completed",
 ];
 
 /**
@@ -562,10 +1339,22 @@ const SWIFT_VISIBLE_STAGES: RequestStage[] = [
 const ROLE_QUEUE_STAGES: Record<Role, RequestStage[] | "all"> = {
   platform_admin: "all",
   bank_admin: [
-    "draft", "bank_submitted", "bank_internal_review", "bank_returned",
-    "bank_approved", "support_review", "support_returned", "support_approved",
-    "swift_attached", "executive_voting", "executive_approved", "executive_rejected",
-    "support_rejected", "bank_rejected", "customs_released", "completed",
+    "draft",
+    "bank_submitted",
+    "bank_internal_review",
+    "bank_returned",
+    "bank_approved",
+    "support_review",
+    "support_returned",
+    "support_approved",
+    "swift_attached",
+    "executive_voting",
+    "executive_approved",
+    "executive_rejected",
+    "support_rejected",
+    "bank_rejected",
+    "customs_released",
+    "completed",
   ],
   bank_intake: ["draft", "bank_returned", "support_returned"],
   bank_reviewer: ["bank_submitted", "bank_internal_review"],
@@ -656,44 +1445,138 @@ const C = {
 const DATA_ENTRY_BUCKETS: DisplayBucket[] = [
   { key: "draft", label: "مسودات", color: C.muted, stages: ["draft"] },
   { key: "submitted", label: "مُقدَّم للمراجعة", color: C.info, stages: ["bank_submitted"] },
-  { key: "internal_review", label: "قيد المراجعة الداخلية", color: C.warning, stages: ["bank_internal_review"] },
-  { key: "cby_processing", label: "قيد معالجة البنك المركزي", color: C.accent, stages: ["bank_approved", "support_review", "support_approved", "swift_attached", "executive_voting", "executive_approved"] },
-  { key: "returned", label: "بحاجة لتعديل", color: C.warning, stages: ["support_returned", "bank_returned"] },
-  { key: "rejected", label: "مرفوض", color: C.destructive, stages: ["support_rejected", "executive_rejected", "bank_rejected"] },
+  {
+    key: "internal_review",
+    label: "قيد المراجعة الداخلية",
+    color: C.warning,
+    stages: ["bank_internal_review"],
+  },
+  {
+    key: "cby_processing",
+    label: "قيد معالجة البنك المركزي",
+    color: C.accent,
+    stages: [
+      "bank_approved",
+      "support_review",
+      "support_approved",
+      "swift_attached",
+      "executive_voting",
+      "executive_approved",
+    ],
+  },
+  {
+    key: "returned",
+    label: "بحاجة لتعديل",
+    color: C.warning,
+    stages: ["support_returned", "bank_returned"],
+  },
+  {
+    key: "rejected",
+    label: "مرفوض",
+    color: C.destructive,
+    stages: ["support_rejected", "executive_rejected", "bank_rejected"],
+  },
   { key: "completed", label: "مكتمل", color: C.success, stages: ["customs_released", "completed"] },
 ];
 
 const BANK_REVIEWER_BUCKETS: DisplayBucket[] = [
   { key: "drafts", label: "مسودات", color: C.muted, stages: ["draft"] },
-  { key: "internal_review", label: "مراجعة داخلية معلّقة", color: C.warning, stages: ["bank_submitted", "bank_internal_review"] },
-  { key: "cby_review", label: "قيد مراجعة البنك المركزي", color: C.warning, stages: ["bank_approved", "support_review"] },
-  { key: "returned", label: "مُعاد للتعديل", color: C.warning, stages: ["support_returned", "bank_returned"] },
+  {
+    key: "internal_review",
+    label: "مراجعة داخلية معلّقة",
+    color: C.warning,
+    stages: ["bank_submitted", "bank_internal_review"],
+  },
+  {
+    key: "cby_review",
+    label: "قيد مراجعة البنك المركزي",
+    color: C.warning,
+    stages: ["bank_approved", "support_review"],
+  },
+  {
+    key: "returned",
+    label: "مُعاد للتعديل",
+    color: C.warning,
+    stages: ["support_returned", "bank_returned"],
+  },
   { key: "waiting_swift", label: "بانتظار السويفت", color: C.accent, stages: ["support_approved"] },
   { key: "swift_done", label: "تم رفع السويفت", color: C.info, stages: ["swift_attached"] },
-  { key: "exec_voting", label: "تصويت اللجنة التنفيذية", color: C.chart5, stages: ["executive_voting"] },
+  {
+    key: "exec_voting",
+    label: "تصويت اللجنة التنفيذية",
+    color: C.chart5,
+    stages: ["executive_voting"],
+  },
   { key: "approved", label: "مُعتمد", color: C.success, stages: ["executive_approved"] },
-  { key: "rejected", label: "مرفوض", color: C.destructive, stages: ["support_rejected", "executive_rejected", "bank_rejected"] },
+  {
+    key: "rejected",
+    label: "مرفوض",
+    color: C.destructive,
+    stages: ["support_rejected", "executive_rejected", "bank_rejected"],
+  },
   { key: "completed", label: "مكتمل", color: C.success, stages: ["customs_released", "completed"] },
 ];
 
 const SWIFT_BUCKETS: DisplayBucket[] = [
-  { key: "waiting_swift", label: "بانتظار رفع السويفت", color: C.warning, stages: ["support_approved"] },
-  { key: "swift_uploaded", label: "تم رفع السويفت", color: C.success, stages: ["swift_attached", "executive_voting", "executive_approved", "customs_released", "completed", "executive_rejected"] },
+  {
+    key: "waiting_swift",
+    label: "بانتظار رفع السويفت",
+    color: C.warning,
+    stages: ["support_approved"],
+  },
+  {
+    key: "swift_uploaded",
+    label: "تم رفع السويفت",
+    color: C.success,
+    stages: [
+      "swift_attached",
+      "executive_voting",
+      "executive_approved",
+      "customs_released",
+      "completed",
+      "executive_rejected",
+    ],
+  },
 ];
 
 const SUPPORT_BUCKETS: DisplayBucket[] = [
-  { key: "support_pending", label: "بانتظار المراجعة", color: C.warning, stages: ["bank_approved"] },
-  { key: "support_in_progress", label: "قيد المراجعة", color: C.warning, stages: ["support_review"] },
+  {
+    key: "support_pending",
+    label: "بانتظار المراجعة",
+    color: C.warning,
+    stages: ["bank_approved"],
+  },
+  {
+    key: "support_in_progress",
+    label: "قيد المراجعة",
+    color: C.warning,
+    stages: ["support_review"],
+  },
   { key: "approved", label: "مُعتمد من المساندة", color: C.success, stages: ["support_approved"] },
   { key: "returned", label: "مُعاد للبنك", color: C.warning, stages: ["support_returned"] },
   { key: "rejected", label: "مرفوض", color: C.destructive, stages: ["support_rejected"] },
 ];
 
 const EXECUTIVE_BUCKETS: DisplayBucket[] = [
-  { key: "voting_queue", label: "بانتظار فتح التصويت", color: C.warning, stages: ["swift_attached"] },
+  {
+    key: "voting_queue",
+    label: "بانتظار فتح التصويت",
+    color: C.warning,
+    stages: ["swift_attached"],
+  },
   { key: "voting_open", label: "باب التصويت مفتوح", color: C.chart5, stages: ["executive_voting"] },
-  { key: "awaiting_customs", label: "بانتظار إنشاء إذن إصدار بيان جمركي", color: C.accent, stages: ["executive_approved"] },
-  { key: "customs_done", label: "مكتمل", color: C.success, stages: ["customs_released", "completed"] },
+  {
+    key: "awaiting_customs",
+    label: "بانتظار إنشاء إذن إصدار بيان جمركي",
+    color: C.accent,
+    stages: ["executive_approved"],
+  },
+  {
+    key: "customs_done",
+    label: "مكتمل",
+    color: C.success,
+    stages: ["customs_released", "completed"],
+  },
   { key: "rejected", label: "مرفوض", color: C.destructive, stages: ["executive_rejected"] },
 ];
 
@@ -706,7 +1589,10 @@ const BUCKETS_BY_ROLE: Record<Role, DisplayBucket[]> = {
   executive_member: EXECUTIVE_BUCKETS,
   committee_manager: EXECUTIVE_BUCKETS,
   platform_admin: STAGE_ORDER.map((s) => ({
-    key: s, label: STAGE_LABELS[s], color: STAGE_COLORS[s], stages: [s],
+    key: s,
+    label: STAGE_LABELS[s],
+    color: STAGE_COLORS[s],
+    stages: [s],
   })),
 };
 
@@ -735,9 +1621,7 @@ const OFF_TRACK_STAGES: RequestStage[] = [
 
 /** The forward-progress buckets for a role (excludes returned/rejected buckets). */
 export function progressionBucketsFor(role: Role): DisplayBucket[] {
-  return bucketsFor(role).filter(
-    (b) => !b.stages.every((s) => OFF_TRACK_STAGES.includes(s)),
-  );
+  return bucketsFor(role).filter((b) => !b.stages.every((s) => OFF_TRACK_STAGES.includes(s)));
 }
 
 /**

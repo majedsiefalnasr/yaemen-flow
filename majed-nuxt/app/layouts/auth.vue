@@ -1,1 +1,0 @@
-<template><div dir="rtl" class="min-h-screen bg-background text-foreground"><slot /></div></template>

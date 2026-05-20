@@ -1,9 +1,30 @@
 import { Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
-  LayoutDashboard, FileText, FilePlus2, Users, ShieldCheck, BarChart3,
-  Vote, PackageCheck, Settings, Bell, Search, Sun, Moon, LogOut, Languages,
-  Building2, ScrollText, AlertTriangle, ChevronLeft, UserCog, Network,
-  FileCheck2, KeyRound, Upload, Menu,
+  LayoutDashboard,
+  FileText,
+  FilePlus2,
+  Users,
+  ShieldCheck,
+  BarChart3,
+  Vote,
+  PackageCheck,
+  Settings,
+  Bell,
+  Search,
+  Sun,
+  Moon,
+  LogOut,
+  Languages,
+  Building2,
+  ScrollText,
+  AlertTriangle,
+  ChevronLeft,
+  UserCog,
+  Network,
+  FileCheck2,
+  KeyRound,
+  Upload,
+  Menu,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAuth, auth, ROLE_LABELS, type Role } from "@/lib/mock";
@@ -14,29 +35,52 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
-  DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Popover, PopoverContent, PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
-type NavItem = { to: string; label: string; icon: React.ComponentType<{ className?: string }>; roles?: Role[]; perm?: Permission };
+type NavItem = {
+  to: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  roles?: Role[];
+  perm?: Permission;
+};
 
 const NAV: NavItem[] = [
   { to: "/", label: "اللوحة الرئيسية", icon: LayoutDashboard },
   { to: "/requests", label: "طلبات التمويل", icon: FileText },
-  { to: "/requests/new", label: "تقديم طلب جديد", icon: FilePlus2, roles: ["bank_intake", "bank_admin"] },
+  {
+    to: "/requests/new",
+    label: "تقديم طلب جديد",
+    icon: FilePlus2,
+    roles: ["bank_intake", "bank_admin"],
+  },
   { to: "/merchants", label: "إدارة التجار", icon: Building2, perm: "merchants.manage" },
-  
-  { to: "/customs", label: "إذن إصدار بيان جمركي", icon: PackageCheck, roles: ["committee_manager"] },
+
+  {
+    to: "/customs",
+    label: "إذن إصدار بيان جمركي",
+    icon: PackageCheck,
+    roles: ["committee_manager"],
+  },
   { to: "/reports", label: "التقارير والتحليلات", icon: BarChart3, perm: "reports.view" },
   { to: "/audit", label: "التدقيق والامتثال", icon: ScrollText, perm: "audit.view" },
   { to: "/notifications", label: "الإشعارات", icon: Bell },
   { to: "/admin/entities", label: "إدارة البنوك", icon: Network, perm: "entities.manage" },
   { to: "/admin/cby-staff", label: "مستخدمي النظام", icon: UserCog, roles: ["platform_admin"] },
-  { to: "/admin/workflow-docs", label: "قواعد المستندات", icon: FileCheck2, perm: "docrules.manage" },
+  {
+    to: "/admin/workflow-docs",
+    label: "قواعد المستندات",
+    icon: FileCheck2,
+    perm: "docrules.manage",
+  },
   { to: "/admin/roles", label: "الأدوار والصلاحيات", icon: KeyRound, perm: "roles.manage" },
   { to: "/bank/users", label: "موظفو الجهة", icon: Users, roles: ["bank_admin"] },
   { to: "/settings", label: "إعدادات النظام", icon: Settings, roles: ["platform_admin"] },
@@ -50,7 +94,9 @@ export function AppShell() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   // Close mobile drawer on route change
-  useEffect(() => { setMobileOpen(false); }, [path]);
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [path]);
 
   if (!user) {
     return <Outlet />;
@@ -65,7 +111,7 @@ export function AppShell() {
   const unread = notifs.filter((n) => n.unread).length;
 
   const SidebarBody = ({ inDrawer = false }: { inDrawer?: boolean }) => (
-    <>
+    <div className="flex h-full flex-col">
       <div className="flex h-16 items-center gap-3 px-5 border-b border-sidebar-border">
         <div className="grid h-10 w-10 place-items-center rounded-xl bg-sidebar-primary text-sidebar-primary-foreground font-bold">
           ب م
@@ -77,10 +123,7 @@ export function AppShell() {
           </div>
         )}
       </div>
-      <nav className={cn(
-        "p-3 space-y-1 overflow-y-auto",
-        inDrawer ? "h-[calc(100vh-9rem)]" : "h-[calc(100vh-9rem)]",
-      )}>
+      <nav className="min-h-0 flex-1 space-y-1 overflow-y-auto p-3">
         {items.map((it) => {
           const active = it.to === "/" ? path === "/" : path.startsWith(it.to);
           return (
@@ -96,13 +139,15 @@ export function AppShell() {
             >
               <it.icon className="h-5 w-5 shrink-0" />
               {(!collapsed || inDrawer) && <span className="truncate">{it.label}</span>}
-              {(!collapsed || inDrawer) && active && <ChevronLeft className="h-4 w-4 ms-auto opacity-60" />}
+              {(!collapsed || inDrawer) && active && (
+                <ChevronLeft className="h-4 w-4 ms-auto opacity-60" />
+              )}
             </Link>
           );
         })}
       </nav>
       {!inDrawer && (
-        <div className="absolute bottom-0 inset-x-0 p-3 border-t border-sidebar-border bg-sidebar">
+        <div className="border-t border-sidebar-border bg-sidebar p-3">
           <button
             onClick={() => setCollapsed((c) => !c)}
             className="w-full text-xs text-sidebar-foreground/60 hover:text-sidebar-foreground py-2"
@@ -111,15 +156,15 @@ export function AppShell() {
           </button>
         </div>
       )}
-    </>
+    </div>
   );
 
   return (
-    <div dir="rtl" className="flex min-h-screen w-full bg-background text-foreground">
+    <div dir="rtl" className="min-h-screen w-full bg-background text-foreground">
       {/* Desktop sidebar */}
       <aside
         className={cn(
-          "sticky top-0 h-screen shrink-0 bg-sidebar text-sidebar-foreground transition-all duration-300 border-l border-sidebar-border hidden lg:block relative",
+          "fixed inset-y-0 right-0 z-40 hidden border-l border-sidebar-border bg-sidebar text-sidebar-foreground transition-all duration-300 lg:block",
           collapsed ? "w-20" : "w-72",
         )}
       >
@@ -128,12 +173,20 @@ export function AppShell() {
 
       {/* Mobile/Tablet drawer */}
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-        <SheetContent side="right" className="p-0 w-72 bg-sidebar text-sidebar-foreground border-l border-sidebar-border">
+        <SheetContent
+          side="right"
+          className="p-0 w-72 bg-sidebar text-sidebar-foreground border-l border-sidebar-border"
+        >
           <SidebarBody inDrawer />
         </SheetContent>
       </Sheet>
 
-      <div className="flex flex-1 flex-col min-w-0">
+      <div
+        className={cn(
+          "flex min-h-screen min-w-0 flex-1 flex-col transition-[padding] duration-300",
+          collapsed ? "lg:pr-20" : "lg:pr-72",
+        )}
+      >
         <header className="sticky top-0 z-30 h-16 border-b bg-card/80 backdrop-blur-md flex items-center gap-2 sm:gap-3 px-3 sm:px-6">
           <Button
             variant="ghost"
@@ -155,80 +208,111 @@ export function AppShell() {
           <div className="ms-auto flex items-center gap-1.5 sm:gap-3">
             <RoleSwitcher />
 
-          <Button variant="ghost" size="icon" className="hidden sm:inline-flex" onClick={() => auth.setLang(auth.lang === "ar" ? "en" : "ar")}>
-            <Languages className="h-5 w-5" />
-          </Button>
-          <Button variant="ghost" size="icon" className="hidden sm:inline-flex" onClick={() => auth.toggleTheme()}>
-            {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-          </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="hidden sm:inline-flex"
+              onClick={() => auth.setLang(auth.lang === "ar" ? "en" : "ar")}
+            >
+              <Languages className="h-5 w-5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="hidden sm:inline-flex"
+              onClick={() => auth.toggleTheme()}
+            >
+              {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            </Button>
 
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="ghost" size="icon" className="relative">
-                <Bell className="h-5 w-5" />
-                {unread > 0 && (
-                  <span className="absolute top-1.5 left-1.5 h-2 w-2 rounded-full bg-destructive ring-2 ring-card" />
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent align="end" className="w-[min(24rem,calc(100vw-1rem))] p-0">
-              <div className="px-4 py-3 border-b flex items-center justify-between">
-                <div className="font-semibold">الإشعارات</div>
-                <div className="flex items-center gap-2">
-                  <Badge variant="secondary">{unread} جديد</Badge>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" size="icon" className="relative">
+                  <Bell className="h-5 w-5" />
                   {unread > 0 && (
-                    <button onClick={markAllRead} className="text-[11px] text-primary hover:underline">قراءة الكل</button>
+                    <span className="absolute top-1.5 left-1.5 h-2 w-2 rounded-full bg-destructive ring-2 ring-card" />
                   )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-[min(24rem,calc(100vw-1rem))] p-0">
+                <div className="px-4 py-3 border-b flex items-center justify-between">
+                  <div className="font-semibold">الإشعارات</div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary">{unread} جديد</Badge>
+                    {unread > 0 && (
+                      <button
+                        onClick={markAllRead}
+                        className="text-[11px] text-primary hover:underline"
+                      >
+                        قراءة الكل
+                      </button>
+                    )}
+                  </div>
                 </div>
-              </div>
-              <div className="max-h-96 overflow-auto divide-y">
-                {notifs.slice(0, 12).map((n) => (
-                  <div key={n.id} className="p-4 hover:bg-muted/50 cursor-pointer flex gap-3">
-                    <div className={cn("mt-1 h-2 w-2 rounded-full shrink-0", n.unread ? "bg-accent" : "bg-muted")} />
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium text-sm truncate">{n.title}</div>
-                      <div className="text-xs text-muted-foreground truncate">{n.body}</div>
-                      <div className="text-[10px] text-muted-foreground mt-1">{n.time}</div>
+                <div className="max-h-96 overflow-auto divide-y">
+                  {notifs.slice(0, 12).map((n) => (
+                    <div key={n.id} className="p-4 hover:bg-muted/50 cursor-pointer flex gap-3">
+                      <div
+                        className={cn(
+                          "mt-1 h-2 w-2 rounded-full shrink-0",
+                          n.unread ? "bg-accent" : "bg-muted",
+                        )}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-sm truncate">{n.title}</div>
+                        <div className="text-xs text-muted-foreground truncate">{n.body}</div>
+                        <div className="text-[10px] text-muted-foreground mt-1">{n.time}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="p-2 border-t text-center">
+                  <Link to="/notifications" className="text-xs text-primary hover:underline">
+                    عرض كل الإشعارات
+                  </Link>
+                </div>
+              </PopoverContent>
+            </Popover>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex items-center gap-3 pr-2 pl-1 py-1 rounded-full hover:bg-muted/60">
+                  <div className="text-right leading-tight hidden sm:block">
+                    <div className="text-sm font-semibold">{user.name}</div>
+                    <div className="text-[11px] text-muted-foreground">
+                      {ROLE_LABELS[user.role]}
                     </div>
                   </div>
-                ))}
-              </div>
-              <div className="p-2 border-t text-center">
-                <Link to="/notifications" className="text-xs text-primary hover:underline">عرض كل الإشعارات</Link>
-              </div>
-            </PopoverContent>
-          </Popover>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-3 pr-2 pl-1 py-1 rounded-full hover:bg-muted/60">
-                <div className="text-right leading-tight hidden sm:block">
-                  <div className="text-sm font-semibold">{user.name}</div>
-                  <div className="text-[11px] text-muted-foreground">{ROLE_LABELS[user.role]}</div>
-                </div>
-                <div className="grid h-9 w-9 place-items-center rounded-full bg-primary text-primary-foreground text-sm font-bold">
-                  {user.avatar}
-                </div>
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-64">
-              <DropdownMenuLabel>
-                <div className="font-semibold">{user.name}</div>
-                <div className="text-xs font-normal text-muted-foreground">{user.email}</div>
-                <div className="text-xs font-normal text-muted-foreground mt-0.5">{user.org}</div>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onSelect={() => nav({ to: "/profile" })}>الملف الشخصي</DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => nav({ to: "/settings" })}>الإعدادات</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onSelect={() => { auth.logout(); nav({ to: "/login" }); }}
-                className="text-destructive"
-              >
-                <LogOut className="h-4 w-4 ml-2" /> تسجيل الخروج
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                  <div className="grid h-9 w-9 place-items-center rounded-full bg-primary text-primary-foreground text-sm font-bold">
+                    {user.avatar}
+                  </div>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-64">
+                <DropdownMenuLabel>
+                  <div className="font-semibold">{user.name}</div>
+                  <div className="text-xs font-normal text-muted-foreground">{user.email}</div>
+                  <div className="text-xs font-normal text-muted-foreground mt-0.5">{user.org}</div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onSelect={() => nav({ to: "/profile" })}>
+                  الملف الشخصي
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => nav({ to: "/settings" })}>
+                  الإعدادات
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onSelect={() => {
+                    auth.logout();
+                    nav({ to: "/login" });
+                  }}
+                  className="text-destructive"
+                >
+                  <LogOut className="h-4 w-4 ml-2" /> تسجيل الخروج
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </header>
 
@@ -249,7 +333,10 @@ export function AppShell() {
 }
 
 export function PageHeader({
-  title, subtitle, actions, breadcrumbs,
+  title,
+  subtitle,
+  actions,
+  breadcrumbs,
 }: {
   title: string;
   subtitle?: string;
@@ -263,7 +350,13 @@ export function PageHeader({
           {breadcrumbs.map((b, i) => (
             <span key={i} className="flex items-center gap-1.5">
               {i > 0 && <span>/</span>}
-              {b.to ? <Link to={b.to} className="hover:text-foreground">{b.label}</Link> : <span>{b.label}</span>}
+              {b.to ? (
+                <Link to={b.to} className="hover:text-foreground">
+                  {b.label}
+                </Link>
+              ) : (
+                <span>{b.label}</span>
+              )}
             </span>
           ))}
         </nav>

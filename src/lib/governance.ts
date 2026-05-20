@@ -9,6 +9,8 @@ import {
   AUDIT as SEED_AUDIT,
   NOTIFICATIONS as SEED_NOTIFS,
   MERCHANTS as SEED_MERCHANTS,
+  SEED_VOTES,
+  SEED_VOTE_HISTORY,
   type ImportRequest,
   type Role,
   type RequestStage,
@@ -61,8 +63,8 @@ export type FinalizationRecord = {
   managerVoteWeighted: boolean;
 };
 
-export const votesCell = cell<VoteRecord[]>("votes", []);
-export const voteHistoryCell = cell<VoteHistory[]>("voteHistory", []);
+export const votesCell = cell<VoteRecord[]>("votes", SEED_VOTES);
+export const voteHistoryCell = cell<VoteHistory[]>("voteHistory", SEED_VOTE_HISTORY);
 export const finalizationsCell = cell<FinalizationRecord[]>("finalizations", []);
 
 // Document rules
@@ -76,22 +78,67 @@ export type DocRule = {
 };
 
 const DEFAULT_DOC_RULES: DocRule[] = [
-  { id: "d1", stage: "draft", name: "الفاتورة الأولية (Proforma Invoice)", required: true, fileTypes: ["pdf"], minCount: 1 },
-  { id: "d2", stage: "draft", name: "السجل التجاري", required: true, fileTypes: ["pdf"], minCount: 1 },
-  { id: "d3", stage: "draft", name: "البطاقة الضريبية", required: true, fileTypes: ["pdf"], minCount: 1 },
-  { id: "d4", stage: "draft", name: "مستندات إضافية", required: false, fileTypes: ["pdf"], minCount: 0 },
-  { id: "d6", stage: "support_approved", name: "وثيقة السويفت (MT103)", required: true, fileTypes: ["pdf"], minCount: 1 },
+  {
+    id: "d1",
+    stage: "draft",
+    name: "الفاتورة الأولية (Proforma Invoice)",
+    required: true,
+    fileTypes: ["pdf"],
+    minCount: 1,
+  },
+  {
+    id: "d2",
+    stage: "draft",
+    name: "السجل التجاري",
+    required: true,
+    fileTypes: ["pdf"],
+    minCount: 1,
+  },
+  {
+    id: "d3",
+    stage: "draft",
+    name: "البطاقة الضريبية",
+    required: true,
+    fileTypes: ["pdf"],
+    minCount: 1,
+  },
+  {
+    id: "d4",
+    stage: "draft",
+    name: "مستندات إضافية",
+    required: false,
+    fileTypes: ["pdf"],
+    minCount: 0,
+  },
+  {
+    id: "d6",
+    stage: "support_approved",
+    name: "وثيقة السويفت (MT103)",
+    required: true,
+    fileTypes: ["pdf"],
+    minCount: 1,
+  },
 ];
 
 export const docRulesCell = cell<DocRule[]>("docRules", DEFAULT_DOC_RULES);
 
 // Permissions / Roles / SubRoles
 export type Permission =
-  | "request.create" | "request.review" | "request.approve" | "request.reject"
-  | "swift.upload" | "voting.cast" | "voting.finalize"
-  | "customs.issue" | "reports.view" | "audit.view"
-  | "merchants.manage" | "users.manage" | "entities.manage"
-  | "docrules.manage" | "roles.manage";
+  | "request.create"
+  | "request.review"
+  | "request.approve"
+  | "request.reject"
+  | "swift.upload"
+  | "voting.cast"
+  | "voting.finalize"
+  | "customs.issue"
+  | "reports.view"
+  | "audit.view"
+  | "merchants.manage"
+  | "users.manage"
+  | "entities.manage"
+  | "docrules.manage"
+  | "roles.manage";
 
 export const PERMISSION_LABELS: Record<Permission, string> = {
   "request.create": "إنشاء طلب تمويل",
@@ -113,23 +160,39 @@ export const PERMISSION_LABELS: Record<Permission, string> = {
 
 // الصلاحيات التي تخص عمليات البنوك التجارية فقط — ولا تظهر للأدوار التابعة للبنك المركزي.
 export const BANK_ONLY_PERMS: Permission[] = [
-  "request.create", "request.review", "request.approve", "request.reject", "swift.upload",
+  "request.create",
+  "request.review",
+  "request.approve",
+  "request.reject",
+  "swift.upload",
 ];
 
 // الصلاحيات المتاحة لأدوار البنك المركزي (CBY) — تستثني صلاحيات تشغيل البنوك التجارية.
-export const CBY_PERMS: Permission[] = (Object.keys(PERMISSION_LABELS) as Permission[])
-  .filter((p) => !BANK_ONLY_PERMS.includes(p));
+export const CBY_PERMS: Permission[] = (Object.keys(PERMISSION_LABELS) as Permission[]).filter(
+  (p) => !BANK_ONLY_PERMS.includes(p),
+);
 
 const DEFAULT_ROLE_PERMS: Record<Role, Permission[]> = {
   // مسؤول النظام (CBY)
   platform_admin: [
-    "reports.view", "audit.view", "merchants.manage", "users.manage",
-    "entities.manage", "docrules.manage", "roles.manage",
+    "reports.view",
+    "audit.view",
+    "merchants.manage",
+    "users.manage",
+    "entities.manage",
+    "docrules.manage",
+    "roles.manage",
   ],
   // مسؤول البنك
   bank_admin: [
-    "request.create", "request.review", "swift.upload",
-    "reports.view", "audit.view", "merchants.manage", "users.manage", "roles.manage",
+    "request.create",
+    "request.review",
+    "swift.upload",
+    "reports.view",
+    "audit.view",
+    "merchants.manage",
+    "users.manage",
+    "roles.manage",
   ],
   // موظف إدخال البنك
   bank_intake: ["request.create", "merchants.manage"],
@@ -143,7 +206,11 @@ const DEFAULT_ROLE_PERMS: Record<Role, Permission[]> = {
   executive_member: ["voting.cast", "reports.view", "audit.view"],
   // مدير اللجنة التنفيذية — يرث صلاحيات العضو + إغلاق التصويت + إصدار إذن بيان جمركي
   committee_manager: [
-    "voting.cast", "voting.finalize", "customs.issue", "reports.view", "audit.view",
+    "voting.cast",
+    "voting.finalize",
+    "customs.issue",
+    "reports.view",
+    "audit.view",
   ],
 };
 
@@ -187,7 +254,10 @@ export function logAudit(entry: Omit<AuditEntry, "id" | "ts" | "ip" | "device">)
       id: `a_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
       ts: new Date().toISOString(),
       ip: "127.0.0.1",
-      device: typeof navigator !== "undefined" ? navigator.userAgent.split(") ")[0].slice(0, 40) : "server",
+      device:
+        typeof navigator !== "undefined"
+          ? navigator.userAgent.split(") ")[0].slice(0, 40)
+          : "server",
     },
     ...prev,
   ]);
@@ -206,7 +276,12 @@ export type Notif = {
 
 export function notify(n: Omit<Notif, "id" | "time" | "unread">) {
   notificationsCell.set((prev) => [
-    { ...n, id: `n_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`, time: "الآن", unread: true },
+    {
+      ...n,
+      id: `n_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      time: "الآن",
+      unread: true,
+    },
     ...prev,
   ]);
 }
@@ -235,7 +310,14 @@ export function castVote(req: ImportRequest, voterId: string, vote: Vote, justif
   const existing = votesCell.get().find((v) => v.requestId === req.id && v.voterId === voterId);
   voteHistoryCell.set((prev) => [
     ...prev,
-    { id: `vh_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`, requestId: req.id, voterId, vote, justification, ts },
+    {
+      id: `vh_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      requestId: req.id,
+      voterId,
+      vote,
+      justification,
+      ts,
+    },
   ]);
   votesCell.set((prev) => {
     const without = prev.filter((v) => !(v.requestId === req.id && v.voterId === voterId));
@@ -316,10 +398,14 @@ export function isFinalized(requestId: string): FinalizationRecord | null {
  * any) is decisive; if the manager hasn't voted on a tie, the request is
  * rejected by default (safe stance).
  */
-export function finalizeVoting(req: ImportRequest, managerId: string): FinalizationRecord | { error: string } {
+export function finalizeVoting(
+  req: ImportRequest,
+  managerId: string,
+): FinalizationRecord | { error: string } {
   if (isFinalized(req.id)) return { error: "تم إغلاق التصويت مسبقاً" };
   const cfg = execConfigCell.get();
-  if (managerId !== cfg.managerId) return { error: "فقط مدير اللجنة التنفيذية يمكنه إغلاق التصويت" };
+  if (managerId !== cfg.managerId)
+    return { error: "فقط مدير اللجنة التنفيذية يمكنه إغلاق التصويت" };
   if (req.stage !== "executive_voting") return { error: "باب التصويت غير مفتوح" };
 
   const { counts } = tally(req.id);
@@ -332,7 +418,9 @@ export function finalizeVoting(req: ImportRequest, managerId: string): Finalizat
     result = "rejected";
   } else {
     // Tie — manager's vote decides; if manager hasn't voted, default to rejection.
-    const managerVote = votesCell.get().find((v) => v.requestId === req.id && v.voterId === managerId);
+    const managerVote = votesCell
+      .get()
+      .find((v) => v.requestId === req.id && v.voterId === managerId);
     if (managerVote && managerVote.vote !== "abstain") {
       weighted = true;
       result = managerVote.vote === "approve" ? "approved" : "rejected";
@@ -345,8 +433,15 @@ export function finalizeVoting(req: ImportRequest, managerId: string): Finalizat
 }
 
 // ---------- Stage transition (persistent) ----------
-export function transitionRequest(req: ImportRequest, to: RequestStage, actor: { id: string; name: string; role: Role }, notes?: string) {
-  requestsCell.set((prev) => prev.map((r) => (r.id === req.id ? { ...r, stage: to, progress: progressFor(to) } : r)));
+export function transitionRequest(
+  req: ImportRequest,
+  to: RequestStage,
+  actor: { id: string; name: string; role: Role },
+  notes?: string,
+) {
+  requestsCell.set((prev) =>
+    prev.map((r) => (r.id === req.id ? { ...r, stage: to, progress: progressFor(to) } : r)),
+  );
   logAudit({
     userId: actor.id,
     userName: actor.name,
@@ -384,7 +479,13 @@ export function claimSupportReview(
   requestsCell.set((prev) =>
     prev.map((r) =>
       r.id === req.id
-        ? { ...r, stage: "support_review", progress: progressFor("support_review"), supportClaimedBy: actor.id, supportClaimedAt: ts }
+        ? {
+            ...r,
+            stage: "support_review",
+            progress: progressFor("support_review"),
+            supportClaimedBy: actor.id,
+            supportClaimedAt: ts,
+          }
         : r,
     ),
   );
@@ -416,7 +517,13 @@ export function releaseSupportClaim(
   requestsCell.set((prev) =>
     prev.map((r) =>
       r.id === req.id
-        ? { ...r, stage: "bank_approved", progress: progressFor("bank_approved"), supportClaimedBy: undefined, supportClaimedAt: undefined }
+        ? {
+            ...r,
+            stage: "bank_approved",
+            progress: progressFor("bank_approved"),
+            supportClaimedBy: undefined,
+            supportClaimedAt: undefined,
+          }
         : r,
     ),
   );
@@ -451,7 +558,9 @@ export function findDuplicateInvoices(): Array<{ invoice: string; refs: string[]
     arr.push(r.ref);
     map.set(r.invoice, arr);
   });
-  return [...map.entries()].filter(([, refs]) => refs.length > 1).map(([invoice, refs]) => ({ invoice, refs }));
+  return [...map.entries()]
+    .filter(([, refs]) => refs.length > 1)
+    .map(([invoice, refs]) => ({ invoice, refs }));
 }
 
 // ---------- Reset demo ----------
@@ -470,9 +579,16 @@ export function isEditable(req: ImportRequest): boolean {
 export function isLocked(req: ImportRequest): boolean {
   // Once internal review approved (bank_approved) and beyond, request is locked from edits.
   const lockedStages: RequestStage[] = [
-    "bank_approved", "support_review", "support_approved", "swift_attached",
-    "executive_voting", "executive_approved", "executive_rejected",
-    "support_rejected", "customs_released", "completed",
+    "bank_approved",
+    "support_review",
+    "support_approved",
+    "swift_attached",
+    "executive_voting",
+    "executive_approved",
+    "executive_rejected",
+    "support_rejected",
+    "customs_released",
+    "completed",
   ];
   return lockedStages.includes(req.stage);
 }
