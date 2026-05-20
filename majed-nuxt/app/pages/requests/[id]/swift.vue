@@ -35,18 +35,16 @@ function onFile(e: Event) {
 }
 function attachSwift() {
   if (!req.value || !user.value) return
-  const swiftFile = file.value
-    ? { name: file.value.name, size: file.value.size, uploadedAt: new Date().toISOString(), uploadedBy: user.value.id }
-    : { name: `SWIFT_${req.value.ref}_${Date.now()}.pdf`, size: 184320, uploadedAt: new Date().toISOString(), uploadedBy: user.value.id }
-  requestsCell.set((prev) => prev.map((r) => r.id === req.value!.id ? { ...r, swiftFile, stage: 'executive_voting' as const } : r))
+  if (!file.value) { toast.error('يجب اختيار ملف PDF حقيقي لإرفاق السويفت.'); return }
+  const swiftFile = { name: file.value.name, size: file.value.size, uploadedAt: new Date().toISOString(), uploadedBy: user.value.id }
+  requestsCell.set((prev) => prev.map((r) => r.id === req.value!.id ? { ...r, swiftFile, stage: 'swift_attached' as const } : r))
   logAudit({
     userId: user.value.id, userName: user.value.name, role: user.value.role,
-    action: 'إرفاق وثيقة السويفت وإرسال للتصويت التنفيذي',
-    ref: req.value.ref, fromStage: req.value.stage, toStage: 'executive_voting',
+    action: 'إرفاق وثيقة السويفت',
+    ref: req.value.ref, fromStage: req.value.stage, toStage: 'swift_attached',
     notes: reference.value ? `مرجع: ${reference.value}` : undefined,
   })
-  toast.success('تم إرفاق السويفت وإرسال الطلب للجنة التنفيذية.')
-  router.push(`/requests/${req.value.id}`)
+  toast.success('تم إرفاق السويفت. اضغط إرسال لتحويل الطلب للتصويت.')
 }
 function sendToVoting() {
   if (!req.value || !user.value) return
@@ -109,7 +107,8 @@ function sendToVoting() {
               <input id="swift-file-input" type="file" accept="application/pdf,.pdf" class="sr-only" @change="onFile" />
               <div v-if="file" class="flex items-center gap-2 text-xs text-success"><FileText class="h-4 w-4" /> تم اختيار: {{ file.name }}</div>
             </div>
-            <Button class="w-full" size="lg" @click="attachSwift"><Upload class="h-4 w-4 ml-2" /> إرفاق وثيقة السويفت</Button>
+            <Button class="w-full" size="lg" :disabled="!file" @click="attachSwift"><Upload class="h-4 w-4 ml-2" /> إرفاق وثيقة السويفت</Button>
+            <p class="text-xs text-muted-foreground text-center">اختر ملف PDF حقيقي ثم اضغط إرفاق. سيظهر زر "إرسال" بعدها.</p>
           </template>
 
           <div v-if="canSend" class="pt-4 border-t space-y-3">

@@ -86,6 +86,7 @@ export type RequestStage =
   | 'support_review'
   | 'support_returned'
   | 'support_rejected'
+  | 'bank_returned'
   | 'bank_rejected'
   | 'support_approved'
   | 'swift_attached'
@@ -101,13 +102,14 @@ export const STAGE_LABELS: Record<RequestStage, string> = {
   bank_internal_review: 'مراجعة داخلية بالبنك',
   bank_approved: 'اعتماد البنك الداخلي',
   support_review: 'قيد مراجعة اللجنة المساندة',
-  support_returned: 'مُعاد من المساندة للتعديل',
-  support_rejected: 'مرفوض من اللجنة المساندة',
-  bank_rejected: 'مرفوض من المراجعة الداخلية بالبنك',
+  support_returned: 'معاد من المساندة',
+  support_rejected: 'مرفوض من المساندة',
+  bank_returned: 'معاد من المراجعة',
+  bank_rejected: 'مرفوض من المراجعة',
   support_approved: 'اعتماد المساندة — بانتظار السويفت',
   swift_attached: 'تم إرفاق السويفت',
   executive_voting: 'تصويت اللجنة التنفيذية',
-  executive_rejected: 'مرفوض من اللجنة التنفيذية',
+  executive_rejected: 'مرفوض من التنفيذية',
   executive_approved: 'بانتظار إنشاء إذن إصدار بيان جمركي',
   customs_released: 'صدر إذن إصدار بيان جمركي',
   completed: 'مكتمل',
@@ -121,6 +123,7 @@ export const STAGE_COLORS: Record<RequestStage, string> = {
   support_review: 'bg-warning/15 text-warning',
   support_returned: 'bg-destructive/10 text-destructive',
   support_rejected: 'bg-destructive/15 text-destructive',
+  bank_returned: 'bg-destructive/10 text-destructive',
   bank_rejected: 'bg-destructive/15 text-destructive',
   support_approved: 'bg-accent/15 text-accent',
   swift_attached: 'bg-info/15 text-info',
@@ -139,7 +142,7 @@ export const STAGE_ORDER: RequestStage[] = [
 
 const STAGE_PROGRESS: Record<RequestStage, number> = {
   draft: 5, bank_submitted: 15, bank_internal_review: 25, bank_approved: 35,
-  support_review: 50, support_returned: 20, support_rejected: 50, bank_rejected: 25,
+  support_review: 50, support_returned: 20, support_rejected: 50, bank_returned: 18, bank_rejected: 25,
   support_approved: 65, swift_attached: 75, executive_voting: 85, executive_rejected: 85,
   executive_approved: 92, customs_released: 100, completed: 100,
 }
@@ -171,7 +174,7 @@ export const TRANSITIONS: Record<RequestStage, Transition[]> = {
   ],
   bank_internal_review: [
     { to: 'bank_approved', label: 'اعتماد المراجعة الداخلية وإحالة للمساندة', roles: ['bank_reviewer','bank_admin'], requiresEntityMatch: true, forbidIntakeUser: true },
-    { to: 'draft', label: 'إعادة لإعادة الإدخال', roles: ['bank_reviewer','bank_admin'], requiresEntityMatch: true, forbidIntakeUser: true, requiresComment: true },
+    { to: 'bank_returned', label: 'إعادة لإعادة الإدخال', roles: ['bank_reviewer','bank_admin'], requiresEntityMatch: true, forbidIntakeUser: true, requiresComment: true },
     { to: 'bank_rejected', label: 'رفض الطلب', roles: ['bank_reviewer','bank_admin'], requiresEntityMatch: true, forbidIntakeUser: true, destructive: true, requiresComment: true },
   ],
   bank_approved: [
@@ -183,6 +186,9 @@ export const TRANSITIONS: Record<RequestStage, Transition[]> = {
     { to: 'support_rejected', label: 'رفض الطلب', roles: ['support_member'], destructive: true, requiresComment: true },
   ],
   support_returned: [
+    { to: 'bank_submitted', label: 'إعادة التقديم بعد التعديل', roles: ORIGIN_ROLES, requiresEntityMatch: true },
+  ],
+  bank_returned: [
     { to: 'bank_submitted', label: 'إعادة التقديم بعد التعديل', roles: ORIGIN_ROLES, requiresEntityMatch: true },
   ],
   support_rejected: [],
@@ -410,6 +416,30 @@ const SWIFT_VISIBLE_STAGES: RequestStage[] = [
   'executive_rejected', 'customs_released', 'completed',
 ]
 
+const ROLE_QUEUE_STAGES: Record<Role, RequestStage[] | 'all'> = {
+  platform_admin: 'all',
+  bank_admin: [
+    'draft','bank_submitted','bank_internal_review','bank_returned',
+    'bank_approved','support_review','support_returned','support_approved',
+    'swift_attached','executive_voting','executive_approved','executive_rejected',
+    'support_rejected','bank_rejected','customs_released','completed',
+  ],
+  bank_intake: ['draft','bank_returned','support_returned'],
+  bank_reviewer: ['bank_submitted','bank_internal_review'],
+  bank_swift: ['support_approved','swift_attached'],
+  support_member: ['bank_approved','support_review'],
+  executive_member: ['executive_voting'],
+  committee_manager: ['swift_attached','executive_voting','executive_approved'],
+}
+
+export function queueRequestsFor(user: User | null, list: ImportRequest[]): ImportRequest[] {
+  if (!user) return []
+  const scoped = visibleRequestsFor(user, list)
+  const stages = ROLE_QUEUE_STAGES[user.role]
+  if (stages === 'all') return scoped
+  return scoped.filter((r) => stages.includes(r.stage))
+}
+
 export function visibleRequestsFor(user: User | null, list: ImportRequest[]): ImportRequest[] {
   if (!user) return []
   switch (user.role) {
@@ -459,8 +489,8 @@ const DATA_ENTRY_BUCKETS: DisplayBucket[] = [
   { key: 'submitted', label: 'مُقدَّم للمراجعة', color: C.info, stages: ['bank_submitted'] },
   { key: 'internal_review', label: 'قيد المراجعة الداخلية', color: C.warning, stages: ['bank_internal_review'] },
   { key: 'cby_processing', label: 'قيد معالجة البنك المركزي', color: C.accent, stages: ['bank_approved','support_review','support_approved','swift_attached','executive_voting','executive_approved'] },
-  { key: 'returned', label: 'بحاجة لتعديل', color: C.warning, stages: ['support_returned'] },
-  { key: 'rejected', label: 'مرفوض', color: C.destructive, stages: ['support_rejected','executive_rejected'] },
+  { key: 'returned', label: 'بحاجة لتعديل', color: C.warning, stages: ['support_returned','bank_returned'] },
+  { key: 'rejected', label: 'مرفوض', color: C.destructive, stages: ['support_rejected','executive_rejected','bank_rejected'] },
   { key: 'completed', label: 'مكتمل', color: C.success, stages: ['customs_released','completed'] },
 ]
 
@@ -468,12 +498,12 @@ const BANK_REVIEWER_BUCKETS: DisplayBucket[] = [
   { key: 'drafts', label: 'مسودات', color: C.muted, stages: ['draft'] },
   { key: 'internal_review', label: 'مراجعة داخلية معلّقة', color: C.warning, stages: ['bank_submitted','bank_internal_review'] },
   { key: 'cby_review', label: 'قيد مراجعة البنك المركزي', color: C.warning, stages: ['bank_approved','support_review'] },
-  { key: 'returned', label: 'مُعاد للتعديل', color: C.warning, stages: ['support_returned'] },
+  { key: 'returned', label: 'مُعاد للتعديل', color: C.warning, stages: ['support_returned','bank_returned'] },
   { key: 'waiting_swift', label: 'بانتظار السويفت', color: C.accent, stages: ['support_approved'] },
   { key: 'swift_done', label: 'تم رفع السويفت', color: C.info, stages: ['swift_attached'] },
   { key: 'exec_voting', label: 'تصويت اللجنة التنفيذية', color: C.chart5, stages: ['executive_voting'] },
   { key: 'approved', label: 'مُعتمد', color: C.success, stages: ['executive_approved'] },
-  { key: 'rejected', label: 'مرفوض', color: C.destructive, stages: ['support_rejected','executive_rejected'] },
+  { key: 'rejected', label: 'مرفوض', color: C.destructive, stages: ['support_rejected','executive_rejected','bank_rejected'] },
   { key: 'completed', label: 'مكتمل', color: C.success, stages: ['customs_released','completed'] },
 ]
 
@@ -524,7 +554,7 @@ export function displayStatusFor(
   return { key: stage, label: STAGE_LABELS[stage], color: STAGE_COLORS[stage] }
 }
 
-const OFF_TRACK_STAGES: RequestStage[] = ['support_returned','support_rejected','executive_rejected']
+const OFF_TRACK_STAGES: RequestStage[] = ['support_returned','support_rejected','executive_rejected','bank_returned','bank_rejected']
 
 export function progressionBucketsFor(role: Role): DisplayBucket[] {
   return bucketsFor(role).filter(

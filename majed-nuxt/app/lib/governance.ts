@@ -36,11 +36,10 @@ export type DocRule = {
   required: boolean; fileTypes: string[]; minCount: number
 }
 const DEFAULT_DOC_RULES: DocRule[] = [
-  { id: 'd1', stage: 'draft', name: 'السجل التجاري', required: true, fileTypes: ['pdf'], minCount: 1 },
-  { id: 'd2', stage: 'draft', name: 'البطاقة الضريبية', required: true, fileTypes: ['pdf'], minCount: 1 },
-  { id: 'd3', stage: 'draft', name: 'كشف حساب التاجر', required: true, fileTypes: ['pdf'], minCount: 1 },
-  { id: 'd4', stage: 'draft', name: 'الفاتورة التجارية', required: true, fileTypes: ['pdf'], minCount: 1 },
-  { id: 'd5', stage: 'draft', name: 'بوليصة الشحن', required: false, fileTypes: ['pdf'], minCount: 0 },
+  { id: 'd1', stage: 'draft', name: 'الفاتورة الأولية (Proforma Invoice)', required: true, fileTypes: ['pdf'], minCount: 1 },
+  { id: 'd2', stage: 'draft', name: 'السجل التجاري', required: true, fileTypes: ['pdf'], minCount: 1 },
+  { id: 'd3', stage: 'draft', name: 'البطاقة الضريبية', required: true, fileTypes: ['pdf'], minCount: 1 },
+  { id: 'd4', stage: 'draft', name: 'مستندات إضافية', required: false, fileTypes: ['pdf'], minCount: 0 },
   { id: 'd6', stage: 'support_approved', name: 'وثيقة السويفت (MT103)', required: true, fileTypes: ['pdf'], minCount: 1 },
 ]
 export const docRulesCell = cell<DocRule[]>('docRules', DEFAULT_DOC_RULES)
@@ -292,7 +291,7 @@ export function resetDemoData() {
   window.location.reload()
 }
 
-export const EDITABLE_STAGES: RequestStage[] = ['draft','support_returned']
+export const EDITABLE_STAGES: RequestStage[] = ['draft','support_returned','bank_returned']
 export function isEditable(req: ImportRequest): boolean { return EDITABLE_STAGES.includes(req.stage) }
 export function isLocked(req: ImportRequest): boolean {
   const lockedStages: RequestStage[] = [

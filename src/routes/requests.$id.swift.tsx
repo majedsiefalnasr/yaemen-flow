@@ -46,6 +46,10 @@ function SwiftUpload() {
   }
 
   function attachSwift() {
+    if (!file) {
+      toast.error("يجب اختيار ملف PDF حقيقي لإرفاق السويفت.");
+      return;
+    }
     const swiftFile = file
       ? {
           name: file.name,
@@ -53,27 +57,21 @@ function SwiftUpload() {
           uploadedAt: new Date().toISOString(),
           uploadedBy: user!.id,
         }
-      : {
-          name: `SWIFT_${req!.ref}_${Date.now()}.pdf`,
-          size: 184320,
-          uploadedAt: new Date().toISOString(),
-          uploadedBy: user!.id,
-        };
+      : null;
     requestsCell.set((prev) =>
-      prev.map((r) => (r.id === req!.id ? { ...r, swiftFile, stage: "executive_voting" as const } : r)),
+      prev.map((r) => (r.id === req!.id ? { ...r, swiftFile: swiftFile!, stage: "swift_attached" as const } : r)),
     );
     logAudit({
       userId: user!.id,
       userName: user!.name,
       role: user!.role,
-      action: "إرفاق وثيقة السويفت وإرسال للتصويت التنفيذي",
+      action: "إرفاق وثيقة السويفت",
       ref: req!.ref,
       fromStage: req!.stage,
-      toStage: "executive_voting",
+      toStage: "swift_attached",
       notes: reference ? `مرجع: ${reference}` : undefined,
     });
-    toast.success("تم إرفاق السويفت وإرسال الطلب للجنة التنفيذية للتصويت.");
-    nav({ to: "/requests/$id", params: { id: req!.id } });
+    toast.success("تم إرفاق السويفت. اضغط إرسال لتحويل الطلب للتصويت.");
   }
 
   function sendToVoting() {
@@ -179,12 +177,12 @@ function SwiftUpload() {
                   )}
                 </div>
 
-                <Button onClick={attachSwift} className="w-full" size="lg">
+                <Button onClick={attachSwift} className="w-full" size="lg" disabled={!file}>
                   <Upload className="h-4 w-4 ml-2" />
                   إرفاق وثيقة السويفت
                 </Button>
                 <p className="text-xs text-muted-foreground text-center">
-                  اختيار الملف اختياري — سيتم اعتبار الوثيقة مرفقة عند الضغط.
+                  اختر ملف PDF حقيقي ثم اضغط إرفاق. سيظهر زر "إرسال" بعدها لتحويل الطلب للتصويت.
                 </p>
               </>
             )}
