@@ -71,7 +71,7 @@ const returnedReason = computed(() => req.value?.stage === 'support_returned' ? 
 const supportRejectedReason = computed(() => req.value?.stage === 'support_rejected' ? reasonFor('support_rejected') : undefined)
 const execRejectedReason = computed(() => req.value?.stage === 'executive_rejected' ? reasonFor('executive_rejected') : undefined)
 const bankRejectedReason = computed(() => req.value?.stage === 'bank_rejected' ? reasonFor('bank_rejected') : undefined)
-const bankReturnedReason = computed(() => req.value?.stage === 'draft' ? reasonFor('draft') : undefined)
+const bankReturnedReason = computed(() => req.value?.stage === 'bank_returned' ? reasonFor('bank_returned') : undefined)
 
 const supportClaimedByName = computed(() =>
   DEMO_USERS.find((u) => u.id === req.value?.supportClaimedBy)?.name ?? 'عضو آخر',
@@ -251,7 +251,7 @@ function goCustoms() {
       </div>
     </Card>
 
-    <Card v-if="req.stage === 'draft' && bankReturnedReason" class="p-4 mb-4 border-amber-300 bg-amber-50/70 shadow-card border-r-4 border-r-amber-500">
+    <Card v-if="req.stage === 'bank_returned'" class="p-4 mb-4 border-amber-300 bg-amber-50/70 shadow-card border-r-4 border-r-amber-500">
       <div class="flex items-start gap-3">
         <AlertTriangle class="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
         <div class="flex-1">
