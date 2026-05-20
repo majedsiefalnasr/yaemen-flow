@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ENTITIES, useAuth, visibleRequestsFor, bucketsFor, displayStatusFor, progressForRole } from "@/lib/mock";
+import { ENTITIES, useAuth, queueRequestsFor, bucketsFor, displayStatusFor, progressForRole } from "@/lib/mock";
 import { requestsCell } from "@/lib/governance";
 import { cn } from "@/lib/utils";
 
@@ -35,8 +35,8 @@ function RequestsList() {
   const [bankFilter, setBankFilter] = useState<string>("all");
 
   const ALL_REQUESTS = requestsCell.use();
-  // Single source of truth for role-scoped visibility (ownership + workflow stage).
-  const scoped = visibleRequestsFor(user, ALL_REQUESTS);
+  // Queue scoping: only stages relevant to the user's role (actionable).
+  const scoped = queueRequestsFor(user, ALL_REQUESTS);
 
   // Role-aware display buckets — users see business-friendly statuses,
   // not raw internal workflow stages.
