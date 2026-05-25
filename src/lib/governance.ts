@@ -432,7 +432,20 @@ export function finalizeVoting(
     return { error: "فقط مدير اللجنة التنفيذية يمكنه إغلاق التصويت" };
   if (req.stage !== "executive_voting") return { error: "باب التصويت غير مفتوح" };
 
-  const { counts } = tally(req.id);
+  const { counts, votes } = tally(req.id);
+
+  // Strict rule: cannot close the session while members are still pending.
+  const votedIds = new Set(votes.map((v) => v.voterId));
+  const missing = cfg.memberIds.filter((id) => !votedIds.has(id));
+  if (missing.length > 0) {
+    const names = missing
+      .map((id) => DEMO_USERS.find((u) => u.id === id)?.name ?? id)
+      .join("، ");
+    return {
+      error: `لا يمكن إغلاق التصويت — لم يصوّت بعد: ${names}`,
+    };
+  }
+
   let result: "approved" | "rejected";
   let weighted = false;
 
