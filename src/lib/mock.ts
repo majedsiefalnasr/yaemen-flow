@@ -309,12 +309,12 @@ export const STAGE_LABELS: Record<RequestStage, string> = {
   support_rejected: "مرفوض من المساندة",
   bank_returned: "معاد من المراجعة",
   bank_rejected: "مرفوض من المراجعة",
-  support_approved: "اعتماد المساندة — بانتظار السويفت",
-  swift_attached: "تم إرفاق السويفت",
+  support_approved: "اعتماد المساندة — بانتظار التصويت",
+  swift_attached: "تم إرفاق السويفت — بانتظار تأكيد المصارفة",
   executive_voting: "تصويت اللجنة التنفيذية",
   executive_rejected: "مرفوض من التنفيذية",
-  executive_approved: "بانتظار إنشاء إذن إصدار بيان جمركي",
-  customs_released: "صدر إذن إصدار بيان جمركي",
+  executive_approved: "اعتماد التنفيذية — بانتظار رفع السويفت",
+  customs_released: "صدر تأكيد المصارفة الخارجية",
   completed: "مكتمل",
 };
 
@@ -343,10 +343,9 @@ export const STAGE_ORDER: RequestStage[] = [
   "bank_internal_review",
   "bank_approved",
   "support_review",
-  "support_approved",
-  "swift_attached",
   "executive_voting",
   "executive_approved",
+  "swift_attached",
   "customs_released",
   "completed",
 ];
@@ -367,11 +366,11 @@ const STAGE_PROGRESS: Record<RequestStage, number> = {
   support_rejected: 50, // failed at support
   bank_returned: 18, // returned by bank reviewer to intake
   bank_rejected: 25, // failed at bank internal review
-  support_approved: 65,
-  swift_attached: 75,
-  executive_voting: 85,
-  executive_rejected: 85, // failed at exec
-  executive_approved: 92,
+  support_approved: 60, // transient — auto-progresses to executive_voting
+  executive_voting: 70,
+  executive_rejected: 70, // failed at exec
+  executive_approved: 80, // awaiting bank swift
+  swift_attached: 90, // awaiting manager customs release
   customs_released: 100,
   completed: 100,
 };
@@ -509,14 +508,14 @@ export function availableTransitions(req: ImportRequest, user: User): Transition
 
 /** Can this user upload SWIFT for this request? */
 export function canAttachSwift(req: ImportRequest, user: User): boolean {
-  if (req.stage !== "support_approved") return false;
+  if (req.stage !== "executive_approved") return false;
   if (user.entityId !== req.entityId) return false;
   return user.role === "bank_swift" || user.role === "bank_admin";
 }
 
 /** Can this user issue the customs declaration? */
 export function canIssueCustoms(req: ImportRequest, user: User): boolean {
-  if (req.stage !== "executive_approved") return false;
+  if (req.stage !== "swift_attached") return false;
   return user.role === "committee_manager";
 }
 
@@ -554,6 +553,24 @@ export type ImportRequest = {
   supportClaimedBy?: string;
   supportClaimedAt?: string;
   swiftFile?: {
+    name: string;
+    size: number;
+    uploadedAt: string;
+    uploadedBy: string;
+    mime?: string;
+    storageKey?: string;
+  };
+  /** Filled & stamped "طلب تأكيد مصارفة" form uploaded alongside the SWIFT. */
+  remittanceRequestFile?: {
+    name: string;
+    size: number;
+    uploadedAt: string;
+    uploadedBy: string;
+    mime?: string;
+    storageKey?: string;
+  };
+  /** Stamped scan of the external-remittance confirmation, uploaded by the committee manager. */
+  customsStampedFile?: {
     name: string;
     size: number;
     uploadedAt: string;
@@ -841,33 +858,7 @@ const SEED_ROWS: SeedRow[] = [
     intake: "u4",
   },
 
-  // ─── support_approved × 2 (waiting for SWIFT) ──────────────────────
-  {
-    stage: "support_approved",
-    importer: importers[4],
-    entity: 1,
-    amount: 640000,
-    currency: "USD",
-    type: types[0],
-    supplier: suppliers[0],
-    port: ports[1],
-    risk: "low",
-    intake: "u5",
-  },
-  {
-    stage: "support_approved",
-    importer: importers[0],
-    entity: 0,
-    amount: 1100000,
-    currency: "USD",
-    type: types[2],
-    supplier: suppliers[2],
-    port: ports[0],
-    risk: "medium",
-    intake: "u4",
-  },
-
-  // ─── swift_attached × 2 (queued for voting) ────────────────────────
+  // ─── swift_attached × 2 (SWIFT uploaded, waiting for manager to issue customs) ─
   {
     stage: "swift_attached",
     importer: importers[1],
@@ -1080,19 +1071,15 @@ const SUPPORT_HANDLED_STAGES = new Set<RequestStage>([
   "support_review",
   "support_returned",
   "support_rejected",
-  "support_approved",
-  "swift_attached",
   "executive_voting",
   "executive_rejected",
   "executive_approved",
+  "swift_attached",
   "customs_released",
   "completed",
 ]);
 const SWIFT_ATTACHED_STAGES = new Set<RequestStage>([
   "swift_attached",
-  "executive_voting",
-  "executive_rejected",
-  "executive_approved",
   "customs_released",
   "completed",
 ]);
@@ -1311,23 +1298,19 @@ const SUPPORT_VISIBLE_STAGES: RequestStage[] = [
   "bank_approved",
   "support_review",
   "support_returned",
-  "support_approved",
   "support_rejected",
 ];
 const EXEC_VISIBLE_STAGES: RequestStage[] = [
-  "swift_attached",
   "executive_voting",
   "executive_approved",
   "executive_rejected",
+  "swift_attached",
   "customs_released",
   "completed",
 ];
 const SWIFT_VISIBLE_STAGES: RequestStage[] = [
-  "support_approved",
-  "swift_attached",
-  "executive_voting",
   "executive_approved",
-  "executive_rejected",
+  "swift_attached",
   "customs_released",
   "completed",
 ];
@@ -1346,10 +1329,9 @@ const ROLE_QUEUE_STAGES: Record<Role, RequestStage[] | "all"> = {
     "bank_approved",
     "support_review",
     "support_returned",
-    "support_approved",
-    "swift_attached",
     "executive_voting",
     "executive_approved",
+    "swift_attached",
     "executive_rejected",
     "support_rejected",
     "bank_rejected",
@@ -1358,10 +1340,10 @@ const ROLE_QUEUE_STAGES: Record<Role, RequestStage[] | "all"> = {
   ],
   bank_intake: ["draft", "bank_returned", "support_returned"],
   bank_reviewer: ["bank_submitted", "bank_internal_review"],
-  bank_swift: ["support_approved", "swift_attached"],
+  bank_swift: ["executive_approved", "swift_attached"],
   support_member: ["bank_approved", "support_review"],
   executive_member: ["executive_voting"],
-  committee_manager: ["swift_attached", "executive_voting", "executive_approved"],
+  committee_manager: ["executive_voting", "executive_approved", "swift_attached"],
 };
 
 /** Requests that are actionable / relevant to the user's role queue. */
@@ -1458,10 +1440,9 @@ const DATA_ENTRY_BUCKETS: DisplayBucket[] = [
     stages: [
       "bank_approved",
       "support_review",
-      "support_approved",
-      "swift_attached",
       "executive_voting",
       "executive_approved",
+      "swift_attached",
     ],
   },
   {
@@ -1491,7 +1472,7 @@ const BANK_REVIEWER_BUCKETS: DisplayBucket[] = [
     key: "cby_review",
     label: "قيد مراجعة البنك المركزي",
     color: C.warning,
-    stages: ["bank_approved", "support_review"],
+    stages: ["bank_approved", "support_review", "support_approved"],
   },
   {
     key: "returned",
@@ -1499,15 +1480,14 @@ const BANK_REVIEWER_BUCKETS: DisplayBucket[] = [
     color: C.warning,
     stages: ["support_returned", "bank_returned"],
   },
-  { key: "waiting_swift", label: "بانتظار السويفت", color: C.accent, stages: ["support_approved"] },
-  { key: "swift_done", label: "تم رفع السويفت", color: C.info, stages: ["swift_attached"] },
   {
     key: "exec_voting",
     label: "تصويت اللجنة التنفيذية",
     color: C.chart5,
     stages: ["executive_voting"],
   },
-  { key: "approved", label: "مُعتمد", color: C.success, stages: ["executive_approved"] },
+  { key: "waiting_swift", label: "بانتظار رفع السويفت", color: C.accent, stages: ["executive_approved"] },
+  { key: "swift_done", label: "تم رفع السويفت — بانتظار تأكيد المصارفة", color: C.info, stages: ["swift_attached"] },
   {
     key: "rejected",
     label: "مرفوض",
@@ -1522,7 +1502,7 @@ const SWIFT_BUCKETS: DisplayBucket[] = [
     key: "waiting_swift",
     label: "بانتظار رفع السويفت",
     color: C.warning,
-    stages: ["support_approved"],
+    stages: ["executive_approved"],
   },
   {
     key: "swift_uploaded",
@@ -1530,11 +1510,8 @@ const SWIFT_BUCKETS: DisplayBucket[] = [
     color: C.success,
     stages: [
       "swift_attached",
-      "executive_voting",
-      "executive_approved",
       "customs_released",
       "completed",
-      "executive_rejected",
     ],
   },
 ];
@@ -1558,18 +1535,18 @@ const SUPPORT_BUCKETS: DisplayBucket[] = [
 ];
 
 const EXECUTIVE_BUCKETS: DisplayBucket[] = [
-  {
-    key: "voting_queue",
-    label: "بانتظار فتح التصويت",
-    color: C.warning,
-    stages: ["swift_attached"],
-  },
   { key: "voting_open", label: "باب التصويت مفتوح", color: C.chart5, stages: ["executive_voting"] },
   {
-    key: "awaiting_customs",
-    label: "بانتظار إنشاء إذن إصدار بيان جمركي",
+    key: "awaiting_swift",
+    label: "بانتظار رفع السويفت من البنك",
     color: C.accent,
     stages: ["executive_approved"],
+  },
+  {
+    key: "awaiting_customs",
+    label: "بانتظار إصدار تأكيد المصارفة الخارجية",
+    color: C.accent,
+    stages: ["swift_attached"],
   },
   {
     key: "customs_done",
