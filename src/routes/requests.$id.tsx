@@ -215,6 +215,12 @@ function RequestDetail() {
     );
     toast.success(`تم: ${label}`);
     setComment("");
+    // If the new stage moves the request out of the current user's scope,
+    // redirect to the requests list instead of leaving them on an "unauthorized" screen.
+    const updated = { ...req!, stage: to as RequestStage };
+    if (!canViewRequest(user!, updated)) {
+      nav({ to: "/requests" });
+    }
   }
 
   function downloadDoc(doc: { name: string; fileName?: string; dataUrl?: string }) {
