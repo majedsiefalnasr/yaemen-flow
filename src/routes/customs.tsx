@@ -22,7 +22,7 @@ function Customs() {
   const { user } = useAuth();
   const REQUESTS = requestsCell.use();
   const scoped = visibleRequestsFor(user, REQUESTS);
-  const ready = scoped.filter((r) => r.stage === "executive_approved");
+  const ready = scoped.filter((r) => r.stage === "swift_attached");
   const issued = scoped.filter((r) => r.stage === "customs_released" || r.stage === "completed");
 
   return (
