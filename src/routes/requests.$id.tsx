@@ -86,6 +86,7 @@ function RequestDetail() {
     size?: number;
   } | null>(null);
   const [swiftDocDataUrl, setSwiftDocDataUrl] = useState<string | null>(null);
+  const [customsDocDataUrl, setCustomsDocDataUrl] = useState<string | null>(null);
   const [swiftDialogOpen, setSwiftDialogOpen] = useState(false);
   const [customsDialogOpen, setCustomsDialogOpen] = useState(false);
   const REQUESTS = requestsCell.use();
