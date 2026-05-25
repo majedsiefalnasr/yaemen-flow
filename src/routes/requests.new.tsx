@@ -499,14 +499,14 @@ function Step3({ form, uploads, setUploads }: {
       <h3 className="font-semibold">رفع الوثائق المطلوبة</h3>
       <div className="rounded-lg border border-accent/30 bg-accent/5 p-4 text-sm space-y-2">
         <div className="font-semibold text-accent flex items-center gap-2">
-          <FileText className="h-4 w-4" /> نموذج طلب وثيقة تأكيد
+          <FileText className="h-4 w-4" /> طلب وثيقة تأكيد
         </div>
         <p className="text-xs text-muted-foreground leading-relaxed">
           نزّل النموذج، املأ بيانات الطلب وأختمه بختم البنك، ثم ارفعه ضمن الوثائق أدناه.
         </p>
         <Button asChild variant="outline" size="sm" className="h-8">
           <a href={CONFIRMATION_TEMPLATE_URL} download>
-            <FileText className="h-3.5 w-3.5 ml-1" /> تحميل نموذج طلب وثيقة تأكيد
+            <FileText className="h-3.5 w-3.5 ml-1" /> تحميل طلب وثيقة تأكيد
           </a>
         </Button>
       </div>
