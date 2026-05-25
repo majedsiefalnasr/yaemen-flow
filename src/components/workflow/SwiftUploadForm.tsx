@@ -57,9 +57,11 @@ export function SwiftUploadForm({ requestId, mode = "page", onSent }: SwiftUploa
 
   if (!req || !user) return null;
 
-  const allowed = canAttachSwift(req, user) || req.stage === "swift_attached";
-  const hasSwift = !!req.swiftFile;
-  const canSend = hasSwift && req.stage === "swift_attached";
+  const currentReq = req;
+  const currentUser = user;
+  const allowed = canAttachSwift(currentReq, currentUser) || currentReq.stage === "swift_attached";
+  const hasSwift = !!currentReq.swiftFile;
+  const canSend = hasSwift && currentReq.stage === "swift_attached";
 
   if (!allowed) {
     return (
@@ -108,7 +110,7 @@ export function SwiftUploadForm({ requestId, mode = "page", onSent }: SwiftUploa
       return;
     }
 
-    const storageKey = `swift:${req.id}`;
+    const storageKey = `swift:${currentReq.id}`;
     setIsSaving(true);
 
     try {
@@ -126,32 +128,32 @@ export function SwiftUploadForm({ requestId, mode = "page", onSent }: SwiftUploa
 
       requestsCell.set((prev) =>
         prev.map((item) =>
-          item.id === req.id
+          item.id === currentReq.id
             ? {
                 ...item,
                 swiftFile: {
                   name: file.name,
                   size: file.size,
                   uploadedAt,
-                  uploadedBy: user.id,
+                  uploadedBy: currentUser.id,
                   mime: file.type || "application/pdf",
                   storageKey,
                 },
                 stage: "swift_attached" as const,
                 progress: progressFor("swift_attached"),
-                lastUpdatedBy: user.id,
+                lastUpdatedBy: currentUser.id,
               }
             : item,
         ),
       );
 
       logAudit({
-        userId: user.id,
-        userName: user.name,
-        role: user.role,
+        userId: currentUser.id,
+        userName: currentUser.name,
+        role: currentUser.role,
         action: "إرفاق وثيقة السويفت",
-        ref: req.ref,
-        fromStage: req.stage,
+        ref: currentReq.ref,
+        fromStage: currentReq.stage,
         toStage: "swift_attached",
         notes: reference ? `مرجع: ${reference}` : undefined,
       });
@@ -170,15 +172,15 @@ export function SwiftUploadForm({ requestId, mode = "page", onSent }: SwiftUploa
 
   function sendToVoting() {
     transitionRequest(
-      req,
+      currentReq,
       "executive_voting",
-      { id: user.id, name: user.name, role: user.role },
+      { id: currentUser.id, name: currentUser.name, role: currentUser.role },
       "إرسال الطلب للتصويت التنفيذي بعد إرفاق السويفت",
     );
     toast.success("تم إرسال الطلب للجنة التنفيذية للتصويت.");
     onSent?.();
     if (mode === "page") {
-      nav({ to: "/requests/$id", params: { id: req.id } });
+      nav({ to: "/requests/$id", params: { id: currentReq.id } });
     }
   }
 
