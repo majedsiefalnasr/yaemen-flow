@@ -119,6 +119,31 @@ function RequestDetail() {
     };
   }, [req?.id, req?.swiftFile?.storageKey]);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadStoredCustomsFile() {
+      if (!req?.customsStampedFile?.storageKey) {
+        setCustomsDocDataUrl(null);
+        return;
+      }
+
+      try {
+        const stored = await getLocalFile(req.customsStampedFile.storageKey);
+        if (!cancelled) setCustomsDocDataUrl(stored?.dataUrl ?? null);
+      } catch (error) {
+        console.error("Failed to load the stored customs confirmation file.", error);
+        if (!cancelled) setCustomsDocDataUrl(null);
+      }
+    }
+
+    void loadStoredCustomsFile();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [req?.id, req?.customsStampedFile?.storageKey]);
+
   if (path !== `/requests/${id}`) {
     return <Outlet />;
   }
