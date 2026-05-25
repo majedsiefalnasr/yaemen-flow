@@ -443,7 +443,11 @@ export const TRANSITIONS: Record<RequestStage, Transition[]> = {
     { to: "support_review", label: "بدء المراجعة الداخلية", roles: ["support_member"] },
   ],
   support_review: [
-    { to: "support_approved", label: "اعتماد المساندة", roles: ["support_member"] },
+    {
+      to: "executive_voting",
+      label: "اعتماد المساندة وفتح باب التصويت",
+      roles: ["support_member"],
+    },
     {
       to: "support_returned",
       label: "إعادة للبنك للتعديل",
@@ -477,11 +481,11 @@ export const TRANSITIONS: Record<RequestStage, Transition[]> = {
   support_rejected: [], // terminal
   bank_rejected: [], // terminal
   support_approved: [
-    // SWIFT attach is a dedicated action (POST /swift) — not a generic transition
+    // Transient stage — execution-voting is opened automatically on approval.
   ],
-  swift_attached: [
-    { to: "executive_voting", label: "فتح باب التصويت", roles: ["committee_manager"] },
-  ],
+  // SWIFT attach (executive_approved → swift_attached) is a dedicated action
+  // performed via the SWIFT upload form, not a generic transition.
+  swift_attached: [],
   // executive_voting transitions are NOT performed via the generic action panel.
   // Members must cast votes through the voting panel, and the committee
   // manager finalizes the result. This guarantees a real multi-vote process
