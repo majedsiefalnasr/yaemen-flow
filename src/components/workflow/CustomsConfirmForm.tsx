@@ -10,6 +10,7 @@ import { toast } from "sonner";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const CUSTOMS_TEMPLATE_URL = "/templates/نموذج-تأكيد-مصارفة-خارجية.docx";
+const REMITTANCE_TEMPLATE_URL = "/templates/نموذج-طلب-تأكيد-مصارفة.docx";
 
 type Props = {
   requestId: string;
@@ -24,29 +25,40 @@ export function CustomsConfirmForm({ requestId, onIssued }: Props) {
   const [reference, setReference] = useState("");
   const [issuing, setIssuing] = useState(false);
   const [storedUrl, setStoredUrl] = useState<string | null>(null);
+  const [remittanceFile, setRemittanceFile] = useState<File | null>(null);
+  const [storedRemittanceUrl, setStoredRemittanceUrl] = useState<string | null>(null);
+  const [savingRemittance, setSavingRemittance] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const remittanceRef = useRef<HTMLInputElement>(null);
   const inputId = useId();
+  const remittanceId = useId();
 
   useEffect(() => {
     let cancelled = false;
     async function load() {
       const key = req?.customsStampedFile?.storageKey;
-      if (!key) {
-        if (!cancelled) setStoredUrl(null);
-        return;
-      }
+      const remKey = req?.remittanceRequestFile?.storageKey;
       try {
-        const stored = await getLocalFile(key);
-        if (!cancelled) setStoredUrl(stored?.dataUrl ?? null);
+        const [stored, remStored] = await Promise.all([
+          key ? getLocalFile(key) : Promise.resolve(null),
+          remKey ? getLocalFile(remKey) : Promise.resolve(null),
+        ]);
+        if (!cancelled) {
+          setStoredUrl(stored?.dataUrl ?? null);
+          setStoredRemittanceUrl(remStored?.dataUrl ?? null);
+        }
       } catch {
-        if (!cancelled) setStoredUrl(null);
+        if (!cancelled) {
+          setStoredUrl(null);
+          setStoredRemittanceUrl(null);
+        }
       }
     }
     void load();
     return () => {
       cancelled = true;
     };
-  }, [req?.customsStampedFile?.storageKey]);
+  }, [req?.customsStampedFile?.storageKey, req?.remittanceRequestFile?.storageKey]);
 
   if (!req || !user) return null;
 
@@ -59,6 +71,80 @@ export function CustomsConfirmForm({ requestId, onIssued }: Props) {
         لا تملك صلاحية إصدار تأكيد المصارفة الخارجية لهذا الطلب في هذه المرحلة.
       </p>
     );
+  }
+
+  const hasRemittance = !!req.remittanceRequestFile;
+
+  function onRemittanceChange(next: File | null) {
+    if (!next) {
+      setRemittanceFile(null);
+      return;
+    }
+    const isPdf =
+      next.type === "application/pdf" || next.name.toLowerCase().endsWith(".pdf");
+    if (!isPdf) {
+      toast.error("يجب رفع ملف PDF فقط.");
+      if (remittanceRef.current) remittanceRef.current.value = "";
+      return;
+    }
+    if (next.size > MAX_FILE_SIZE) {
+      toast.error("حجم الملف يتجاوز 10MB.");
+      if (remittanceRef.current) remittanceRef.current.value = "";
+      return;
+    }
+    setRemittanceFile(next);
+  }
+
+  async function uploadRemittance() {
+    if (!req || !user || !remittanceFile) return;
+    setSavingRemittance(true);
+    try {
+      const dataUrl = await readFileAsDataUrl(remittanceFile);
+      const uploadedAt = new Date().toISOString();
+      const storageKey = `remittance:${req.id}`;
+      await saveLocalFile({
+        id: storageKey,
+        name: remittanceFile.name,
+        type: remittanceFile.type || "application/pdf",
+        size: remittanceFile.size,
+        dataUrl,
+        storedAt: uploadedAt,
+      });
+      requestsCell.set((prev) =>
+        prev.map((r) =>
+          r.id === req.id
+            ? {
+                ...r,
+                remittanceRequestFile: {
+                  name: remittanceFile.name,
+                  size: remittanceFile.size,
+                  uploadedAt,
+                  uploadedBy: user.id,
+                  mime: remittanceFile.type || "application/pdf",
+                  storageKey,
+                },
+                lastUpdatedBy: user.id,
+              }
+            : r,
+        ),
+      );
+      logAudit({
+        userId: user.id,
+        userName: user.name,
+        role: user.role,
+        action: "إرفاق نموذج طلب تأكيد المصارفة المختوم",
+        ref: req.ref,
+      });
+      setStoredRemittanceUrl(dataUrl);
+      setRemittanceFile(null);
+      if (remittanceRef.current) remittanceRef.current.value = "";
+      toast.success("تم رفع نموذج طلب تأكيد المصارفة.");
+    } catch (error) {
+      console.error("Failed to upload remittance request form.", error);
+      toast.error("تعذر حفظ الملف. حاول مرة أخرى.");
+    } finally {
+      setSavingRemittance(false);
+    }
   }
 
   function onFileChange(next: File | null) {
@@ -84,6 +170,10 @@ export function CustomsConfirmForm({ requestId, onIssued }: Props) {
   async function performIssue() {
     if (!req || !user || !stampedFile) {
       toast.error("يجب رفع نسخة تأكيد المصارفة المختومة أولاً.");
+      return;
+    }
+    if (!req.remittanceRequestFile) {
+      toast.error("يجب أولاً رفع نموذج طلب تأكيد المصارفة المختوم.");
       return;
     }
     setIssuing(true);
@@ -196,6 +286,61 @@ export function CustomsConfirmForm({ requestId, onIssued }: Props) {
 
   return (
     <div className="space-y-4">
+      <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 text-xs space-y-2">
+        <div className="font-semibold text-primary flex items-center gap-1.5">
+          <FileText className="h-3.5 w-3.5" /> نموذج طلب تأكيد المصارفة (إلزامي قبل الإصدار)
+        </div>
+        <p className="text-muted-foreground leading-relaxed">
+          بصفتك مدير اللجنة التنفيذية: نزّل النموذج، اختمه ووقّعه، ثم ارفع النسخة المختومة بصيغة PDF.
+        </p>
+        <Button asChild variant="outline" size="sm" className="h-7 text-xs">
+          <a href={REMITTANCE_TEMPLATE_URL} download>
+            <Download className="h-3.5 w-3.5 ml-1" /> تحميل نموذج طلب تأكيد المصارفة
+          </a>
+        </Button>
+        {hasRemittance ? (
+          <div className="rounded-lg border border-success/30 bg-success/5 p-2 flex items-start gap-2">
+            <CheckCircle2 className="h-4 w-4 text-success mt-0.5 shrink-0" />
+            <div className="text-xs flex-1 min-w-0">
+              <div className="font-semibold text-success truncate">
+                {req.remittanceRequestFile?.name}
+              </div>
+              {storedRemittanceUrl && (
+                <div className="mt-1 flex flex-wrap gap-2">
+                  <Button asChild variant="outline" size="sm" className="h-6 text-[11px]">
+                    <a href={storedRemittanceUrl} target="_blank" rel="noreferrer">معاينة</a>
+                  </Button>
+                  <Button asChild variant="ghost" size="sm" className="h-6 text-[11px]">
+                    <a href={storedRemittanceUrl} download={req.remittanceRequestFile?.name}>
+                      <Download className="h-3 w-3 ml-1" /> تنزيل
+                    </a>
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-2 pt-1">
+            <UploadField
+              id={remittanceId}
+              ref={remittanceRef}
+              label="نموذج طلب تأكيد المصارفة (مختوم — PDF)"
+              file={remittanceFile}
+              onChange={onRemittanceChange}
+            />
+            <Button
+              onClick={uploadRemittance}
+              size="sm"
+              className="w-full"
+              disabled={!remittanceFile || savingRemittance}
+            >
+              <Upload className="h-3.5 w-3.5 ml-1" />
+              {savingRemittance ? "جارٍ الرفع..." : "رفع نموذج طلب تأكيد المصارفة"}
+            </Button>
+          </div>
+        )}
+      </div>
+
       <div className="rounded-lg border border-accent/30 bg-accent/5 p-3 text-xs space-y-2">
         <div className="font-semibold text-accent flex items-center gap-1.5">
           <FileText className="h-3.5 w-3.5" /> وثيقة تأكيد المصارفة الخارجية
@@ -232,7 +377,7 @@ export function CustomsConfirmForm({ requestId, onIssued }: Props) {
         onClick={performIssue}
         className="w-full"
         size="lg"
-        disabled={!stampedFile || issuing}
+        disabled={!stampedFile || issuing || !hasRemittance}
       >
         <FileSignature className="h-4 w-4 ml-2" />
         {issuing ? "جارٍ الإصدار..." : "إصدار تأكيد المصارفة الخارجية"}
