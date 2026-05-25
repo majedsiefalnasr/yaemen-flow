@@ -309,12 +309,12 @@ export const STAGE_LABELS: Record<RequestStage, string> = {
   support_rejected: "مرفوض من المساندة",
   bank_returned: "معاد من المراجعة",
   bank_rejected: "مرفوض من المراجعة",
-  support_approved: "اعتماد المساندة — بانتظار السويفت",
-  swift_attached: "تم إرفاق السويفت",
+  support_approved: "اعتماد المساندة — بانتظار التصويت",
+  swift_attached: "تم إرفاق السويفت — بانتظار تأكيد المصارفة",
   executive_voting: "تصويت اللجنة التنفيذية",
   executive_rejected: "مرفوض من التنفيذية",
-  executive_approved: "بانتظار إنشاء إذن إصدار بيان جمركي",
-  customs_released: "صدر إذن إصدار بيان جمركي",
+  executive_approved: "اعتماد التنفيذية — بانتظار رفع السويفت",
+  customs_released: "صدر تأكيد المصارفة الخارجية",
   completed: "مكتمل",
 };
 
@@ -343,10 +343,9 @@ export const STAGE_ORDER: RequestStage[] = [
   "bank_internal_review",
   "bank_approved",
   "support_review",
-  "support_approved",
-  "swift_attached",
   "executive_voting",
   "executive_approved",
+  "swift_attached",
   "customs_released",
   "completed",
 ];
@@ -367,11 +366,11 @@ const STAGE_PROGRESS: Record<RequestStage, number> = {
   support_rejected: 50, // failed at support
   bank_returned: 18, // returned by bank reviewer to intake
   bank_rejected: 25, // failed at bank internal review
-  support_approved: 65,
-  swift_attached: 75,
-  executive_voting: 85,
-  executive_rejected: 85, // failed at exec
-  executive_approved: 92,
+  support_approved: 60, // transient — auto-progresses to executive_voting
+  executive_voting: 70,
+  executive_rejected: 70, // failed at exec
+  executive_approved: 80, // awaiting bank swift
+  swift_attached: 90, // awaiting manager customs release
   customs_released: 100,
   completed: 100,
 };
