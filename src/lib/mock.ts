@@ -1328,23 +1328,19 @@ const SUPPORT_VISIBLE_STAGES: RequestStage[] = [
   "bank_approved",
   "support_review",
   "support_returned",
-  "support_approved",
   "support_rejected",
 ];
 const EXEC_VISIBLE_STAGES: RequestStage[] = [
-  "swift_attached",
   "executive_voting",
   "executive_approved",
   "executive_rejected",
+  "swift_attached",
   "customs_released",
   "completed",
 ];
 const SWIFT_VISIBLE_STAGES: RequestStage[] = [
-  "support_approved",
-  "swift_attached",
-  "executive_voting",
   "executive_approved",
-  "executive_rejected",
+  "swift_attached",
   "customs_released",
   "completed",
 ];
@@ -1363,10 +1359,9 @@ const ROLE_QUEUE_STAGES: Record<Role, RequestStage[] | "all"> = {
     "bank_approved",
     "support_review",
     "support_returned",
-    "support_approved",
-    "swift_attached",
     "executive_voting",
     "executive_approved",
+    "swift_attached",
     "executive_rejected",
     "support_rejected",
     "bank_rejected",
@@ -1375,10 +1370,10 @@ const ROLE_QUEUE_STAGES: Record<Role, RequestStage[] | "all"> = {
   ],
   bank_intake: ["draft", "bank_returned", "support_returned"],
   bank_reviewer: ["bank_submitted", "bank_internal_review"],
-  bank_swift: ["support_approved", "swift_attached"],
+  bank_swift: ["executive_approved", "swift_attached"],
   support_member: ["bank_approved", "support_review"],
   executive_member: ["executive_voting"],
-  committee_manager: ["swift_attached", "executive_voting", "executive_approved"],
+  committee_manager: ["executive_voting", "executive_approved", "swift_attached"],
 };
 
 /** Requests that are actionable / relevant to the user's role queue. */
