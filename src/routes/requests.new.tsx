@@ -22,6 +22,8 @@ export const Route = createFileRoute("/requests/new")({ component: NewRequest })
 
 const STEPS = ["بيانات الطلب", "بيانات المورد والشحنة", "الوثائق المطلوبة", "المراجعة والإرسال"];
 
+const CONFIRMATION_TEMPLATE_URL = "/templates/نموذج-طلب-وثيقة-تأكيد.pdf";
+
 const TYPE_LABEL: Record<string, string> = {
   food: "مواد غذائية", med: "أدوية ومستلزمات طبية", oil: "مشتقات نفطية", parts: "قطع غيار",
 };
@@ -37,6 +39,13 @@ type FormState = {
   payment: string; dueDate: string; notes: string;
   supplier: string; country: string; invoice: string; invoiceDate: string;
   shipPort: string; arrivalPort: string; bl: string; customs: string;
+  // — بيانات التاجر —
+  activity: string; taxNo: string; crNo: string;
+  // — بيانات الفاتورة والشحنة —
+  invoiceAmount: string; shipmentDate: string;
+  // — الملاك ومصادر الأموال والتغطية —
+  shareholders: { name: string; percent: string }[];
+  yerSources: string; fxSources: string; coverageMethod: string;
 };
 
 const INITIAL: FormState = {
@@ -45,6 +54,14 @@ const INITIAL: FormState = {
   supplier: "Cargill Trading Inc.", country: "us", invoice: `INV-2025-${Math.floor(Math.random() * 9000 + 1000)}`,
   invoiceDate: "2025-10-22", shipPort: "Port of Houston, USA", arrivalPort: "aden",
   bl: "BL-CRG-2025-991", customs: "aden_c",
+  activity: "تجارة عامة واستيراد",
+  taxNo: "", crNo: "",
+  invoiceAmount: "850000",
+  shipmentDate: "2025-11-05",
+  shareholders: [{ name: "", percent: "" }],
+  yerSources: "إيرادات نشاط الشركة بالعملة المحلية",
+  fxSources: "تحصيلات تصدير + شراء من السوق المحلي عبر صرّافين معتمدين",
+  coverageMethod: "تحويل بنكي خارجي عبر بنك مراسل",
 };
 
 function NewRequest() {
@@ -114,6 +131,21 @@ function NewRequest() {
         size: u.file.size,
         dataUrl: u.dataUrl,
       })),
+      activity: form.activity || undefined,
+      taxNo: form.taxNo || undefined,
+      crNo: form.crNo || undefined,
+      originCountry: COUNTRY_LABEL[form.country] ?? form.country,
+      invoiceAmount: Number(form.invoiceAmount) || undefined,
+      invoiceDate: form.invoiceDate || undefined,
+      paymentTerms: form.payment.toUpperCase(),
+      shipmentDate: form.shipmentDate || undefined,
+      shipPort: form.shipPort || undefined,
+      shareholders: form.shareholders
+        .filter((s) => s.name.trim() && Number(s.percent) > 0)
+        .map((s) => ({ name: s.name.trim(), percent: Number(s.percent) })),
+      yerSources: form.yerSources || undefined,
+      fxSources: form.fxSources || undefined,
+      coverageMethod: form.coverageMethod || undefined,
     };
   }
 
@@ -221,6 +253,15 @@ function Step1({ form, update }: StepProps) {
     () => allMerchants.filter((m) => m.status === "active" && (!user?.entityId || m.entityId === user.entityId)),
     [allMerchants, user?.entityId],
   );
+  function pickMerchant(name: string) {
+    const m = bankMerchants.find((x) => x.name === name);
+    update({
+      importer: name,
+      taxNo: m?.tax ?? "",
+      crNo: m?.cr ?? "",
+      activity: m?.category ?? form.activity,
+    });
+  }
   return (
     <div className="space-y-6">
       <h3 className="font-semibold">معلومات الطلب الأساسية</h3>
@@ -233,8 +274,8 @@ function Step1({ form, update }: StepProps) {
             </SelectContent>
           </Select>
         </Field>
-        <Field label="المستورد (التاجر)" required>
-          <Select value={form.importer} onValueChange={(v) => update({ importer: v })}>
+        <Field label="اسم التاجر المستورد" required>
+          <Select value={form.importer} onValueChange={pickMerchant}>
             <SelectTrigger><SelectValue placeholder={bankMerchants.length ? "اختر التاجر" : "لا يوجد تجار مسجلون لهذا البنك"} /></SelectTrigger>
             <SelectContent>
               {bankMerchants.map((m) => <SelectItem key={m.id} value={m.name}>{m.name}</SelectItem>)}
@@ -244,7 +285,16 @@ function Step1({ form, update }: StepProps) {
             <p className="text-xs text-muted-foreground mt-1">يجب إضافة تجار للبنك أولاً من شاشة سجل التجار.</p>
           )}
         </Field>
-        <Field label="مبلغ التمويل" required>
+        <Field label="نوع النشاط التجاري" required>
+          <Input value={form.activity} onChange={(e) => update({ activity: e.target.value })} placeholder="مثل: تجارة جملة مواد غذائية" />
+        </Field>
+        <Field label="الرقم الضريبي" required>
+          <Input value={form.taxNo} onChange={(e) => update({ taxNo: e.target.value })} placeholder="يُعبأ تلقائياً من بيانات التاجر" />
+        </Field>
+        <Field label="رقم السجل التجاري" required>
+          <Input value={form.crNo} onChange={(e) => update({ crNo: e.target.value })} placeholder="يُعبأ تلقائياً من بيانات التاجر" />
+        </Field>
+        <Field label="مبلغ العملة الأجنبية المطلوبة" required>
           <Input type="number" value={form.amount} onChange={(e) => update({ amount: e.target.value })} />
         </Field>
         <Field label="العملة" required>
@@ -267,6 +317,9 @@ function Step1({ form, update }: StepProps) {
             </SelectContent>
           </Select>
         </Field>
+        <Field label="طريقة التغطية خارجياً" required>
+          <Input value={form.coverageMethod} onChange={(e) => update({ coverageMethod: e.target.value })} placeholder="مثل: تحويل بنكي عبر بنك مراسل" />
+        </Field>
         <Field label="تاريخ الاستحقاق المتوقع">
           <Input type="date" value={form.dueDate} onChange={(e) => update({ dueDate: e.target.value })} />
         </Field>
@@ -279,6 +332,16 @@ function Step1({ form, update }: StepProps) {
 }
 
 function Step2({ form, update }: StepProps) {
+  function updateShareholder(i: number, patch: Partial<{ name: string; percent: string }>) {
+    const next = form.shareholders.map((s, idx) => (idx === i ? { ...s, ...patch } : s));
+    update({ shareholders: next });
+  }
+  function addShareholder() {
+    update({ shareholders: [...form.shareholders, { name: "", percent: "" }] });
+  }
+  function removeShareholder(i: number) {
+    update({ shareholders: form.shareholders.filter((_, idx) => idx !== i) });
+  }
   return (
     <div className="space-y-6">
       <h3 className="font-semibold">بيانات المورد والشحنة</h3>
@@ -294,13 +357,19 @@ function Step2({ form, update }: StepProps) {
             </SelectContent>
           </Select>
         </Field>
-        <Field label="رقم الفاتورة" required>
+        <Field label="مرجع الفاتورة" required>
           <Input value={form.invoice} onChange={(e) => update({ invoice: e.target.value })} />
         </Field>
         <Field label="تاريخ الفاتورة" required>
           <Input type="date" value={form.invoiceDate} onChange={(e) => update({ invoiceDate: e.target.value })} />
         </Field>
-        <Field label="ميناء الشحن">
+        <Field label="مبلغ الفاتورة" required>
+          <Input type="number" value={form.invoiceAmount} onChange={(e) => update({ invoiceAmount: e.target.value })} />
+        </Field>
+        <Field label="تاريخ الشحن" required>
+          <Input type="date" value={form.shipmentDate} onChange={(e) => update({ shipmentDate: e.target.value })} />
+        </Field>
+        <Field label="ميناء الشحن" required>
           <Input value={form.shipPort} onChange={(e) => update({ shipPort: e.target.value })} />
         </Field>
         <Field label="ميناء الوصول" required>
@@ -324,6 +393,50 @@ function Step2({ form, update }: StepProps) {
           </Select>
         </Field>
       </div>
+
+      <div className="space-y-3 pt-4 border-t">
+        <div className="flex items-center justify-between">
+          <h3 className="font-semibold text-sm">المساهمون / الملاك (بنسبة 25% فأكثر)</h3>
+          <Button type="button" size="sm" variant="outline" onClick={addShareholder}>
+            + إضافة مساهم
+          </Button>
+        </div>
+        <div className="space-y-2">
+          {form.shareholders.map((s, i) => (
+            <div key={i} className="grid grid-cols-[1fr_140px_auto] gap-2 items-center">
+              <Input
+                placeholder="اسم المساهم / المالك"
+                value={s.name}
+                onChange={(e) => updateShareholder(i, { name: e.target.value })}
+              />
+              <Input
+                type="number" min={25} max={100}
+                placeholder="نسبة المساهمة %"
+                value={s.percent}
+                onChange={(e) => updateShareholder(i, { percent: e.target.value })}
+              />
+              <Button
+                type="button" variant="ghost" size="icon"
+                className="text-destructive h-9 w-9"
+                onClick={() => removeShareholder(i)}
+                disabled={form.shareholders.length === 1}
+                aria-label="حذف"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-5 pt-4 border-t">
+        <Field label="مصادر توريدات الريال اليمني" required>
+          <Textarea rows={2} value={form.yerSources} onChange={(e) => update({ yerSources: e.target.value })} />
+        </Field>
+        <Field label="مصادر العملة الأجنبية" required>
+          <Textarea rows={2} value={form.fxSources} onChange={(e) => update({ fxSources: e.target.value })} />
+        </Field>
+      </div>
     </div>
   );
 }
@@ -338,6 +451,7 @@ function Step3({ form, uploads, setUploads }: {
   const licenseRequired = form.type === "oil" || form.type === "med";
   const docNames = useMemo(() => {
     const list = [
+      { name: "طلب وثيقة تأكيد (مختوم)", required: true },
       { name: "الفاتورة الأولية (Proforma Invoice)", required: true },
       { name: "السجل التجاري", required: true },
       { name: "البطاقة الضريبية", required: true },
@@ -383,6 +497,19 @@ function Step3({ form, uploads, setUploads }: {
   return (
     <div className="space-y-6">
       <h3 className="font-semibold">رفع الوثائق المطلوبة</h3>
+      <div className="rounded-lg border border-accent/30 bg-accent/5 p-4 text-sm space-y-2">
+        <div className="font-semibold text-accent flex items-center gap-2">
+          <FileText className="h-4 w-4" /> نموذج طلب وثيقة تأكيد
+        </div>
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          نزّل النموذج، املأ بيانات الطلب وأختمه بختم البنك، ثم ارفعه ضمن الوثائق أدناه.
+        </p>
+        <Button asChild variant="outline" size="sm" className="h-8">
+          <a href={CONFIRMATION_TEMPLATE_URL} download>
+            <FileText className="h-3.5 w-3.5 ml-1" /> تحميل نموذج طلب وثيقة تأكيد
+          </a>
+        </Button>
+      </div>
       <div className="grid md:grid-cols-2 gap-4">
         {docNames.map((d) => {
           const up = uploads[d.name];
@@ -479,16 +606,32 @@ function Step4({ form }: { form: FormState }) {
       <h3 className="font-semibold">مراجعة الطلب قبل الإرسال</h3>
       <div className="rounded-xl border bg-muted/30 p-6 space-y-5">
         <Section title="بيانات الطلب" rows={[
+          ["اسم التاجر المستورد", form.importer],
+          ["نوع النشاط التجاري", form.activity],
+          ["الرقم الضريبي", form.taxNo || "—"],
+          ["السجل التجاري", form.crNo || "—"],
           ["نوع الواردات", TYPE_LABEL[form.type] ?? form.type],
-          ["المستورد", form.importer],
-          ["مبلغ التمويل", `${Number(form.amount).toLocaleString()} ${form.currency}`],
+          ["مبلغ العملة الأجنبية المطلوبة", `${Number(form.amount).toLocaleString()} ${form.currency}`],
           ["شروط الدفع", form.payment.toUpperCase()],
+          ["طريقة التغطية خارجياً", form.coverageMethod || "—"],
         ]} />
         <Section title="بيانات المورد والشحنة" rows={[
           ["المورد", form.supplier],
-          ["رقم الفاتورة", form.invoice],
+          ["بلد المنشأ", COUNTRY_LABEL[form.country] ?? form.country],
+          ["مرجع الفاتورة", form.invoice],
+          ["تاريخ الفاتورة", form.invoiceDate || "—"],
+          ["مبلغ الفاتورة", form.invoiceAmount ? `${Number(form.invoiceAmount).toLocaleString()} ${form.currency}` : "—"],
+          ["تاريخ الشحن", form.shipmentDate || "—"],
+          ["ميناء الشحن", form.shipPort || "—"],
           ["ميناء الوصول", PORT_LABEL[form.arrivalPort] ?? form.arrivalPort],
-          ["البلد", COUNTRY_LABEL[form.country] ?? form.country],
+        ]} />
+        <Section title="الملاك والمصادر" rows={[
+          [
+            "المساهمون (≥25%)",
+            form.shareholders.filter((s) => s.name).map((s) => `${s.name} (${s.percent || 0}%)`).join("، ") || "—",
+          ],
+          ["مصادر توريدات الريال اليمني", form.yerSources || "—"],
+          ["مصادر العملة الأجنبية", form.fxSources || "—"],
         ]} />
       </div>
       <div className="flex items-start gap-3 p-4 rounded-lg bg-info/5 border border-info/20">

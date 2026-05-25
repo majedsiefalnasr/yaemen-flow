@@ -239,8 +239,10 @@ function RequestDetail() {
         ]}
         actions={
           <>
-            <Button variant="outline">
-              <Download className="h-4 w-4 ml-1" /> تنزيل الطلب
+            <Button variant="outline" asChild>
+              <a href="/templates/نموذج-طلب-وثيقة-تأكيد.pdf" download>
+                <Download className="h-4 w-4 ml-1" /> تنزيل الطلب
+              </a>
             </Button>
             {(() => {
               const ds = displayStatusFor(req.stage, user!.role);
@@ -442,20 +444,46 @@ function RequestDetail() {
             <TabsContent value="info" className="mt-4">
               <Card className="p-6 shadow-card border-0">
                 <div className="grid md:grid-cols-2 gap-x-8 gap-y-4 text-sm">
-                  {[
-                    ["نوع الواردات", req.type],
-                    ["المستورد", req.importer],
+                  {([
+                    ["اسم التاجر المستورد", req.importer],
+                    ["نوع النشاط التجاري", req.activity ?? "—"],
+                    ["الرقم الضريبي", req.taxNo ?? "—"],
+                    ["السجل التجاري", req.crNo ?? "—"],
                     ["البنك / الجهة", req.bank],
-                    ["المبلغ", `${req.amount.toLocaleString("en-US")} ${req.currency}`],
+                    ["نوع السلعة", req.type],
+                    ["بلد المنشأ", req.originCountry ?? "—"],
                     ["المورد", req.supplier],
-                    ["رقم الفاتورة", req.invoice],
+                    ["مرجع الفاتورة", req.invoice],
+                    ["تاريخ الفاتورة", req.invoiceDate ?? "—"],
+                    [
+                      "مبلغ الفاتورة",
+                      req.invoiceAmount != null
+                        ? `${req.invoiceAmount.toLocaleString("en-US")} ${req.currency}`
+                        : "—",
+                    ],
+                    [
+                      "مبلغ العملة الأجنبية المطلوبة",
+                      `${req.amount.toLocaleString("en-US")} ${req.currency}`,
+                    ],
+                    ["شروط الدفع", req.paymentTerms ?? "—"],
+                    ["تاريخ الشحن", req.shipmentDate ?? "—"],
+                    ["ميناء الشحن", req.shipPort ?? "—"],
                     ["ميناء الوصول", req.port],
+                    ["طريقة التغطية خارجياً", req.coverageMethod ?? "—"],
+                    [
+                      "المساهمون (≥25%)",
+                      req.shareholders && req.shareholders.length > 0
+                        ? req.shareholders.map((s) => `${s.name} (${s.percent}%)`).join("، ")
+                        : "—",
+                    ],
+                    ["مصادر توريدات الريال اليمني", req.yerSources ?? "—"],
+                    ["مصادر العملة الأجنبية", req.fxSources ?? "—"],
                     ["تاريخ التقديم", new Date(req.createdAt).toLocaleDateString("ar-EG")],
                     [
                       "مستوى المخاطر",
                       req.risk === "high" ? "عالية" : req.risk === "medium" ? "متوسطة" : "منخفضة",
                     ],
-                  ].map(([k, v]) => (
+                  ] as [string, string][]).map(([k, v]) => (
                     <div
                       key={k}
                       className="flex justify-between items-center gap-3 border-b pb-2.5"
