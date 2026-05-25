@@ -118,6 +118,30 @@ const DEFAULT_DOC_RULES: DocRule[] = [
     fileTypes: ["pdf"],
     minCount: 1,
   },
+  {
+    id: "d7",
+    stage: "executive_approved",
+    name: "وثيقة السويفت (MT103/MT202)",
+    required: true,
+    fileTypes: ["pdf"],
+    minCount: 1,
+  },
+  {
+    id: "d8",
+    stage: "executive_approved",
+    name: "نموذج طلب تأكيد المصارفة (موقّع ومختوم)",
+    required: true,
+    fileTypes: ["pdf"],
+    minCount: 1,
+  },
+  {
+    id: "d9",
+    stage: "swift_attached",
+    name: "تأكيد المصارفة الخارجية (مختوم)",
+    required: true,
+    fileTypes: ["pdf"],
+    minCount: 1,
+  },
 ];
 
 export const docRulesCell = cell<DocRule[]>("docRules", DEFAULT_DOC_RULES);
