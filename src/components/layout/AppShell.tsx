@@ -7,7 +7,6 @@ import {
   ShieldCheck,
   BarChart3,
   Vote,
-  PackageCheck,
   Settings,
   Bell,
   Search,
