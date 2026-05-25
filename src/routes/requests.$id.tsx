@@ -508,8 +508,24 @@ function RequestDetail() {
                   dataUrl?: string;
                 }> =
                   req.documents && req.documents.length > 0
-                    ? req.documents
+                    ? (req.documents.some((d) => d.name === "طلب وثيقة تأكيد (مختوم)")
+                        ? req.documents
+                        : [
+                            {
+                              name: "طلب وثيقة تأكيد (مختوم)",
+                              fileName: "confirmation_request_stamped.pdf",
+                              mime: "application/pdf",
+                              size: 1_500_000,
+                            },
+                            ...req.documents,
+                          ])
                     : [
+                        {
+                          name: "طلب وثيقة تأكيد (مختوم)",
+                          fileName: "confirmation_request_stamped.pdf",
+                          mime: "application/pdf",
+                          size: 1_500_000,
+                        },
                         {
                           name: "الفاتورة الأولية (Proforma Invoice)",
                           fileName: "proforma_invoice.pdf",
