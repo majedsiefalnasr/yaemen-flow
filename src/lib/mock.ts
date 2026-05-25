@@ -508,14 +508,14 @@ export function availableTransitions(req: ImportRequest, user: User): Transition
 
 /** Can this user upload SWIFT for this request? */
 export function canAttachSwift(req: ImportRequest, user: User): boolean {
-  if (req.stage !== "support_approved") return false;
+  if (req.stage !== "executive_approved") return false;
   if (user.entityId !== req.entityId) return false;
   return user.role === "bank_swift" || user.role === "bank_admin";
 }
 
 /** Can this user issue the customs declaration? */
 export function canIssueCustoms(req: ImportRequest, user: User): boolean {
-  if (req.stage !== "executive_approved") return false;
+  if (req.stage !== "swift_attached") return false;
   return user.role === "committee_manager";
 }
 
@@ -553,6 +553,24 @@ export type ImportRequest = {
   supportClaimedBy?: string;
   supportClaimedAt?: string;
   swiftFile?: {
+    name: string;
+    size: number;
+    uploadedAt: string;
+    uploadedBy: string;
+    mime?: string;
+    storageKey?: string;
+  };
+  /** Filled & stamped "طلب تأكيد مصارفة" form uploaded alongside the SWIFT. */
+  remittanceRequestFile?: {
+    name: string;
+    size: number;
+    uploadedAt: string;
+    uploadedBy: string;
+    mime?: string;
+    storageKey?: string;
+  };
+  /** Stamped scan of the external-remittance confirmation, uploaded by the committee manager. */
+  customsStampedFile?: {
     name: string;
     size: number;
     uploadedAt: string;
