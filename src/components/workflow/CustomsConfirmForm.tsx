@@ -10,6 +10,7 @@ import { toast } from "sonner";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const CUSTOMS_TEMPLATE_URL = "/templates/نموذج-تأكيد-مصارفة-خارجية.docx";
+const REMITTANCE_TEMPLATE_URL = "/templates/نموذج-طلب-تأكيد-مصارفة.docx";
 
 type Props = {
   requestId: string;
@@ -24,29 +25,40 @@ export function CustomsConfirmForm({ requestId, onIssued }: Props) {
   const [reference, setReference] = useState("");
   const [issuing, setIssuing] = useState(false);
   const [storedUrl, setStoredUrl] = useState<string | null>(null);
+  const [remittanceFile, setRemittanceFile] = useState<File | null>(null);
+  const [storedRemittanceUrl, setStoredRemittanceUrl] = useState<string | null>(null);
+  const [savingRemittance, setSavingRemittance] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const remittanceRef = useRef<HTMLInputElement>(null);
   const inputId = useId();
+  const remittanceId = useId();
 
   useEffect(() => {
     let cancelled = false;
     async function load() {
       const key = req?.customsStampedFile?.storageKey;
-      if (!key) {
-        if (!cancelled) setStoredUrl(null);
-        return;
-      }
+      const remKey = req?.remittanceRequestFile?.storageKey;
       try {
-        const stored = await getLocalFile(key);
-        if (!cancelled) setStoredUrl(stored?.dataUrl ?? null);
+        const [stored, remStored] = await Promise.all([
+          key ? getLocalFile(key) : Promise.resolve(null),
+          remKey ? getLocalFile(remKey) : Promise.resolve(null),
+        ]);
+        if (!cancelled) {
+          setStoredUrl(stored?.dataUrl ?? null);
+          setStoredRemittanceUrl(remStored?.dataUrl ?? null);
+        }
       } catch {
-        if (!cancelled) setStoredUrl(null);
+        if (!cancelled) {
+          setStoredUrl(null);
+          setStoredRemittanceUrl(null);
+        }
       }
     }
     void load();
     return () => {
       cancelled = true;
     };
-  }, [req?.customsStampedFile?.storageKey]);
+  }, [req?.customsStampedFile?.storageKey, req?.remittanceRequestFile?.storageKey]);
 
   if (!req || !user) return null;
 
@@ -59,6 +71,80 @@ export function CustomsConfirmForm({ requestId, onIssued }: Props) {
         لا تملك صلاحية إصدار تأكيد المصارفة الخارجية لهذا الطلب في هذه المرحلة.
       </p>
     );
+  }
+
+  const hasRemittance = !!req.remittanceRequestFile;
+
+  function onRemittanceChange(next: File | null) {
+    if (!next) {
+      setRemittanceFile(null);
+      return;
+    }
+    const isPdf =
+      next.type === "application/pdf" || next.name.toLowerCase().endsWith(".pdf");
+    if (!isPdf) {
+      toast.error("يجب رفع ملف PDF فقط.");
+      if (remittanceRef.current) remittanceRef.current.value = "";
+      return;
+    }
+    if (next.size > MAX_FILE_SIZE) {
+      toast.error("حجم الملف يتجاوز 10MB.");
+      if (remittanceRef.current) remittanceRef.current.value = "";
+      return;
+    }
+    setRemittanceFile(next);
+  }
+
+  async function uploadRemittance() {
+    if (!req || !user || !remittanceFile) return;
+    setSavingRemittance(true);
+    try {
+      const dataUrl = await readFileAsDataUrl(remittanceFile);
+      const uploadedAt = new Date().toISOString();
+      const storageKey = `remittance:${req.id}`;
+      await saveLocalFile({
+        id: storageKey,
+        name: remittanceFile.name,
+        type: remittanceFile.type || "application/pdf",
+        size: remittanceFile.size,
+        dataUrl,
+        storedAt: uploadedAt,
+      });
+      requestsCell.set((prev) =>
+        prev.map((r) =>
+          r.id === req.id
+            ? {
+                ...r,
+                remittanceRequestFile: {
+                  name: remittanceFile.name,
+                  size: remittanceFile.size,
+                  uploadedAt,
+                  uploadedBy: user.id,
+                  mime: remittanceFile.type || "application/pdf",
+                  storageKey,
+                },
+                lastUpdatedBy: user.id,
+              }
+            : r,
+        ),
+      );
+      logAudit({
+        userId: user.id,
+        userName: user.name,
+        role: user.role,
+        action: "إرفاق نموذج طلب تأكيد المصارفة المختوم",
+        ref: req.ref,
+      });
+      setStoredRemittanceUrl(dataUrl);
+      setRemittanceFile(null);
+      if (remittanceRef.current) remittanceRef.current.value = "";
+      toast.success("تم رفع نموذج طلب تأكيد المصارفة.");
+    } catch (error) {
+      console.error("Failed to upload remittance request form.", error);
+      toast.error("تعذر حفظ الملف. حاول مرة أخرى.");
+    } finally {
+      setSavingRemittance(false);
+    }
   }
 
   function onFileChange(next: File | null) {
@@ -84,6 +170,10 @@ export function CustomsConfirmForm({ requestId, onIssued }: Props) {
   async function performIssue() {
     if (!req || !user || !stampedFile) {
       toast.error("يجب رفع نسخة تأكيد المصارفة المختومة أولاً.");
+      return;
+    }
+    if (!req.remittanceRequestFile) {
+      toast.error("يجب أولاً رفع نموذج طلب تأكيد المصارفة المختوم.");
       return;
     }
     setIssuing(true);
