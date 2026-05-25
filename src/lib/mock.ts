@@ -990,7 +990,7 @@ const SEED_ROWS: SeedRow[] = [
   {
     stage: "executive_approved",
     importer: importers[2],
-    entity: 2,
+    entity: 0,
     amount: 715000,
     currency: "USD",
     type: types[0],
