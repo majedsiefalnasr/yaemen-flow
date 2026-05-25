@@ -129,6 +129,21 @@ function NewRequest() {
         size: u.file.size,
         dataUrl: u.dataUrl,
       })),
+      activity: form.activity || undefined,
+      taxNo: form.taxNo || undefined,
+      crNo: form.crNo || undefined,
+      originCountry: COUNTRY_LABEL[form.country] ?? form.country,
+      invoiceAmount: Number(form.invoiceAmount) || undefined,
+      invoiceDate: form.invoiceDate || undefined,
+      paymentTerms: form.payment.toUpperCase(),
+      shipmentDate: form.shipmentDate || undefined,
+      shipPort: form.shipPort || undefined,
+      shareholders: form.shareholders
+        .filter((s) => s.name.trim() && Number(s.percent) > 0)
+        .map((s) => ({ name: s.name.trim(), percent: Number(s.percent) })),
+      yerSources: form.yerSources || undefined,
+      fxSources: form.fxSources || undefined,
+      coverageMethod: form.coverageMethod || undefined,
     };
   }
 
