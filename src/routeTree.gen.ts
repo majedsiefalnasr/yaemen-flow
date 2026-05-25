@@ -15,7 +15,6 @@ import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as MerchantsRouteImport } from './routes/merchants'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as CustomsRouteImport } from './routes/customs'
 import { Route as AuditRouteImport } from './routes/audit'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as RequestsIndexRouteImport } from './routes/requests.index'
@@ -27,7 +26,6 @@ import { Route as AdminRolesRouteImport } from './routes/admin.roles'
 import { Route as AdminEntitiesRouteImport } from './routes/admin.entities'
 import { Route as AdminCbyStaffRouteImport } from './routes/admin.cby-staff'
 import { Route as RequestsIdSwiftRouteImport } from './routes/requests.$id.swift'
-import { Route as CustomsIdPrintRouteImport } from './routes/customs.$id.print'
 
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
@@ -57,11 +55,6 @@ const MerchantsRoute = MerchantsRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CustomsRoute = CustomsRouteImport.update({
-  id: '/customs',
-  path: '/customs',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuditRoute = AuditRouteImport.update({
@@ -119,16 +112,10 @@ const RequestsIdSwiftRoute = RequestsIdSwiftRouteImport.update({
   path: '/swift',
   getParentRoute: () => RequestsIdRoute,
 } as any)
-const CustomsIdPrintRoute = CustomsIdPrintRouteImport.update({
-  id: '/$id/print',
-  path: '/$id/print',
-  getParentRoute: () => CustomsRoute,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/audit': typeof AuditRoute
-  '/customs': typeof CustomsRouteWithChildren
   '/login': typeof LoginRoute
   '/merchants': typeof MerchantsRoute
   '/notifications': typeof NotificationsRoute
@@ -143,13 +130,11 @@ export interface FileRoutesByFullPath {
   '/requests/$id': typeof RequestsIdRouteWithChildren
   '/requests/new': typeof RequestsNewRoute
   '/requests/': typeof RequestsIndexRoute
-  '/customs/$id/print': typeof CustomsIdPrintRoute
   '/requests/$id/swift': typeof RequestsIdSwiftRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/audit': typeof AuditRoute
-  '/customs': typeof CustomsRouteWithChildren
   '/login': typeof LoginRoute
   '/merchants': typeof MerchantsRoute
   '/notifications': typeof NotificationsRoute
@@ -164,14 +149,12 @@ export interface FileRoutesByTo {
   '/requests/$id': typeof RequestsIdRouteWithChildren
   '/requests/new': typeof RequestsNewRoute
   '/requests': typeof RequestsIndexRoute
-  '/customs/$id/print': typeof CustomsIdPrintRoute
   '/requests/$id/swift': typeof RequestsIdSwiftRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/audit': typeof AuditRoute
-  '/customs': typeof CustomsRouteWithChildren
   '/login': typeof LoginRoute
   '/merchants': typeof MerchantsRoute
   '/notifications': typeof NotificationsRoute
@@ -186,7 +169,6 @@ export interface FileRoutesById {
   '/requests/$id': typeof RequestsIdRouteWithChildren
   '/requests/new': typeof RequestsNewRoute
   '/requests/': typeof RequestsIndexRoute
-  '/customs/$id/print': typeof CustomsIdPrintRoute
   '/requests/$id/swift': typeof RequestsIdSwiftRoute
 }
 export interface FileRouteTypes {
@@ -194,7 +176,6 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/audit'
-    | '/customs'
     | '/login'
     | '/merchants'
     | '/notifications'
@@ -209,13 +190,11 @@ export interface FileRouteTypes {
     | '/requests/$id'
     | '/requests/new'
     | '/requests/'
-    | '/customs/$id/print'
     | '/requests/$id/swift'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/audit'
-    | '/customs'
     | '/login'
     | '/merchants'
     | '/notifications'
@@ -230,13 +209,11 @@ export interface FileRouteTypes {
     | '/requests/$id'
     | '/requests/new'
     | '/requests'
-    | '/customs/$id/print'
     | '/requests/$id/swift'
   id:
     | '__root__'
     | '/'
     | '/audit'
-    | '/customs'
     | '/login'
     | '/merchants'
     | '/notifications'
@@ -251,14 +228,12 @@ export interface FileRouteTypes {
     | '/requests/$id'
     | '/requests/new'
     | '/requests/'
-    | '/customs/$id/print'
     | '/requests/$id/swift'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuditRoute: typeof AuditRoute
-  CustomsRoute: typeof CustomsRouteWithChildren
   LoginRoute: typeof LoginRoute
   MerchantsRoute: typeof MerchantsRoute
   NotificationsRoute: typeof NotificationsRoute
@@ -317,13 +292,6 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/customs': {
-      id: '/customs'
-      path: '/customs'
-      fullPath: '/customs'
-      preLoaderRoute: typeof CustomsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/audit': {
@@ -403,26 +371,8 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RequestsIdSwiftRouteImport
       parentRoute: typeof RequestsIdRoute
     }
-    '/customs/$id/print': {
-      id: '/customs/$id/print'
-      path: '/$id/print'
-      fullPath: '/customs/$id/print'
-      preLoaderRoute: typeof CustomsIdPrintRouteImport
-      parentRoute: typeof CustomsRoute
-    }
   }
 }
-
-interface CustomsRouteChildren {
-  CustomsIdPrintRoute: typeof CustomsIdPrintRoute
-}
-
-const CustomsRouteChildren: CustomsRouteChildren = {
-  CustomsIdPrintRoute: CustomsIdPrintRoute,
-}
-
-const CustomsRouteWithChildren =
-  CustomsRoute._addFileChildren(CustomsRouteChildren)
 
 interface RequestsIdRouteChildren {
   RequestsIdSwiftRoute: typeof RequestsIdSwiftRoute
@@ -439,7 +389,6 @@ const RequestsIdRouteWithChildren = RequestsIdRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuditRoute: AuditRoute,
-  CustomsRoute: CustomsRouteWithChildren,
   LoginRoute: LoginRoute,
   MerchantsRoute: MerchantsRoute,
   NotificationsRoute: NotificationsRoute,

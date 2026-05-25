@@ -65,6 +65,7 @@ import { AuditTimeline } from "@/components/workflow/AuditTimeline";
 import { LockedBanner } from "@/components/workflow/LockedBanner";
 import { DocumentChecklist } from "@/components/workflow/DocumentChecklist";
 import { SwiftUploadForm } from "@/components/workflow/SwiftUploadForm";
+import { CustomsConfirmForm } from "@/components/workflow/CustomsConfirmForm";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
@@ -86,6 +87,7 @@ function RequestDetail() {
   } | null>(null);
   const [swiftDocDataUrl, setSwiftDocDataUrl] = useState<string | null>(null);
   const [swiftDialogOpen, setSwiftDialogOpen] = useState(false);
+  const [customsDialogOpen, setCustomsDialogOpen] = useState(false);
   const REQUESTS = requestsCell.use();
   const AUDIT = auditCell.use();
 
@@ -657,7 +659,7 @@ function RequestDetail() {
                 />
                 {req.customsBy && (
                   <ActorRow
-                    label="مُصدِر إذن إصدار بيان جمركي"
+                    label="مُصدِر تأكيد المصارفة الخارجية"
                     userId={req.customsBy}
                     extra={`رقم البيان ${req.customsNo}`}
                   />
@@ -704,9 +706,9 @@ function RequestDetail() {
                 {canCustoms && (
                   <Button
                     className="w-full justify-start"
-                    onClick={() => nav({ to: "/customs/$id/print", params: { id: req.id } })}
+                    onClick={() => setCustomsDialogOpen(true)}
                   >
-                    <FileSignature className="h-4 w-4 ml-2" /> إصدار إذن بيان جمركي
+                    <FileSignature className="h-4 w-4 ml-2" /> إصدار تأكيد المصارفة الخارجية
                   </Button>
                 )}
               </div>
@@ -790,6 +792,20 @@ function RequestDetail() {
             requestId={req.id}
             mode="dialog"
             onSent={() => setSwiftDialogOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
+      <Dialog open={customsDialogOpen} onOpenChange={setCustomsDialogOpen}>
+        <DialogContent dir="rtl" className="max-w-2xl">
+          <DialogHeader className="text-right">
+            <DialogTitle>إصدار تأكيد المصارفة الخارجية</DialogTitle>
+            <DialogDescription>
+              نزّل وثيقة تأكيد المصارفة، وقّعها واختمها، ثم ارفع النسخة النهائية بصيغة PDF.
+            </DialogDescription>
+          </DialogHeader>
+          <CustomsConfirmForm
+            requestId={req.id}
+            onIssued={() => setCustomsDialogOpen(false)}
           />
         </DialogContent>
       </Dialog>

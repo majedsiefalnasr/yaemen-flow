@@ -172,7 +172,7 @@ export const PERMISSION_LABELS: Record<Permission, string> = {
   "swift.upload": "رفع وثيقة السويفت",
   "voting.cast": "التصويت على الطلبات",
   "voting.finalize": "إغلاق التصويت ونشر القرار",
-  "customs.issue": "إصدار إذن بيان جمركي",
+  "customs.issue": "إصدار تأكيد المصارفة الخارجية",
   "reports.view": "عرض التقارير",
   "audit.view": "عرض سجل التدقيق",
   "merchants.manage": "إدارة التجار",
@@ -228,7 +228,7 @@ const DEFAULT_ROLE_PERMS: Record<Role, Permission[]> = {
   support_member: ["request.approve", "request.reject", "audit.view"],
   // عضو اللجنة التنفيذية
   executive_member: ["voting.cast", "reports.view", "audit.view"],
-  // مدير اللجنة التنفيذية — يرث صلاحيات العضو + إغلاق التصويت + إصدار إذن بيان جمركي
+  // مدير اللجنة التنفيذية — يرث صلاحيات العضو + إغلاق التصويت + إصدار تأكيد المصارفة الخارجية
   committee_manager: [
     "voting.cast",
     "voting.finalize",

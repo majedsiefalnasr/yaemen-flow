@@ -7,7 +7,6 @@ import {
   ShieldCheck,
   BarChart3,
   Vote,
-  PackageCheck,
   Settings,
   Bell,
   Search,
@@ -64,12 +63,6 @@ const NAV: NavItem[] = [
   },
   { to: "/merchants", label: "إدارة التجار", icon: Building2, perm: "merchants.manage" },
 
-  {
-    to: "/customs",
-    label: "إذن إصدار بيان جمركي",
-    icon: PackageCheck,
-    roles: ["committee_manager"],
-  },
   { to: "/reports", label: "التقارير والتحليلات", icon: BarChart3, perm: "reports.view" },
   { to: "/audit", label: "التدقيق والامتثال", icon: ScrollText, perm: "audit.view" },
   { to: "/notifications", label: "الإشعارات", icon: Bell },
