@@ -37,6 +37,13 @@ type FormState = {
   payment: string; dueDate: string; notes: string;
   supplier: string; country: string; invoice: string; invoiceDate: string;
   shipPort: string; arrivalPort: string; bl: string; customs: string;
+  // — بيانات التاجر —
+  activity: string; taxNo: string; crNo: string;
+  // — بيانات الفاتورة والشحنة —
+  invoiceAmount: string; shipmentDate: string;
+  // — الملاك ومصادر الأموال والتغطية —
+  shareholders: { name: string; percent: string }[];
+  yerSources: string; fxSources: string; coverageMethod: string;
 };
 
 const INITIAL: FormState = {
@@ -45,6 +52,14 @@ const INITIAL: FormState = {
   supplier: "Cargill Trading Inc.", country: "us", invoice: `INV-2025-${Math.floor(Math.random() * 9000 + 1000)}`,
   invoiceDate: "2025-10-22", shipPort: "Port of Houston, USA", arrivalPort: "aden",
   bl: "BL-CRG-2025-991", customs: "aden_c",
+  activity: "تجارة عامة واستيراد",
+  taxNo: "", crNo: "",
+  invoiceAmount: "850000",
+  shipmentDate: "2025-11-05",
+  shareholders: [{ name: "", percent: "" }],
+  yerSources: "إيرادات نشاط الشركة بالعملة المحلية",
+  fxSources: "تحصيلات تصدير + شراء من السوق المحلي عبر صرّافين معتمدين",
+  coverageMethod: "تحويل بنكي خارجي عبر بنك مراسل",
 };
 
 function NewRequest() {
