@@ -858,33 +858,7 @@ const SEED_ROWS: SeedRow[] = [
     intake: "u4",
   },
 
-  // ─── support_approved × 2 (waiting for SWIFT) ──────────────────────
-  {
-    stage: "support_approved",
-    importer: importers[4],
-    entity: 1,
-    amount: 640000,
-    currency: "USD",
-    type: types[0],
-    supplier: suppliers[0],
-    port: ports[1],
-    risk: "low",
-    intake: "u5",
-  },
-  {
-    stage: "support_approved",
-    importer: importers[0],
-    entity: 0,
-    amount: 1100000,
-    currency: "USD",
-    type: types[2],
-    supplier: suppliers[2],
-    port: ports[0],
-    risk: "medium",
-    intake: "u4",
-  },
-
-  // ─── swift_attached × 2 (queued for voting) ────────────────────────
+  // ─── swift_attached × 2 (SWIFT uploaded, waiting for manager to issue customs) ─
   {
     stage: "swift_attached",
     importer: importers[1],
