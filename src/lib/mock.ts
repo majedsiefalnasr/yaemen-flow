@@ -1440,10 +1440,9 @@ const DATA_ENTRY_BUCKETS: DisplayBucket[] = [
     stages: [
       "bank_approved",
       "support_review",
-      "support_approved",
-      "swift_attached",
       "executive_voting",
       "executive_approved",
+      "swift_attached",
     ],
   },
   {
@@ -1473,7 +1472,7 @@ const BANK_REVIEWER_BUCKETS: DisplayBucket[] = [
     key: "cby_review",
     label: "قيد مراجعة البنك المركزي",
     color: C.warning,
-    stages: ["bank_approved", "support_review"],
+    stages: ["bank_approved", "support_review", "support_approved"],
   },
   {
     key: "returned",
@@ -1481,15 +1480,14 @@ const BANK_REVIEWER_BUCKETS: DisplayBucket[] = [
     color: C.warning,
     stages: ["support_returned", "bank_returned"],
   },
-  { key: "waiting_swift", label: "بانتظار السويفت", color: C.accent, stages: ["support_approved"] },
-  { key: "swift_done", label: "تم رفع السويفت", color: C.info, stages: ["swift_attached"] },
   {
     key: "exec_voting",
     label: "تصويت اللجنة التنفيذية",
     color: C.chart5,
     stages: ["executive_voting"],
   },
-  { key: "approved", label: "مُعتمد", color: C.success, stages: ["executive_approved"] },
+  { key: "waiting_swift", label: "بانتظار رفع السويفت", color: C.accent, stages: ["executive_approved"] },
+  { key: "swift_done", label: "تم رفع السويفت — بانتظار تأكيد المصارفة", color: C.info, stages: ["swift_attached"] },
   {
     key: "rejected",
     label: "مرفوض",
@@ -1504,7 +1502,7 @@ const SWIFT_BUCKETS: DisplayBucket[] = [
     key: "waiting_swift",
     label: "بانتظار رفع السويفت",
     color: C.warning,
-    stages: ["support_approved"],
+    stages: ["executive_approved"],
   },
   {
     key: "swift_uploaded",
@@ -1512,11 +1510,8 @@ const SWIFT_BUCKETS: DisplayBucket[] = [
     color: C.success,
     stages: [
       "swift_attached",
-      "executive_voting",
-      "executive_approved",
       "customs_released",
       "completed",
-      "executive_rejected",
     ],
   },
 ];
@@ -1540,18 +1535,18 @@ const SUPPORT_BUCKETS: DisplayBucket[] = [
 ];
 
 const EXECUTIVE_BUCKETS: DisplayBucket[] = [
-  {
-    key: "voting_queue",
-    label: "بانتظار فتح التصويت",
-    color: C.warning,
-    stages: ["swift_attached"],
-  },
   { key: "voting_open", label: "باب التصويت مفتوح", color: C.chart5, stages: ["executive_voting"] },
   {
-    key: "awaiting_customs",
-    label: "بانتظار إنشاء إذن إصدار بيان جمركي",
+    key: "awaiting_swift",
+    label: "بانتظار رفع السويفت من البنك",
     color: C.accent,
     stages: ["executive_approved"],
+  },
+  {
+    key: "awaiting_customs",
+    label: "بانتظار إصدار تأكيد المصارفة الخارجية",
+    color: C.accent,
+    stages: ["swift_attached"],
   },
   {
     key: "customs_done",
