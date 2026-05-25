@@ -509,7 +509,7 @@ function RequestDetail() {
                     dataUrl: swiftDocDataUrl ?? undefined,
                   };
                   const swiftIndex = docs.findIndex(
-                    (doc) => doc.name === "وثيقة سويفت" || doc.fileName === req.swiftFile.name,
+                    (doc) => doc.name === "وثيقة سويفت" || doc.fileName === req.swiftFile!.name,
                   );
                   if (swiftIndex >= 0) docs[swiftIndex] = { ...docs[swiftIndex], ...swiftDoc };
                   else docs.push(swiftDoc);
