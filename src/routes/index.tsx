@@ -175,9 +175,11 @@ function countStages(list: ImportRequest[], stages: string[]) {
 function Dashboard() {
   const { user } = useAuth();
   const ALL = requestsCell.use();
+  const scoped = useMemo(
+    () => (user ? visibleRequestsFor(user, ALL) : []),
+    [user, ALL],
+  );
   if (!user) return null;
-
-  const scoped = useMemo(() => visibleRequestsFor(user, ALL), [user, ALL]);
 
   const greeting = (
     <PageHeader
