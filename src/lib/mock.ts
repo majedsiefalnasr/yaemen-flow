@@ -53,22 +53,6 @@ export const ENTITIES: Entity[] = [
     licenseNo: "BNK-001",
     status: "active",
   },
-  {
-    id: "e2",
-    type: "bank",
-    name: "بنك التضامن الإسلامي",
-    swiftCode: "TSIBYESA",
-    licenseNo: "BNK-002",
-    status: "active",
-  },
-  {
-    id: "e3",
-    type: "bank",
-    name: "بنك سبأ الإسلامي",
-    swiftCode: "SBAIYESA",
-    licenseNo: "BNK-003",
-    status: "active",
-  },
 ];
 
 // ============================================================
@@ -659,7 +643,7 @@ type SeedVote = {
 type SeedRow = {
   stage: RequestStage;
   importer: string;
-  entity: 0 | 1 | 2; // index into ENTITIES
+  entity: 0; // index into ENTITIES (only one bank)
   amount: number;
   currency: "USD" | "EUR" | "SAR";
   type: string;
@@ -692,7 +676,7 @@ const SEED_ROWS: SeedRow[] = [
   {
     stage: "draft",
     importer: importers[1],
-    entity: 1,
+    entity: 0,
     amount: 340000,
     currency: "USD",
     type: types[3],
@@ -718,7 +702,7 @@ const SEED_ROWS: SeedRow[] = [
   {
     stage: "bank_submitted",
     importer: importers[3],
-    entity: 2,
+    entity: 0,
     amount: 89000,
     currency: "EUR",
     type: types[1],
@@ -732,7 +716,7 @@ const SEED_ROWS: SeedRow[] = [
   {
     stage: "bank_internal_review",
     importer: importers[4],
-    entity: 1,
+    entity: 0,
     amount: 720000,
     currency: "USD",
     type: types[2],
@@ -758,7 +742,7 @@ const SEED_ROWS: SeedRow[] = [
   {
     stage: "bank_approved",
     importer: importers[1],
-    entity: 2,
+    entity: 0,
     amount: 980000,
     currency: "USD",
     type: types[0],
@@ -784,7 +768,7 @@ const SEED_ROWS: SeedRow[] = [
   {
     stage: "support_review",
     importer: importers[3],
-    entity: 1,
+    entity: 0,
     amount: 415000,
     currency: "USD",
     type: types[1],
@@ -798,7 +782,7 @@ const SEED_ROWS: SeedRow[] = [
   {
     stage: "support_review",
     importer: importers[4],
-    entity: 2,
+    entity: 0,
     amount: 1250000,
     currency: "USD",
     type: types[2],
@@ -827,7 +811,7 @@ const SEED_ROWS: SeedRow[] = [
   {
     stage: "support_returned",
     importer: importers[1],
-    entity: 1,
+    entity: 0,
     amount: 295000,
     currency: "USD",
     type: types[3],
@@ -853,7 +837,7 @@ const SEED_ROWS: SeedRow[] = [
   {
     stage: "bank_returned",
     importer: importers[3],
-    entity: 1,
+    entity: 0,
     amount: 410000,
     currency: "EUR",
     type: types[3],
@@ -867,7 +851,7 @@ const SEED_ROWS: SeedRow[] = [
   {
     stage: "support_rejected",
     importer: importers[2],
-    entity: 2,
+    entity: 0,
     amount: 780000,
     currency: "USD",
     type: types[2],
@@ -893,7 +877,7 @@ const SEED_ROWS: SeedRow[] = [
   {
     stage: "swift_attached",
     importer: importers[1],
-    entity: 2,
+    entity: 0,
     amount: 420000,
     currency: "EUR",
     type: types[5],
@@ -906,7 +890,7 @@ const SEED_ROWS: SeedRow[] = [
   {
     stage: "swift_attached",
     importer: importers[2],
-    entity: 1,
+    entity: 0,
     amount: 875000,
     currency: "USD",
     type: types[3],
@@ -941,7 +925,7 @@ const SEED_ROWS: SeedRow[] = [
   {
     stage: "executive_voting",
     importer: importers[4],
-    entity: 2,
+    entity: 0,
     amount: 360000,
     currency: "USD",
     type: types[1],
@@ -964,7 +948,7 @@ const SEED_ROWS: SeedRow[] = [
   {
     stage: "executive_rejected",
     importer: importers[0],
-    entity: 1,
+    entity: 0,
     amount: 980000,
     currency: "USD",
     type: types[2],
@@ -1002,7 +986,7 @@ const SEED_ROWS: SeedRow[] = [
   {
     stage: "executive_approved",
     importer: importers[3],
-    entity: 1,
+    entity: 0,
     amount: 488000,
     currency: "USD",
     type: types[1],
@@ -1028,7 +1012,7 @@ const SEED_ROWS: SeedRow[] = [
   {
     stage: "customs_released",
     importer: importers[0],
-    entity: 2,
+    entity: 0,
     amount: 175000,
     currency: "SAR",
     type: types[5],
@@ -1042,7 +1026,7 @@ const SEED_ROWS: SeedRow[] = [
   {
     stage: "completed",
     importer: importers[1],
-    entity: 1,
+    entity: 0,
     amount: 540000,
     currency: "USD",
     type: types[0],
