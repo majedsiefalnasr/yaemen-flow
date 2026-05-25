@@ -1,4 +1,4 @@
-import { createFileRoute, useParams, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useParams, Link } from "@tanstack/react-router";
 import {
   ArrowRight, FileSignature, FileText, Download, Upload,
   ShieldCheck, AlertTriangle, CheckCircle2, Lock, Stamp,
@@ -26,7 +26,6 @@ export const Route = createFileRoute("/customs/$id/print")({ component: CustomsP
 function CustomsPrint() {
   const { id } = useParams({ from: "/customs/$id/print" });
   const { user } = useAuth();
-  const nav = useNavigate();
   const reqs = requestsCell.use();
   const req = reqs.find((r) => r.id === id);
   const [stampedFile, setStampedFile] = useState<File | null>(null);
