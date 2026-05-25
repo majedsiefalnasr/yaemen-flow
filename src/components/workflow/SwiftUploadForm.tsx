@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState, type RefObject } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import {
   CheckCircle2,
@@ -313,7 +313,7 @@ const UploadField = ({
   onChange,
 }: {
   id: string;
-  ref: React.RefObject<HTMLInputElement | null>;
+  ref: RefObject<HTMLInputElement | null>;
   label: string;
   file: File | null;
   onChange: (next: File | null) => void;
