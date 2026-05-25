@@ -1047,6 +1047,32 @@ const SEED_ROWS: SeedRow[] = [
     risk: "medium",
     intake: "u4",
   },
+
+  // ─── bank_rejected × 2 (rejected by bank reviewer) ─────────────────
+  {
+    stage: "bank_rejected",
+    importer: importers[0],
+    entity: 0,
+    amount: 95000,
+    currency: "USD",
+    type: types[2],
+    supplier: suppliers[2],
+    port: ports[0],
+    risk: "high",
+    intake: "u5",
+  },
+  {
+    stage: "bank_rejected",
+    importer: importers[4],
+    entity: 0,
+    amount: 365000,
+    currency: "EUR",
+    type: types[4],
+    supplier: suppliers[4],
+    port: ports[2],
+    risk: "medium",
+    intake: "u4",
+  },
 ];
 
 const SUBMITTED_STAGES = new Set<RequestStage>([
