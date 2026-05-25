@@ -586,6 +586,33 @@ export type ImportRequest = {
   customsNo?: string;
   customsAt?: string;
   customsBy?: string;
+  // ---------- بيانات إضافية مطلوبة بنموذج طلب وثيقة التأكيد ----------
+  /** نوع النشاط التجاري للتاجر */
+  activity?: string;
+  /** الرقم الضريبي للتاجر */
+  taxNo?: string;
+  /** رقم السجل التجاري للتاجر */
+  crNo?: string;
+  /** بلد المنشأ */
+  originCountry?: string;
+  /** مبلغ الفاتورة (قد يختلف عن مبلغ التمويل) */
+  invoiceAmount?: number;
+  /** تاريخ الفاتورة */
+  invoiceDate?: string;
+  /** شروط الدفع (LC / DP / TT ...) */
+  paymentTerms?: string;
+  /** تاريخ الشحن */
+  shipmentDate?: string;
+  /** ميناء الشحن */
+  shipPort?: string;
+  /** أسماء المساهمين/الملاك بنسبة 25% فأكثر */
+  shareholders?: { name: string; percent: number }[];
+  /** مصادر توريدات الريال اليمني */
+  yerSources?: string;
+  /** مصادر العملة الأجنبية */
+  fxSources?: string;
+  /** طريقة التغطية خارجياً */
+  coverageMethod?: string;
 };
 
 const types = [
