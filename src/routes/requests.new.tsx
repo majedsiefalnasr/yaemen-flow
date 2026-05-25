@@ -606,16 +606,32 @@ function Step4({ form }: { form: FormState }) {
       <h3 className="font-semibold">مراجعة الطلب قبل الإرسال</h3>
       <div className="rounded-xl border bg-muted/30 p-6 space-y-5">
         <Section title="بيانات الطلب" rows={[
+          ["اسم التاجر المستورد", form.importer],
+          ["نوع النشاط التجاري", form.activity],
+          ["الرقم الضريبي", form.taxNo || "—"],
+          ["السجل التجاري", form.crNo || "—"],
           ["نوع الواردات", TYPE_LABEL[form.type] ?? form.type],
-          ["المستورد", form.importer],
-          ["مبلغ التمويل", `${Number(form.amount).toLocaleString()} ${form.currency}`],
+          ["مبلغ العملة الأجنبية المطلوبة", `${Number(form.amount).toLocaleString()} ${form.currency}`],
           ["شروط الدفع", form.payment.toUpperCase()],
+          ["طريقة التغطية خارجياً", form.coverageMethod || "—"],
         ]} />
         <Section title="بيانات المورد والشحنة" rows={[
           ["المورد", form.supplier],
-          ["رقم الفاتورة", form.invoice],
+          ["بلد المنشأ", COUNTRY_LABEL[form.country] ?? form.country],
+          ["مرجع الفاتورة", form.invoice],
+          ["تاريخ الفاتورة", form.invoiceDate || "—"],
+          ["مبلغ الفاتورة", form.invoiceAmount ? `${Number(form.invoiceAmount).toLocaleString()} ${form.currency}` : "—"],
+          ["تاريخ الشحن", form.shipmentDate || "—"],
+          ["ميناء الشحن", form.shipPort || "—"],
           ["ميناء الوصول", PORT_LABEL[form.arrivalPort] ?? form.arrivalPort],
-          ["البلد", COUNTRY_LABEL[form.country] ?? form.country],
+        ]} />
+        <Section title="الملاك والمصادر" rows={[
+          [
+            "المساهمون (≥25%)",
+            form.shareholders.filter((s) => s.name).map((s) => `${s.name} (${s.percent || 0}%)`).join("، ") || "—",
+          ],
+          ["مصادر توريدات الريال اليمني", form.yerSources || "—"],
+          ["مصادر العملة الأجنبية", form.fxSources || "—"],
         ]} />
       </div>
       <div className="flex items-start gap-3 p-4 rounded-lg bg-info/5 border border-info/20">
