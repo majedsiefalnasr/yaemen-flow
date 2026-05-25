@@ -23,7 +23,6 @@ type SwiftUploadFormProps = {
 };
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
-const REMITTANCE_TEMPLATE_URL = "/templates/نموذج-طلب-تأكيد-مصارفة.docx";
 
 export function SwiftUploadForm({ requestId, mode = "page", onSent }: SwiftUploadFormProps) {
   const { user } = useAuth();
@@ -31,15 +30,11 @@ export function SwiftUploadForm({ requestId, mode = "page", onSent }: SwiftUploa
   const requests = requestsCell.use();
   const req = requests.find((item) => item.id === requestId);
   const [swiftFile, setSwiftFile] = useState<File | null>(null);
-  const [remittanceFile, setRemittanceFile] = useState<File | null>(null);
   const [reference, setReference] = useState("");
   const [storedSwiftUrl, setStoredSwiftUrl] = useState<string | null>(null);
-  const [storedRemittanceUrl, setStoredRemittanceUrl] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const swiftInputRef = useRef<HTMLInputElement>(null);
-  const remittanceInputRef = useRef<HTMLInputElement>(null);
   const swiftInputId = useId();
-  const remittanceInputId = useId();
 
   useEffect(() => {
     let cancelled = false;
@@ -47,20 +42,14 @@ export function SwiftUploadForm({ requestId, mode = "page", onSent }: SwiftUploa
     async function loadStoredFiles() {
       try {
         const swiftKey = req?.swiftFile?.storageKey;
-        const remittanceKey = req?.remittanceRequestFile?.storageKey;
-        const [swiftStored, remittanceStored] = await Promise.all([
-          swiftKey ? getLocalFile(swiftKey) : Promise.resolve(null),
-          remittanceKey ? getLocalFile(remittanceKey) : Promise.resolve(null),
-        ]);
+        const swiftStored = swiftKey ? await getLocalFile(swiftKey) : null;
         if (!cancelled) {
           setStoredSwiftUrl(swiftStored?.dataUrl ?? null);
-          setStoredRemittanceUrl(remittanceStored?.dataUrl ?? null);
         }
       } catch (error) {
         console.error("Failed to load stored SWIFT files.", error);
         if (!cancelled) {
           setStoredSwiftUrl(null);
-          setStoredRemittanceUrl(null);
         }
       }
     }
@@ -70,14 +59,14 @@ export function SwiftUploadForm({ requestId, mode = "page", onSent }: SwiftUploa
     return () => {
       cancelled = true;
     };
-  }, [req?.swiftFile?.storageKey, req?.remittanceRequestFile?.storageKey]);
+  }, [req?.swiftFile?.storageKey]);
 
   if (!req || !user) return null;
 
   const currentReq = req;
   const currentUser = user;
   const allowed = canAttachSwift(currentReq, currentUser) || currentReq.stage === "swift_attached";
-  const hasAttached = !!currentReq.swiftFile && !!currentReq.remittanceRequestFile;
+  const hasAttached = !!currentReq.swiftFile;
 
   if (!allowed) {
     return (
@@ -110,47 +99,28 @@ export function SwiftUploadForm({ requestId, mode = "page", onSent }: SwiftUploa
     if (!ok && swiftInputRef.current) swiftInputRef.current.value = "";
     setSwiftFile(ok);
   }
-  function onRemittanceChange(next: File | null) {
-    const ok = validatePdf(next, "نموذج طلب تأكيد المصارفة");
-    if (!ok && remittanceInputRef.current) remittanceInputRef.current.value = "";
-    setRemittanceFile(ok);
-  }
 
   async function attachBoth() {
-    if (!swiftFile || !remittanceFile) {
-      toast.error("يجب رفع وثيقة السويفت ونموذج طلب تأكيد المصارفة معاً.");
+    if (!swiftFile) {
+      toast.error("يجب رفع وثيقة السويفت.");
       return;
     }
 
     const swiftKey = `swift:${currentReq.id}`;
-    const remittanceKey = `remittance:${currentReq.id}`;
     setIsSaving(true);
 
     try {
-      const [swiftDataUrl, remittanceDataUrl] = await Promise.all([
-        readFileAsDataUrl(swiftFile),
-        readFileAsDataUrl(remittanceFile),
-      ]);
+      const swiftDataUrl = await readFileAsDataUrl(swiftFile);
       const uploadedAt = new Date().toISOString();
 
-      await Promise.all([
-        saveLocalFile({
-          id: swiftKey,
-          name: swiftFile.name,
-          type: swiftFile.type || "application/pdf",
-          size: swiftFile.size,
-          dataUrl: swiftDataUrl,
-          storedAt: uploadedAt,
-        }),
-        saveLocalFile({
-          id: remittanceKey,
-          name: remittanceFile.name,
-          type: remittanceFile.type || "application/pdf",
-          size: remittanceFile.size,
-          dataUrl: remittanceDataUrl,
-          storedAt: uploadedAt,
-        }),
-      ]);
+      await saveLocalFile({
+        id: swiftKey,
+        name: swiftFile.name,
+        type: swiftFile.type || "application/pdf",
+        size: swiftFile.size,
+        dataUrl: swiftDataUrl,
+        storedAt: uploadedAt,
+      });
 
       requestsCell.set((prev) =>
         prev.map((item) =>
@@ -165,14 +135,6 @@ export function SwiftUploadForm({ requestId, mode = "page", onSent }: SwiftUploa
                   mime: swiftFile.type || "application/pdf",
                   storageKey: swiftKey,
                 },
-                remittanceRequestFile: {
-                  name: remittanceFile.name,
-                  size: remittanceFile.size,
-                  uploadedAt,
-                  uploadedBy: currentUser.id,
-                  mime: remittanceFile.type || "application/pdf",
-                  storageKey: remittanceKey,
-                },
                 stage: "swift_attached" as const,
                 progress: progressFor("swift_attached"),
                 lastUpdatedBy: currentUser.id,
@@ -185,7 +147,7 @@ export function SwiftUploadForm({ requestId, mode = "page", onSent }: SwiftUploa
         userId: currentUser.id,
         userName: currentUser.name,
         role: currentUser.role,
-        action: "إرفاق وثيقة السويفت ونموذج طلب تأكيد المصارفة",
+        action: "إرفاق وثيقة السويفت",
         ref: currentReq.ref,
         fromStage: currentReq.stage,
         toStage: "swift_attached",
@@ -193,12 +155,9 @@ export function SwiftUploadForm({ requestId, mode = "page", onSent }: SwiftUploa
       });
 
       setStoredSwiftUrl(swiftDataUrl);
-      setStoredRemittanceUrl(remittanceDataUrl);
       setSwiftFile(null);
-      setRemittanceFile(null);
       if (swiftInputRef.current) swiftInputRef.current.value = "";
-      if (remittanceInputRef.current) remittanceInputRef.current.value = "";
-      toast.success("تم رفع الوثائق وأُحيل الطلب لمدير اللجنة التنفيذية.");
+      toast.success("تم رفع السويفت وأُحيل الطلب لمدير اللجنة التنفيذية.");
       onSent?.();
       if (mode === "page") {
         nav({ to: "/requests/$id", params: { id: currentReq.id } });
@@ -221,14 +180,8 @@ export function SwiftUploadForm({ requestId, mode = "page", onSent }: SwiftUploa
             size={currentReq.swiftFile!.size}
             dataUrl={storedSwiftUrl}
           />
-          <AttachedFileCard
-            title="نموذج طلب تأكيد المصارفة"
-            name={currentReq.remittanceRequestFile!.name}
-            size={currentReq.remittanceRequestFile!.size}
-            dataUrl={storedRemittanceUrl}
-          />
           <p className="text-xs text-muted-foreground text-center">
-            تم إرفاق الوثائق — الطلب الآن مع مدير اللجنة التنفيذية لإصدار تأكيد المصارفة الخارجية.
+            تم إرفاق السويفت — الطلب الآن مع مدير اللجنة التنفيذية لإصدار تأكيد المصارفة الخارجية.
           </p>
         </div>
       ) : (
@@ -250,36 +203,14 @@ export function SwiftUploadForm({ requestId, mode = "page", onSent }: SwiftUploa
             onChange={onSwiftChange}
           />
 
-          <div className="rounded-lg border border-accent/30 bg-accent/5 p-3 text-xs space-y-2">
-            <div className="font-semibold text-accent flex items-center gap-1.5">
-              <FileText className="h-3.5 w-3.5" /> نموذج طلب تأكيد المصارفة
-            </div>
-            <p className="text-muted-foreground leading-relaxed">
-              نزّل النموذج، املأ بياناته، اختمه من البنك، ثم ارفعه أدناه بصيغة PDF.
-            </p>
-            <Button asChild variant="outline" size="sm" className="h-7 text-xs">
-              <a href={REMITTANCE_TEMPLATE_URL} download>
-                <Download className="h-3.5 w-3.5 ml-1" /> تحميل نموذج طلب تأكيد مصارفة
-              </a>
-            </Button>
-          </div>
-
-          <UploadField
-            id={remittanceInputId}
-            ref={remittanceInputRef}
-            label="نموذج طلب تأكيد المصارفة (مختوم — PDF)"
-            file={remittanceFile}
-            onChange={onRemittanceChange}
-          />
-
           <Button
             onClick={attachBoth}
             className="w-full"
             size="lg"
-            disabled={!swiftFile || !remittanceFile || isSaving}
+            disabled={!swiftFile || isSaving}
           >
             <Upload className="h-4 w-4 ml-2" />
-            {isSaving ? "جارٍ رفع الوثائق..." : "إرفاق الوثائق وإحالة الطلب"}
+            {isSaving ? "جارٍ رفع السويفت..." : "إرفاق السويفت وإحالة الطلب"}
           </Button>
           <p className="text-xs text-muted-foreground text-center">
             بعد الإرفاق، يُحال الطلب تلقائياً لمدير اللجنة التنفيذية لإصدار تأكيد المصارفة الخارجية.
@@ -295,8 +226,8 @@ export function SwiftUploadForm({ requestId, mode = "page", onSent }: SwiftUploa
           <ul className="text-xs text-muted-foreground space-y-2 leading-relaxed list-disc pr-4">
             <li>لا يُسمح بتعديل أي بيانات سابقة للطلب.</li>
             <li>الإجراء متاح فقط لموظفي السويفت أو مسؤول البنك ضمن نفس الجهة.</li>
-            <li>يجب رفع وثيقة السويفت ونموذج طلب تأكيد المصارفة معاً.</li>
-            <li>تأكد من ختم النموذج قبل رفعه.</li>
+            <li>يكفي رفع وثيقة السويفت في هذه المرحلة.</li>
+            <li>نموذج طلب تأكيد المصارفة يتولى تحميله وختمه مدير اللجنة التنفيذية لاحقاً.</li>
             <li>سيُسجَّل كل إجراء في سجل التدقيق غير القابل للتعديل.</li>
           </ul>
         </Card>
