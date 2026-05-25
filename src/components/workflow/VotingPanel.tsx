@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { Check, X, Minus, Lock, Crown, Gavel, AlertTriangle, PlayCircle, StopCircle } from "lucide-react";
+import { Check, X, Minus, Lock, Crown, Gavel, AlertTriangle, StopCircle } from "lucide-react";
 import {
   votesCell, voteHistoryCell, finalizationsCell, execConfigCell,
-  castVote, tally, isFinalized, finalizeVoting, transitionRequest,
+  castVote, tally, isFinalized, finalizeVoting,
 } from "@/lib/governance";
-import { DEMO_USERS, useAuth, progressFor, type ImportRequest } from "@/lib/mock";
+import { DEMO_USERS, useAuth, type ImportRequest } from "@/lib/mock";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
@@ -25,9 +25,11 @@ export function VotingPanel({ req }: { req: ImportRequest }) {
   const locked = !!final;
 
   const totalVoted = counts.approve + counts.reject + counts.abstain;
-  const threshold = 4;
-  const approveProgress = Math.min(100, (counts.approve / threshold) * 100);
-  const rejectProgress = Math.min(100, (counts.reject / threshold) * 100);
+  const totalMembers = members.length;
+  const pendingVoters = members.filter((m) => !votes.some((v) => v.voterId === m.id));
+  const allVoted = pendingVoters.length === 0 && totalMembers > 0;
+  const approveProgress = totalMembers ? (counts.approve / totalMembers) * 100 : 0;
+  const rejectProgress = totalMembers ? (counts.reject / totalMembers) * 100 : 0;
 
   function vote(v: "approve" | "reject" | "abstain") {
     if (!user) return;
@@ -41,14 +43,13 @@ export function VotingPanel({ req }: { req: ImportRequest }) {
   const sessionOpen = req.stage === "executive_voting" && !locked;
   const canControlSession = isManager && !locked;
 
-  function openSession() {
-    if (!user) return;
-    transitionRequest(req, "executive_voting", { id: user.id, name: user.name, role: user.role }, "فتح باب التصويت");
-    toast.success("تم فتح باب التصويت");
-  }
   function closeSession() {
     if (!user) return;
-    if (!confirm("سيتم احتساب نتيجة التصويت بناءً على الأصوات الحالية. متابعة؟")) return;
+    if (!allVoted) {
+      toast.error("لا يمكن إغلاق التصويت قبل تصويت جميع الأعضاء");
+      return;
+    }
+    if (!confirm("سيتم احتساب نتيجة التصويت ونشر القرار النهائي. متابعة؟")) return;
     const r = finalizeVoting(req, user.id);
     if ("error" in r) toast.error(r.error);
     else toast.success(`تم إغلاق التصويت — ${r.result === "approved" ? "اعتماد" : "رفض"}`);
@@ -63,7 +64,7 @@ export function VotingPanel({ req }: { req: ImportRequest }) {
             <Gavel className="h-4 w-4" /> جلسة تصويت اللجنة التنفيذية
           </div>
           <div className="text-xs text-muted-foreground mt-0.5">
-            النصاب: {threshold} أصوات للاعتماد أو الرفض · صوّت {totalVoted} من {members.length}
+            يجب تصويت جميع الأعضاء قبل إغلاق الجلسة · صوّت {totalVoted} من {totalMembers}
           </div>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
@@ -78,20 +79,25 @@ export function VotingPanel({ req }: { req: ImportRequest }) {
             </span>
           ) : sessionOpen ? (
             <span className="text-xs px-3 py-1.5 rounded-full bg-info/15 text-info font-medium">
-              باب التصويت مفتوح
+              باب التصويت مفتوح (تلقائياً)
             </span>
           ) : (
             <span className="text-xs px-3 py-1.5 rounded-full bg-muted text-muted-foreground font-medium">
-              باب التصويت مغلق — بانتظار فتحه من قبل مدير اللجنة
+              باب التصويت مغلق
             </span>
           )}
-          {canControlSession && !sessionOpen && req.stage === "swift_attached" && (
-            <Button size="sm" onClick={openSession}>
-              <PlayCircle className="h-4 w-4 ml-1" /> فتح باب التصويت
-            </Button>
-          )}
           {canControlSession && sessionOpen && (
-            <Button size="sm" variant="destructive" onClick={closeSession}>
+            <Button
+              size="sm"
+              variant="destructive"
+              onClick={closeSession}
+              disabled={!allVoted}
+              title={
+                !allVoted
+                  ? `بانتظار: ${pendingVoters.map((m) => m.name).join("، ")}`
+                  : undefined
+              }
+            >
               <StopCircle className="h-4 w-4 ml-1" /> إغلاق باب التصويت
             </Button>
           )}
@@ -102,7 +108,7 @@ export function VotingPanel({ req }: { req: ImportRequest }) {
       <div className="p-4 grid sm:grid-cols-3 gap-3">
         <Tally label="موافقة" count={counts.approve} pct={approveProgress} cls="bg-success" />
         <Tally label="رفض" count={counts.reject} pct={rejectProgress} cls="bg-destructive" />
-        <Tally label="امتناع" count={counts.abstain} pct={(counts.abstain / Math.max(1, members.length)) * 100} cls="bg-muted-foreground" />
+        <Tally label="امتناع" count={counts.abstain} pct={(counts.abstain / Math.max(1, totalMembers)) * 100} cls="bg-muted-foreground" />
       </div>
 
       {/* Member list */}
