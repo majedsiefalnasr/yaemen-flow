@@ -113,7 +113,7 @@ const DEFAULT_DOC_RULES: DocRule[] = [
   {
     id: "d6",
     stage: "support_approved",
-    name: "وثيقة السويفت (MT103)",
+    name: "وثيقة السويفت (MT103/MT202)",
     required: true,
     fileTypes: ["pdf"],
     minCount: 1,
