@@ -1259,7 +1259,7 @@ export const AUDIT: AuditLog[] = Array.from({ length: 25 }, (_, i) => ({
     "اعتماد المساندة",
     "رفع سويفت",
     "تصويت",
-    "إصدار بيان جمركي",
+    "إصدار تأكيد المصارفة الخارجية",
     "تصدير تقرير",
   ][i % 8],
   ts: new Date(Date.now() - i * 3600000).toISOString(),
@@ -1307,7 +1307,7 @@ export const NOTIFICATIONS = [
   },
   {
     id: "n4",
-    title: "صدر إذن إصدار بيان جمركي",
+    title: "صدر تأكيد المصارفة الخارجية",
     body: "IMP-2025-1011 – ميناء عدن",
     time: "اليوم 09:14",
     unread: false,
