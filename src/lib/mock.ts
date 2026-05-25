@@ -1071,19 +1071,15 @@ const SUPPORT_HANDLED_STAGES = new Set<RequestStage>([
   "support_review",
   "support_returned",
   "support_rejected",
-  "support_approved",
-  "swift_attached",
   "executive_voting",
   "executive_rejected",
   "executive_approved",
+  "swift_attached",
   "customs_released",
   "completed",
 ]);
 const SWIFT_ATTACHED_STAGES = new Set<RequestStage>([
   "swift_attached",
-  "executive_voting",
-  "executive_rejected",
-  "executive_approved",
   "customs_released",
   "completed",
 ]);
