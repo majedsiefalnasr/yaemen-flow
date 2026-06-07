@@ -771,7 +771,7 @@ function WorkflowTab({ form, requestedAmount }: { form: FormState; requestedAmou
       </div>
 
       <Label>ملاحظات للمراجع الداخلي (اختياري)</Label>
-      <Textarea rows={3} value={form.notes} onChange={(e) => undefined} placeholder="ستظهر للمراجع الداخلي عند الفتح" />
+      <Textarea rows={3} value={form.notes} readOnly placeholder="(تُضاف لاحقاً في نسخة قادمة)" />
 
       <div className="flex items-start gap-3 p-4 rounded-lg bg-info/5 border border-info/20">
         <ShieldCheck className="h-5 w-5 text-info mt-0.5 shrink-0" />
