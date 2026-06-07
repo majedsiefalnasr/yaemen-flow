@@ -444,10 +444,12 @@ function NewRequest() {
           <Button variant="outline" onClick={() => nav({ to: "/requests" })}>إلغاء</Button>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => persist("draft")}>
-              <Save className="h-4 w-4 ml-1" /> حفظ كمسودة
+              <Save className="h-4 w-4 ml-1" />
+              {matchedMerchant ? "حفظ كمسودة" : "حفظ التاجر + مسودة"}
             </Button>
             <Button onClick={() => persist("bank_submitted")}>
-              <Send className="h-4 w-4 ml-1" /> إرسال للمراجعة الداخلية
+              <Send className="h-4 w-4 ml-1" />
+              {matchedMerchant ? "إرسال للمراجعة الداخلية" : "حفظ التاجر + إرسال للمراجعة"}
             </Button>
           </div>
         </div>
