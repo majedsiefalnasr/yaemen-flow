@@ -168,7 +168,7 @@ export const PERMISSION_LABELS: Record<Permission, string> = {
   "request.create": "إنشاء طلب تمويل",
   "request.review": "مراجعة الطلبات",
   "request.approve": "اعتماد الطلبات",
-  "request.reject": "رفض الطلبات",
+  "request.reject": "تحديد الطلبات غير المستوفية للشروط",
   "swift.upload": "رفع وثيقة السويفت",
   "voting.cast": "التصويت على الطلبات",
   "voting.finalize": "إغلاق التصويت ونشر القرار",
@@ -224,8 +224,8 @@ const DEFAULT_ROLE_PERMS: Record<Role, Permission[]> = {
   bank_reviewer: ["request.review"],
   // موظف السويفت بالبنك
   bank_swift: ["swift.upload"],
-  // عضو اللجنة المساندة
-  support_member: ["request.approve", "request.reject", "audit.view"],
+  // عضو اللجنة المساندة — يضيف ملاحظات ويُحيل إلى اللجنة التنفيذية (بدون اعتماد/رفض/إرجاع)
+  support_member: ["request.review", "audit.view"],
   // عضو اللجنة التنفيذية
   executive_member: ["voting.cast", "reports.view", "audit.view"],
   // مدير اللجنة التنفيذية — يرث صلاحيات العضو + إغلاق التصويت + إصدار تأكيد المصارفة الخارجية
