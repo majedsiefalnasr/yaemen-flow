@@ -27,7 +27,7 @@ const SIMPLIFIED_BANK_STEPS: { key: string; label: string; stages: RequestStage[
   },
   {
     key: "cby_processing",
-    label: "قيد معالجة البنك المركزي",
+    label: "قيد معالجة اللجنة الوطنية",
     stages: [
       "bank_approved",
       "support_review",

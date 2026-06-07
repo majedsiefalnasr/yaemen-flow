@@ -112,7 +112,7 @@ export function AppShell() {
         {(!collapsed || inDrawer) && (
           <div className="leading-tight">
             <div className="font-bold">منصة الواردات</div>
-            <div className="text-[11px] text-sidebar-foreground/60">البنك المركزي اليمني</div>
+            <div className="text-[11px] text-sidebar-foreground/60">اللجنة الوطنية لتنظيم وتمويل الواردات</div>
           </div>
         )}
       </div>
@@ -314,7 +314,7 @@ export function AppShell() {
         </main>
 
         <footer className="px-3 sm:px-6 py-4 text-[10px] sm:text-xs text-muted-foreground border-t flex items-center justify-between gap-2 flex-wrap">
-          <div>© 2025 البنك المركزي اليمني</div>
+          <div>© 2025 اللجنة الوطنية لتنظيم وتمويل الواردات</div>
           <div className="flex items-center gap-2 shrink-0">
             <AlertTriangle className="h-3.5 w-3.5" />
             بيئة عرض توضيحي

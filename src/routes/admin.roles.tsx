@@ -39,7 +39,7 @@ function RolesAdmin() {
   const { user } = useAuth();
   const map = rolePermsCell.use();
   if (!user || user.role !== "platform_admin") {
-    return <div className="p-8 text-sm text-muted-foreground">هذه الصفحة متاحة لمسؤول البنك المركزي فقط.</div>;
+    return <div className="p-8 text-sm text-muted-foreground">هذه الصفحة متاحة لمسؤول اللجنة الوطنية لتنظيم وتمويل الواردات فقط.</div>;
   }
   function isChecked(role: Role, perm: Permission): boolean {
     return (map[role] ?? []).includes(perm);
