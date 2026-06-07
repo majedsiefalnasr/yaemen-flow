@@ -498,14 +498,16 @@ function BasicTab({ form, update, lookup, matched }: TabProps & { lookup: () => 
             <CheckCircle2 className="h-3.5 w-3.5" /> تم جلب بيانات التاجر — يمكنك تعديلها لهذا الطلب دون التأثير على السجل الأصلي.
           </p>
         )}
+        {!matched && form.taxNo && (
+          <p className="text-xs text-info mt-2 flex items-center gap-1">
+            <AlertCircle className="h-3.5 w-3.5" /> الرقم الضريبي غير مسجَّل — أكمل البيانات الأساسية وسيتم إنشاء تاجر جديد تلقائياً عند الحفظ أو الإرسال.
+          </p>
+        )}
       </div>
 
       <div className="grid md:grid-cols-2 gap-5">
         <Field label="اسم التاجر" required>
           <Input value={form.traderName} onChange={(e) => update({ traderName: e.target.value })} />
-        </Field>
-        <Field label="اسم الشركة" required>
-          <Input value={form.companyName} onChange={(e) => update({ companyName: e.target.value })} />
         </Field>
         <Field label="تاريخ انتهاء البطاقة الضريبية" required>
           <Input type="date" value={form.taxExpiry} onChange={(e) => update({ taxExpiry: e.target.value })} />
@@ -525,6 +527,32 @@ function BasicTab({ form, update, lookup, matched }: TabProps & { lookup: () => 
         <Field label="رقم التواصل">
           <Input value={form.contact} onChange={(e) => update({ contact: e.target.value })} />
         </Field>
+      </div>
+
+      <div className="pt-4 border-t">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-semibold text-sm">الشركات المرتبطة بالتاجر</h3>
+          <Button type="button" size="sm" variant="outline"
+            onClick={() => update({ companies: [...form.companies, { name: "" }] })}>
+            + إضافة شركة
+          </Button>
+        </div>
+        {form.companies.length === 0 ? (
+          <p className="text-xs text-muted-foreground">لا توجد شركات مضافة بعد.</p>
+        ) : (
+          <div className="space-y-2">
+            {form.companies.map((c, i) => (
+              <div key={i} className="grid grid-cols-[1fr_auto] gap-2 items-center">
+                <Input placeholder="اسم الشركة" value={c.name}
+                  onChange={(e) => update({ companies: form.companies.map((x, idx) => idx === i ? { name: e.target.value } : x) })} />
+                <Button type="button" variant="ghost" size="icon" className="text-destructive h-9 w-9"
+                  onClick={() => update({ companies: form.companies.filter((_, idx) => idx !== i) })} aria-label="حذف">
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="pt-4 border-t">
@@ -785,7 +813,7 @@ function WorkflowTab({ form, requestedAmount }: { form: FormState; requestedAmou
         <h3 className="font-semibold mb-4">ملخص الطلب قبل الإرسال</h3>
         <div className="grid md:grid-cols-2 gap-x-8 gap-y-2 text-sm">
           {[
-            ["الشركة", form.companyName || "—"],
+            ["التاجر", form.traderName || "—"],
             ["الرقم الضريبي", form.taxNo || "—"],
             ["رقم الفاتورة", form.invoiceNo || "—"],
             ["مبلغ الفاتورة", form.invoiceAmount ? `${Number(form.invoiceAmount).toLocaleString()} ${form.currency}` : "—"],
