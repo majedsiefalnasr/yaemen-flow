@@ -1170,6 +1170,16 @@ export const REQUESTS: ImportRequest[] = REQUEST_SEED_META.map(
         ? new Date(baseDate.getTime() + 8 * 3600_000).toISOString()
         : undefined,
       customsBy,
+      customsStampedFile: customsDone
+        ? {
+            name: `تأكيد-مصارفة-خارجية-CD-2026-${String(7000 + index)}.pdf`,
+            size: 215040,
+            uploadedAt: new Date(baseDate.getTime() + 8 * 3600_000).toISOString(),
+            uploadedBy: customsBy ?? "u9",
+            mime: "application/pdf",
+            publicUrl: "/templates/نموذج-طلب-وثيقة-تأكيد.pdf",
+          }
+        : undefined,
       // ---- merchant / invoice / shipping enrichment ----
       activity: SEED_ACTIVITIES[index % SEED_ACTIVITIES.length],
       taxNo: merchantSeedFor(index).taxNo,
