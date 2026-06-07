@@ -143,7 +143,7 @@ function RequestDetail() {
     return () => {
       cancelled = true;
     };
-  }, [req?.id, req?.customsStampedFile?.storageKey]);
+  }, [req?.id, req?.customsStampedFile?.storageKey, req?.customsStampedFile?.publicUrl]);
 
   if (path !== `/requests/${id}`) {
     return <Outlet />;
