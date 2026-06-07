@@ -189,26 +189,27 @@ export function WorkflowProgress({ req, compact = false }: { req: ImportRequest;
 function CompletionPanel({ req, kind }: { req: ImportRequest; kind: "approved" | "rejected" }) {
   const [dataUrl, setDataUrl] = useState<string | null>(null);
   const storageKey = req.customsStampedFile?.storageKey;
+  const publicUrl = req.customsStampedFile?.publicUrl ?? null;
 
   useEffect(() => {
     let cancelled = false;
     async function load() {
       if (!storageKey) {
-        setDataUrl(null);
+        setDataUrl(publicUrl);
         return;
       }
       try {
         const stored = await getLocalFile(storageKey);
-        if (!cancelled) setDataUrl(stored?.dataUrl ?? null);
+        if (!cancelled) setDataUrl(stored?.dataUrl ?? publicUrl);
       } catch {
-        if (!cancelled) setDataUrl(null);
+        if (!cancelled) setDataUrl(publicUrl);
       }
     }
     void load();
     return () => {
       cancelled = true;
     };
-  }, [storageKey]);
+  }, [storageKey, publicUrl]);
 
   const approved = kind === "approved";
   const Icon = approved ? CheckCircle2 : XCircle;
