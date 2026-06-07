@@ -543,6 +543,8 @@ export type ImportRequest = {
     uploadedBy: string;
     mime?: string;
     storageKey?: string;
+    /** Public URL to a pre-seeded sample PDF (used when no local upload exists). */
+    publicUrl?: string;
   };
   documents?: { name: string; fileName: string; mime: string; dataUrl: string; size: number }[];
   customsNo?: string;
