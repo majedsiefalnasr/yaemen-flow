@@ -1205,9 +1205,22 @@ export const SEED_VOTE_HISTORY = SEED_VOTES.map((vote, index) => ({
 
 export type Merchant = {
   id: string;
+  /** اسم الشركة (للعرض الرئيسي). */
   name: string;
+  /** اسم التاجر (الشخص الطبيعي صاحب البطاقة الضريبية). */
+  traderName?: string;
+  /** الرقم الضريبي — المفتاح الرئيسي (Primary Key). */
   tax: string;
+  /** تاريخ انتهاء البطاقة الضريبية (ISO date). */
+  taxExpiry?: string;
+  /** رقم السجل التجاري. */
   cr: string;
+  /** تاريخ انتهاء السجل التجاري (ISO date). */
+  crExpiry?: string;
+  /** الشركات المرتبطة بنفس التاجر (1→N). */
+  companies?: { id: string; name: string; crNo?: string }[];
+  /** الملاك والمساهمون بنسبة ≥ 25%. */
+  shareholders?: { id: string; name: string; percent: number }[];
   address: string;
   contact: string;
   category: string;
@@ -1218,8 +1231,16 @@ export type Merchant = {
 export const MERCHANTS: Merchant[] = importers.map((n, i) => ({
   id: `m${i + 1}`,
   name: n,
+  traderName: ["محمد هائل سعيد", "علي الشيباني", "ثابت ثابت", "د. عبدالله الكميم", "أحمد الأهدل"][i % 5],
   tax: `4${String(100000 + i * 7777)}`,
+  taxExpiry: new Date(Date.now() + (180 + i * 30) * 86400000).toISOString().slice(0, 10),
   cr: `CR-${String(50000 + i * 13)}`,
+  crExpiry: new Date(Date.now() + (240 + i * 30) * 86400000).toISOString().slice(0, 10),
+  companies: [{ id: `c_${i}_1`, name: n, crNo: `CR-${String(50000 + i * 13)}` }],
+  shareholders: [
+    { id: `sh_${i}_1`, name: ["محمد هائل سعيد", "علي الشيباني", "ثابت ثابت", "د. عبدالله الكميم", "أحمد الأهدل"][i % 5], percent: 60 },
+    { id: `sh_${i}_2`, name: "شريك ثانٍ", percent: 40 },
+  ],
   address: ["صنعاء – شارع الزبيري", "عدن – كريتر", "الحديدة – شارع صنعاء", "المكلا", "تعز"][i % 5],
   contact: `+9677${String(11000000 + i * 9999)}`,
   category: types[i % types.length],
@@ -1227,6 +1248,13 @@ export const MERCHANTS: Merchant[] = importers.map((n, i) => ({
   transactions: 3 + i * 4,
   entityId: ENTITIES[i % ENTITIES.length].id,
 }));
+
+/** Look up a merchant by tax number (primary key). Returns undefined if not found. */
+export function findMerchantByTax(list: Merchant[], tax: string): Merchant | undefined {
+  const needle = tax.trim();
+  if (!needle) return undefined;
+  return list.find((m) => m.tax === needle);
+}
 
 export type AuditLog = {
   id: string;
