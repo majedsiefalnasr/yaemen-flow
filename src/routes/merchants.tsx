@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Plus, Search, Edit, Trash2, Building2, Eye } from "lucide-react";
+import { Plus, Search, Edit, Trash2, Building2, Eye, Users, X } from "lucide-react";
 import { useState, useMemo } from "react";
 import { PageHeader } from "@/components/layout/AppShell";
 import { Card } from "@/components/ui/card";
@@ -22,7 +22,7 @@ const CATEGORIES = ["مواد غذائية", "أدوية ومستلزمات طب
 
 export const Route = createFileRoute("/merchants")({
   component: () => (
-    <RoleGuard allow={["platform_admin", "bank_admin"]}>
+    <RoleGuard allow={["platform_admin", "bank_admin", "bank_intake", "bank_reviewer"]}>
       <Merchants />
     </RoleGuard>
   ),
@@ -43,13 +43,13 @@ function Merchants() {
   const [viewing, setViewing] = useState<Merchant | null>(null);
 
   const isPlatform = user?.role === "platform_admin";
-  const isBankAdmin = user?.role === "bank_admin";
-  const canManage = isBankAdmin; // CBY is read-only
+  // مدخل البيانات / المراجع الداخلي / مدير البنك: لهم صلاحية الإنشاء والتعديل.
+  const canManage = !!user && ["bank_admin", "bank_intake", "bank_reviewer"].includes(user.role);
 
-  // Bank admins see only their own bank's merchants
+  // Bank users see only their own bank's merchants
   const scoped = useMemo(
-    () => (isBankAdmin && user?.entityId ? merchants.filter((m) => m.entityId === user.entityId) : merchants),
-    [merchants, isBankAdmin, user?.entityId],
+    () => (user?.entityId ? merchants.filter((m) => m.entityId === user.entityId) : merchants),
+    [merchants, user?.entityId],
   );
 
   const filtered = useMemo(() => {
@@ -60,6 +60,7 @@ function Merchants() {
       if (!s) return true;
       return (
         m.name.toLowerCase().includes(s) ||
+        (m.traderName ?? "").toLowerCase().includes(s) ||
         m.cr.toLowerCase().includes(s) ||
         m.tax.toLowerCase().includes(s) ||
         entityName(m.entityId).toLowerCase().includes(s)
@@ -72,6 +73,34 @@ function Merchants() {
     active: scoped.filter((m) => m.status === "active").length,
     suspended: scoped.filter((m) => m.status === "suspended").length,
   }), [scoped]);
+
+  function saveNew(m: Merchant) {
+    // الرقم الضريبي مفتاح رئيسي — تحقق عدم التكرار
+    if (merchants.some((x) => x.tax === m.tax)) {
+      toast.error(`الرقم الضريبي ${m.tax} مُسجَّل لتاجر آخر.`);
+      return false;
+    }
+    merchantsCell.set((prev) => [m, ...prev]);
+    logAudit({
+      userId: user!.id, userName: user!.name, role: user!.role,
+      action: "إضافة تاجر جديد", ref: m.cr, notes: m.name,
+    });
+    toast.success(`تم تسجيل التاجر "${m.name}"`);
+    return true;
+  }
+
+  function saveEdit(original: Merchant, m: Merchant) {
+    if (merchants.some((x) => x.id !== original.id && x.tax === m.tax)) {
+      toast.error(`الرقم الضريبي ${m.tax} مُستخدم في تاجر آخر.`);
+      return false;
+    }
+    merchantsCell.set((prev) =>
+      prev.map((x) => (x.id === original.id ? { ...m, id: original.id, transactions: original.transactions } : x)),
+    );
+    logAudit({ userId: user!.id, userName: user!.name, role: user!.role, action: "تعديل بيانات تاجر", ref: m.cr, notes: m.name });
+    toast.success("تم تحديث بيانات التاجر");
+    return true;
+  }
 
   return (
     <div>
@@ -93,13 +122,7 @@ function Merchants() {
                 title="تسجيل تاجر جديد"
                 defaultEntityId={user?.entityId ?? undefined}
                 onSave={(m) => {
-                  merchantsCell.set((prev) => [m, ...prev]);
-                  logAudit({
-                    userId: user!.id, userName: user!.name, role: user!.role,
-                    action: "إضافة تاجر جديد", ref: m.cr, notes: m.name,
-                  });
-                  toast.success(`تم تسجيل التاجر "${m.name}"`);
-                  setOpen(false);
+                  if (saveNew(m)) setOpen(false);
                 }}
               />
             </Dialog>
@@ -120,7 +143,7 @@ function Merchants() {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             className="pr-10"
-            placeholder={isPlatform ? "بحث بالاسم، السجل، الضريبي، أو البنك..." : "بحث برقم السجل، الرقم الضريبي، أو الاسم..."}
+            placeholder="بحث بالاسم، التاجر، الرقم الضريبي، السجل، أو البنك..."
           />
         </div>
         {isPlatform && (
@@ -142,117 +165,81 @@ function Merchants() {
         </Select>
       </Card>
 
-      {isPlatform ? (
-        <Card className="shadow-card border-0 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-muted/40 text-xs text-muted-foreground">
-                <tr className="text-right">
-                  <th className="p-3 font-semibold">التاجر</th>
-                  <th className="p-3 font-semibold">السجل التجاري</th>
-                  <th className="p-3 font-semibold">الرقم الضريبي</th>
-                  <th className="p-3 font-semibold">القطاع</th>
-                  <th className="p-3 font-semibold">البنك التابع له</th>
-                  <th className="p-3 font-semibold">الحالة</th>
-                  <th className="p-3 font-semibold tabular-nums">المعاملات</th>
-                  <th className="p-3 font-semibold w-12 sticky left-0 bg-muted/40 z-10 shadow-[6px_0_8px_-6px_rgba(0,0,0,0.12)]"></th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {filtered.map((m) => (
-                  <tr key={m.id} className="hover:bg-muted/30">
-                    <td className="p-3 font-medium">{m.name}</td>
-                    <td className="p-3 text-muted-foreground">{m.cr}</td>
-                    <td className="p-3 text-muted-foreground tabular-nums">{m.tax}</td>
-                    <td className="p-3 text-muted-foreground">{m.category}</td>
+      <Card className="shadow-card border-0 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-muted/40 text-xs text-muted-foreground">
+              <tr className="text-right">
+                <th className="p-3 font-semibold">الشركة</th>
+                <th className="p-3 font-semibold">التاجر</th>
+                <th className="p-3 font-semibold">الرقم الضريبي</th>
+                <th className="p-3 font-semibold">السجل التجاري</th>
+                <th className="p-3 font-semibold">القطاع</th>
+                {isPlatform && <th className="p-3 font-semibold">البنك</th>}
+                <th className="p-3 font-semibold">الحالة</th>
+                <th className="p-3 font-semibold tabular-nums">المعاملات</th>
+                <th className="p-3 font-semibold w-32"></th>
+              </tr>
+            </thead>
+            <tbody className="divide-y">
+              {filtered.map((m) => (
+                <tr key={m.id} className="hover:bg-muted/30">
+                  <td className="p-3 font-medium">{m.name}</td>
+                  <td className="p-3 text-muted-foreground">{m.traderName ?? "—"}</td>
+                  <td className="p-3 text-muted-foreground tabular-nums">{m.tax}</td>
+                  <td className="p-3 text-muted-foreground">{m.cr}</td>
+                  <td className="p-3 text-muted-foreground">{m.category}</td>
+                  {isPlatform && (
                     <td className="p-3">
                       <Badge variant="outline" className="font-normal">
                         <Building2 className="h-3 w-3 ml-1" />
                         {entityName(m.entityId)}
                       </Badge>
                     </td>
-                    <td className="p-3">
-                      <Badge className={m.status === "active" ? "bg-success/15 text-success border-0" : "bg-destructive/15 text-destructive border-0"}>
-                        {m.status === "active" ? "نشط" : "موقوف"}
-                      </Badge>
-                    </td>
-                    <td className="p-3 tabular-nums font-semibold">{m.transactions}</td>
-                    <td className="p-3 sticky left-0 bg-card z-10 shadow-[6px_0_8px_-6px_rgba(0,0,0,0.12)]">
-                      <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => setViewing(m)} aria-label="عرض التفاصيل">
+                  )}
+                  <td className="p-3">
+                    <Badge className={m.status === "active" ? "bg-success/15 text-success border-0" : "bg-destructive/15 text-destructive border-0"}>
+                      {m.status === "active" ? "نشط" : "موقوف"}
+                    </Badge>
+                  </td>
+                  <td className="p-3 tabular-nums font-semibold">{m.transactions}</td>
+                  <td className="p-3">
+                    <div className="flex gap-1 justify-end">
+                      <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => setViewing(m)} aria-label="عرض">
                         <Eye className="h-4 w-4" />
                       </Button>
-                    </td>
-                  </tr>
-                ))}
-                {filtered.length === 0 && (
-                  <tr><td colSpan={8} className="p-8 text-center text-muted-foreground">لا توجد نتائج مطابقة.</td></tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </Card>
-      ) : (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.map((m) => (
-            <Card key={m.id} className="p-5 shadow-card border-0 hover:shadow-soft transition-shadow flex flex-col">
-              <div className="flex items-start justify-between mb-3">
-                <div className="h-12 w-12 rounded-xl bg-gradient-hero text-white grid place-items-center">
-                  <Building2 className="h-6 w-6" />
-                </div>
-                <Badge className={m.status === "active" ? "bg-success/15 text-success border-0" : "bg-destructive/15 text-destructive border-0"}>
-                  {m.status === "active" ? "نشط" : "موقوف"}
-                </Badge>
-              </div>
-              <div className="font-semibold text-base">{m.name}</div>
-              <div className="text-xs text-muted-foreground">{m.category}</div>
-              <div className="mt-4 space-y-1.5 text-xs">
-                <Row k="السجل التجاري" v={m.cr} />
-                <Row k="الرقم الضريبي" v={m.tax} />
-                <Row k="البنك" v={entityName(m.entityId)} />
-                <Row k="العنوان" v={m.address} />
-                <Row k="هاتف" v={m.contact} />
-              </div>
-              <div className="mt-auto pt-4 border-t flex items-center justify-between">
-                <div className="text-xs">
-                  <span className="text-muted-foreground">المعاملات: </span>
-                  <span className="font-bold tabular-nums">{m.transactions}</span>
-                </div>
-                {canManage && (
-                  <div className="flex gap-1">
-                    <Button
-                      size="sm" variant="ghost" className="h-8"
-                      onClick={() => merchantsCell.set((prev) => prev.map((x) => x.id === m.id ? { ...x, status: x.status === "active" ? "suspended" : "active" } : x))}
-                    >
-                      {m.status === "active" ? "إيقاف" : "تفعيل"}
-                    </Button>
-                    <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => setEditing(m)}>
-                      <Edit className="h-3.5 w-3.5" />
-                    </Button>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="h-8 w-8 text-destructive"
-                      onClick={() => {
-                        if (!confirm(`حذف التاجر "${m.name}"؟`)) return;
-                        merchantsCell.set((prev) => prev.filter((x) => x.id !== m.id));
-                        logAudit({ userId: user!.id, userName: user!.name, role: user!.role, action: "حذف تاجر", ref: m.cr, notes: m.name });
-                        toast.success("تم حذف التاجر");
-                      }}
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </Card>
-          ))}
-          {filtered.length === 0 && (
-            <Card className="p-8 col-span-full text-center text-sm text-muted-foreground border-0 shadow-card">
-              لا توجد نتائج مطابقة.
-            </Card>
-          )}
+                      {canManage && (
+                        <>
+                          <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => setEditing(m)} aria-label="تعديل">
+                            <Edit className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8 text-destructive"
+                            onClick={() => {
+                              if (!confirm(`حذف التاجر "${m.name}"؟`)) return;
+                              merchantsCell.set((prev) => prev.filter((x) => x.id !== m.id));
+                              logAudit({ userId: user!.id, userName: user!.name, role: user!.role, action: "حذف تاجر", ref: m.cr, notes: m.name });
+                              toast.success("تم حذف التاجر");
+                            }}
+                            aria-label="حذف"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {filtered.length === 0 && (
+                <tr><td colSpan={isPlatform ? 9 : 8} className="p-8 text-center text-muted-foreground">لا توجد نتائج مطابقة.</td></tr>
+              )}
+            </tbody>
+          </table>
         </div>
-      )}
+      </Card>
 
       <Dialog open={!!editing} onOpenChange={(v) => !v && setEditing(null)}>
         {editing && (
@@ -261,10 +248,7 @@ function Merchants() {
             initial={editing}
             defaultEntityId={user?.entityId ?? undefined}
             onSave={(m) => {
-              merchantsCell.set((prev) => prev.map((x) => x.id === editing.id ? { ...m, id: editing.id, transactions: editing.transactions } : x));
-              logAudit({ userId: user!.id, userName: user!.name, role: user!.role, action: "تعديل بيانات تاجر", ref: m.cr, notes: m.name });
-              toast.success("تم تحديث بيانات التاجر");
-              setEditing(null);
+              if (saveEdit(editing, m)) setEditing(null);
             }}
           />
         )}
@@ -272,7 +256,7 @@ function Merchants() {
 
       <Dialog open={!!viewing} onOpenChange={(v) => !v && setViewing(null)}>
         {viewing && (
-          <DialogContent dir="rtl" className="sm:max-w-lg">
+          <DialogContent dir="rtl" className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <Building2 className="h-5 w-5" /> {viewing.name}
@@ -280,15 +264,47 @@ function Merchants() {
               <DialogDescription>تفاصيل التاجر — عرض فقط</DialogDescription>
             </DialogHeader>
             <div className="grid sm:grid-cols-2 gap-3 py-2 text-sm">
-              <DetailRow k="السجل التجاري" v={viewing.cr} />
+              <DetailRow k="اسم التاجر" v={viewing.traderName ?? "—"} />
+              <DetailRow k="اسم الشركة" v={viewing.name} />
               <DetailRow k="الرقم الضريبي" v={viewing.tax} />
+              <DetailRow k="انتهاء البطاقة الضريبية" v={viewing.taxExpiry ?? "—"} />
+              <DetailRow k="السجل التجاري" v={viewing.cr} />
+              <DetailRow k="انتهاء السجل التجاري" v={viewing.crExpiry ?? "—"} />
               <DetailRow k="القطاع" v={viewing.category} />
               <DetailRow k="الحالة" v={viewing.status === "active" ? "نشط" : "موقوف"} />
-              <DetailRow k="البنك التابع له" v={entityName(viewing.entityId)} />
+              <DetailRow k="البنك" v={entityName(viewing.entityId)} />
               <DetailRow k="عدد المعاملات" v={String(viewing.transactions)} />
               <div className="sm:col-span-2"><DetailRow k="العنوان" v={viewing.address} /></div>
               <div className="sm:col-span-2"><DetailRow k="هاتف التواصل" v={viewing.contact} /></div>
             </div>
+
+            {(viewing.companies?.length ?? 0) > 0 && (
+              <div className="pt-2">
+                <div className="text-xs font-semibold mb-2 flex items-center gap-1.5"><Building2 className="h-3.5 w-3.5" /> الشركات المرتبطة</div>
+                <div className="rounded-lg border divide-y">
+                  {viewing.companies!.map((c) => (
+                    <div key={c.id} className="p-2.5 text-sm flex justify-between gap-2">
+                      <span className="font-medium">{c.name}</span>
+                      <span className="text-muted-foreground text-xs">{c.crNo ?? "—"}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {(viewing.shareholders?.length ?? 0) > 0 && (
+              <div className="pt-2">
+                <div className="text-xs font-semibold mb-2 flex items-center gap-1.5"><Users className="h-3.5 w-3.5" /> الملاك والمساهمون (≥ 25%)</div>
+                <div className="rounded-lg border divide-y">
+                  {viewing.shareholders!.map((s) => (
+                    <div key={s.id} className="p-2.5 text-sm flex justify-between gap-2">
+                      <span className="font-medium">{s.name}</span>
+                      <Badge variant="outline" className="font-mono">{s.percent}%</Badge>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </DialogContent>
         )}
       </Dialog>
@@ -308,15 +324,6 @@ function StatCard({ label, value, tone }: { label: string; value: number; tone: 
   );
 }
 
-function Row({ k, v }: { k: string; v: string }) {
-  return (
-    <div className="flex justify-between gap-2">
-      <span className="text-muted-foreground shrink-0">{k}</span>
-      <span className="font-medium text-end truncate">{v}</span>
-    </div>
-  );
-}
-
 function DetailRow({ k, v }: { k: string; v: string }) {
   return (
     <div className="space-y-0.5">
@@ -326,23 +333,43 @@ function DetailRow({ k, v }: { k: string; v: string }) {
   );
 }
 
+type Company = { id: string; name: string; crNo?: string };
+type Shareholder = { id: string; name: string; percent: number };
+
 function MerchantDialog({ title, initial, defaultEntityId, onSave }: { title: string; initial?: Merchant; defaultEntityId?: string; onSave: (m: Merchant) => void }) {
   const [name, setName] = useState(initial?.name ?? "");
-  const [cr, setCr] = useState(initial?.cr ?? "");
+  const [traderName, setTraderName] = useState(initial?.traderName ?? "");
   const [tax, setTax] = useState(initial?.tax ?? "");
+  const [taxExpiry, setTaxExpiry] = useState(initial?.taxExpiry ?? "");
+  const [cr, setCr] = useState(initial?.cr ?? "");
+  const [crExpiry, setCrExpiry] = useState(initial?.crExpiry ?? "");
   const [address, setAddress] = useState(initial?.address === "—" ? "" : initial?.address ?? "");
   const [contact, setContact] = useState(initial?.contact === "—" ? "" : initial?.contact ?? "");
   const [category, setCategory] = useState(initial?.category ?? CATEGORIES[0]);
   const [status, setStatus] = useState<"active" | "suspended">(initial?.status ?? "active");
   const [entityId, setEntityId] = useState<string>(initial?.entityId ?? defaultEntityId ?? ENTITIES[0].id);
+  const [companies, setCompanies] = useState<Company[]>(initial?.companies ?? []);
+  const [shareholders, setShareholders] = useState<Shareholder[]>(initial?.shareholders ?? []);
 
-  const valid = name.trim() && cr.trim() && tax.trim() && entityId;
+  const totalShares = shareholders.reduce((s, x) => s + (Number.isFinite(x.percent) ? x.percent : 0), 0);
+  const sharesValid = shareholders.every((s) => s.name.trim() && s.percent >= 25 && s.percent <= 100);
+
+  const valid =
+    name.trim() && traderName.trim() && tax.trim() && taxExpiry && cr.trim() && crExpiry && entityId &&
+    (shareholders.length === 0 || (sharesValid && totalShares <= 100));
 
   function submit() {
     if (!valid) return;
     onSave({
       id: initial?.id ?? `m_${Date.now()}`,
-      name: name.trim(), cr: cr.trim(), tax: tax.trim(),
+      name: name.trim(),
+      traderName: traderName.trim(),
+      tax: tax.trim(),
+      taxExpiry,
+      cr: cr.trim(),
+      crExpiry,
+      companies,
+      shareholders,
       address: address.trim() || "—",
       contact: contact.trim() || "—",
       category, status, entityId,
@@ -351,20 +378,36 @@ function MerchantDialog({ title, initial, defaultEntityId, onSave }: { title: st
   }
 
   return (
-    <DialogContent dir="rtl" className="sm:max-w-lg">
+    <DialogContent dir="rtl" className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
       <DialogHeader>
         <DialogTitle>{title}</DialogTitle>
-        <DialogDescription>الحقول المعلّمة بـ * إلزامية.</DialogDescription>
+        <DialogDescription>الحقول المعلّمة بـ * إلزامية. الرقم الضريبي مفتاح رئيسي ولا يجوز تكراره.</DialogDescription>
       </DialogHeader>
+
       <div className="grid sm:grid-cols-2 gap-3 py-2">
-        <Field label="اسم التاجر / الشركة *">
+        <Field label="اسم التاجر *">
+          <Input value={traderName} onChange={(e) => setTraderName(e.target.value)} placeholder="الاسم الكامل" />
+        </Field>
+        <Field label="اسم الشركة *">
           <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="مثال: شركة الكميم للأدوية" />
+        </Field>
+        <Field label="الرقم الضريبي *">
+          <Input
+            value={tax}
+            onChange={(e) => setTax(e.target.value)}
+            placeholder="4123456"
+            disabled={!!initial}
+            inputMode="numeric"
+          />
+        </Field>
+        <Field label="انتهاء البطاقة الضريبية *">
+          <Input type="date" value={taxExpiry} onChange={(e) => setTaxExpiry(e.target.value)} />
         </Field>
         <Field label="رقم السجل التجاري *">
           <Input value={cr} onChange={(e) => setCr(e.target.value)} placeholder="CR-12345" />
         </Field>
-        <Field label="الرقم الضريبي *">
-          <Input value={tax} onChange={(e) => setTax(e.target.value)} placeholder="4123456" />
+        <Field label="انتهاء السجل التجاري *">
+          <Input type="date" value={crExpiry} onChange={(e) => setCrExpiry(e.target.value)} />
         </Field>
         <Field label="هاتف التواصل">
           <Input value={contact} onChange={(e) => setContact(e.target.value)} placeholder="+9677…" />
@@ -386,23 +429,118 @@ function MerchantDialog({ title, initial, defaultEntityId, onSave }: { title: st
             </SelectContent>
           </Select>
         </Field>
-        <div className="sm:col-span-2">
-          <Field label="البنك التابع له *">
-            <Select value={entityId} onValueChange={setEntityId} disabled={!!defaultEntityId && !initial}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {ENTITIES.map((e) => <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </Field>
-        </div>
+        <Field label="البنك التابع له *">
+          <Select value={entityId} onValueChange={setEntityId} disabled={!!defaultEntityId && !initial}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {ENTITIES.map((e) => <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </Field>
         <div className="sm:col-span-2">
           <Field label="العنوان">
             <Input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="المدينة – الشارع" />
           </Field>
         </div>
       </div>
-      <DialogFooter>
+
+      {/* Companies */}
+      <div className="border rounded-xl p-3 mt-2">
+        <div className="flex items-center justify-between mb-2">
+          <div className="text-sm font-semibold flex items-center gap-1.5">
+            <Building2 className="h-4 w-4" /> الشركات المرتبطة بالتاجر
+          </div>
+          <Button
+            type="button" size="sm" variant="outline"
+            onClick={() => setCompanies((p) => [...p, { id: `c_${Date.now()}`, name: "", crNo: "" }])}
+          >
+            <Plus className="h-3.5 w-3.5 ml-1" /> إضافة شركة
+          </Button>
+        </div>
+        {companies.length === 0 ? (
+          <p className="text-xs text-muted-foreground">لا توجد شركات مضافة بعد.</p>
+        ) : (
+          <div className="space-y-2">
+            {companies.map((c, i) => (
+              <div key={c.id} className="grid grid-cols-[1fr_180px_auto] gap-2 items-center">
+                <Input
+                  placeholder="اسم الشركة"
+                  value={c.name}
+                  onChange={(e) => setCompanies((p) => p.map((x, idx) => idx === i ? { ...x, name: e.target.value } : x))}
+                />
+                <Input
+                  placeholder="رقم السجل (اختياري)"
+                  value={c.crNo ?? ""}
+                  onChange={(e) => setCompanies((p) => p.map((x, idx) => idx === i ? { ...x, crNo: e.target.value } : x))}
+                />
+                <Button type="button" size="icon" variant="ghost" className="h-9 w-9 text-destructive"
+                  onClick={() => setCompanies((p) => p.filter((_, idx) => idx !== i))}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Shareholders */}
+      <div className="border rounded-xl p-3 mt-2">
+        <div className="flex items-center justify-between mb-2">
+          <div>
+            <div className="text-sm font-semibold flex items-center gap-1.5">
+              <Users className="h-4 w-4" /> الملاك والمساهمون (نسبة ≥ 25%)
+            </div>
+            <div className="text-xs text-muted-foreground mt-0.5">
+              إجمالي النسب: <span className={totalShares > 100 ? "text-destructive font-bold" : "font-bold"}>{totalShares}%</span>
+            </div>
+          </div>
+          <Button
+            type="button" size="sm" variant="outline"
+            onClick={() => setShareholders((p) => [...p, { id: `sh_${Date.now()}`, name: "", percent: 25 }])}
+          >
+            <Plus className="h-3.5 w-3.5 ml-1" /> إضافة مالك / مساهم
+          </Button>
+        </div>
+        {shareholders.length === 0 ? (
+          <p className="text-xs text-muted-foreground">لا توجد إضافات بعد — أضف الملاك بنسبة 25% فأكثر.</p>
+        ) : (
+          <div className="space-y-2">
+            {shareholders.map((s, i) => (
+              <div key={s.id} className="grid grid-cols-[1fr_120px_auto] gap-2 items-center">
+                <Input
+                  placeholder="اسم المالك / المساهم"
+                  value={s.name}
+                  onChange={(e) => setShareholders((p) => p.map((x, idx) => idx === i ? { ...x, name: e.target.value } : x))}
+                />
+                <div className="relative">
+                  <Input
+                    type="number"
+                    min={25}
+                    max={100}
+                    step={1}
+                    value={Number.isFinite(s.percent) ? s.percent : ""}
+                    onChange={(e) => setShareholders((p) => p.map((x, idx) => idx === i ? { ...x, percent: Number(e.target.value) } : x))}
+                    className="pl-7"
+                  />
+                  <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">%</span>
+                </div>
+                <Button type="button" size="icon" variant="ghost" className="h-9 w-9 text-destructive"
+                  onClick={() => setShareholders((p) => p.filter((_, idx) => idx !== i))}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            ))}
+            {totalShares > 100 && (
+              <p className="text-xs text-destructive">إجمالي النسب يتجاوز 100%.</p>
+            )}
+            {!shareholders.every((s) => s.percent >= 25) && (
+              <p className="text-xs text-destructive">يجب أن تكون نسبة كل مالك ≥ 25%.</p>
+            )}
+          </div>
+        )}
+      </div>
+
+      <DialogFooter className="mt-3">
         <Button onClick={submit} disabled={!valid}>{initial ? "حفظ التعديلات" : "حفظ التاجر"}</Button>
       </DialogFooter>
     </DialogContent>
