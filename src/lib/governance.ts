@@ -182,7 +182,7 @@ export const PERMISSION_LABELS: Record<Permission, string> = {
   "roles.manage": "إدارة الأدوار والصلاحيات",
 };
 
-// الصلاحيات التي تخص عمليات البنوك التجارية فقط — ولا تظهر للأدوار التابعة للبنك المركزي.
+// الصلاحيات التي تخص عمليات البنوك التجارية فقط — ولا تظهر للأدوار التابعة للجنة الوطنية لتنظيم وتمويل الواردات.
 export const BANK_ONLY_PERMS: Permission[] = [
   "request.create",
   "request.review",
