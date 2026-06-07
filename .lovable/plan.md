@@ -1,97 +1,100 @@
-# خطة: استبدال الواجهة بـ Nuxt 4 + shadcn-vue
 
-## ⚠️ تحذير حرج قبل البدء
+# خطة التعديلات الشاملة
 
-مشروع Lovable مبني على قالب **TanStack Start (React)** — وهو القالب الوحيد المدعوم رسمياً على المنصة. تحويله إلى Nuxt 4 يعني:
+طلبك يحتوي على تعديلات كبيرة ومترابطة تمس معظم أجزاء النظام. سأقسمها إلى مراحل واضحة، وسأنفذها بالترتيب بعد موافقتك.
 
-1. **الـ Preview المباشر داخل Lovable سيتوقف عن العمل بشكل شبه مؤكد** — نظام البناء والـ dev server في Lovable مربوط بـ Vite + TanStack وليس Nuxt/Nitro.
-2. **النشر (Publish) عبر Lovable لن يعمل** — قالب النشر متوقع React SSR على Cloudflare Workers، وليس Nuxt/Nitro.
-3. **أدوات Lovable Cloud / Auth / السكانر الأمني** كلها مصممة لـ React وستفقد التكامل.
-4. **vite.config.ts و wrangler.jsonc و src/server.ts و src/start.ts** كلها روابط للقالب الحالي.
+## المرحلة 1 — تعديل الأدوار والمسميات (تغييرات أساسية)
 
-عملياً: بعد التحويل، المشروع سيصبح "كود Nuxt مخزّن في Lovable" بدون قدرة على المعاينة أو النشر من داخل المنصة — يجب تشغيله محلياً (`npm run dev`) أو نشره خارجياً (Vercel/Netlify).
+**ملف:** `src/lib/mock.ts` + كل الملفات التي تستخدم الأدوار/الحالات
 
-**توصيتي:** إذا الهدف Vue stack، الأفضل عمل الـ Nuxt كمشروع منفصل خارج Lovable. لكن بناءً على اختيارك "استبدال كامل"، الخطة بالأسفل تنفذ ذلك.
+- إعادة تسمية الأدوار في طبقة البنك التجاري إلى:
+  - `data_entry` (مدخل البيانات) — بديل `bank_intake`
+  - `internal_reviewer` (المراجع الداخلي) — بديل `bank_reviewer`
+  - `bank_manager` (مدير البنك) — بديل `bank_admin`
+  - `support_committee` (اللجنة المساندة) — بديل `support_member`
+  - `executive_committee` (اللجنة التنفيذية) — يبقى
+  - دور رفع السويفت يُدمج في `bank_manager` / `data_entry`
+- أدوار البنك المركزي تبقى كما هي
+- استبدال كلمة "رفض" بـ "غير مستوفي للشروط" في كل النصوص و enum labels
+- تحديث `roles-reference.md` و `workflow-docs`
 
----
+## المرحلة 2 — شاشة التجار
 
-## ما سيتم تنفيذه
+**ملفات:** `src/routes/merchants.tsx` + نموذج بيانات في `mock.ts`
 
-### 1. هيكل المشروع
-- حذف: `src/` بالكامل، `vite.config.ts`، `wrangler.jsonc`، `src/server.ts/start.ts/router.tsx/routeTree.gen.ts`، `.lovable/project.json` يُحدّث.
-- إضافة: `nuxt.config.ts`، `app.vue`، `app/` (Nuxt 4 srcDir الجديد) يحوي `pages/`, `layouts/`, `components/`, `composables/`, `stores/`, `lib/`, `assets/`.
-- `package.json` يُعاد كتابته كاملاً بالاعتماديات المطلوبة.
+- توسيع نموذج التاجر ليشمل:
+  - اسم التاجر، اسم الشركة، الرقم الضريبي (PK)، انتهاء البطاقة الضريبية
+  - رقم السجل التجاري، انتهاء السجل التجاري
+  - قائمة شركات مرتبطة (1→N)
+  - قائمة ملاك/مساهمين ≥25% مع نسبة كل مالك
+- الرقم الضريبي مفتاح فريد (تحقق عند الإنشاء)
+- صلاحية الإنشاء/التعديل لـ: `data_entry`, `internal_reviewer`, `bank_manager`
 
-### 2. الاعتماديات
-```
-nuxt ^4.4.5, vue ^3.5 (Vue 4 لم يصدر بعد — سنستخدم Vue 3.5 وهو ما يدعمه Nuxt 4)
-@nuxtjs/tailwindcss-vite + tailwindcss ^4.1, @tailwindcss/vite
-shadcn-vue ^2.7.3 + reka-ui (المتطلب) + class-variance-authority + clsx + tailwind-merge
-@pinia/nuxt + pinia ^2.3, @vueuse/nuxt + @vueuse/core ^13.1
-vee-validate + @vee-validate/zod + zod ^3
-lucide-vue-next
-@nuxtjs/google-fonts (للخط Cairo)
-```
+## المرحلة 3 — إعادة بناء شاشة الطلب بـ Tabs
 
-### 3. نقل الـ Routes (1:1 مع src/routes الحالية)
-| React (Tan Stack) | Nuxt 4 |
-|---|---|
-| `index.tsx` | `pages/index.vue` |
-| `login.tsx` | `pages/login.vue` |
-| `requests.index.tsx` | `pages/requests/index.vue` |
-| `requests.new.tsx` | `pages/requests/new.vue` |
-| `requests.$id.tsx` | `pages/requests/[id].vue` |
-| `requests.$id.swift.tsx` | `pages/requests/[id]/swift.vue` |
-| `customs.tsx`, `customs.$id.print.tsx` | `pages/customs/index.vue`, `pages/customs/[id]/print.vue` |
-| `admin.*` (4 ملفات) | `pages/admin/*.vue` |
-| `audit, bank.users, merchants, notifications, profile, reports, settings` | `pages/{name}.vue` لكل واحد |
+**ملف:** `src/routes/requests.new.tsx` (و `requests.$id.tsx` للعرض)
 
-المجموع: **20 صفحة**.
+استبدال الـ wizard الحالي بـ 5 Tabs:
 
-### 4. نقل المكونات والمنطق
-- `src/components/layout/AppShell.tsx` → `app/layouts/default.vue` + `components/layout/AppShell.vue`.
-- `src/components/workflow/*` (7 ملفات: AuditTimeline, DocumentChecklist, LockedBanner, RoleGuard, RoleSwitcher, VotingPanel, WorkflowProgress) → `components/workflow/*.vue`.
-- `src/components/ui/*` (shadcn React) → استبدال بمكونات `shadcn-vue` المثبتة عبر CLI ثم تخصيصها لتطابق الستايل الحالي.
-- `src/lib/mock.ts, db.ts, governance.ts, utils.ts, error-capture.ts, error-page.ts` → نسخ كـ TypeScript pure إلى `app/lib/` (المنطق React-agnostic فيتم نقله مباشرة؛ أي hooks تتحول إلى composables).
-- `src/hooks/use-mobile.tsx` → `app/composables/useMobile.ts` (موجود بالفعل في VueUse: `useMediaQuery`).
+### Tab 1 — المعلومات الأساسية
+- أول حقل: الرقم الضريبي → عند الإدخال يجلب بيانات التاجر تلقائياً
+- باقي الحقول إجبارية ومعبّأة من بيانات التاجر (قابلة للتعديل بدون تأثير على الأصل)
 
-### 5. State Management
-- استبدال أي state محلي React بـ Pinia stores تحت `app/stores/`:
-  - `auth.ts` (الدور الحالي للمستخدم — للـ RoleSwitcher)
-  - `requests.ts` (mock requests + audit log)
-  - `merchants.ts`
-  - `notifications.ts`
+### Tab 2 — بيانات الفاتورة (كل الحقول إجبارية)
+- نوع الطلب (3 خيارات)، نوع التغطية (3)، مصدر العملة (2)، شروط الدفع (كلي/جزئي)
+- **منطق شروط الدفع:**
+  - كلي → نسبة = 100% (مقفلة)
+  - جزئي → نسبة بين 5% و <100%
+- عملة الطلب (USD/SAR)، إجمالي الطلب
+- نوع الفاتورة (8 خيارات)، رقم الفاتورة، عملة الفاتورة، تاريخ الفاتورة
+- الكمية، وحدة القياس، إجمالي الفاتورة
+- السلعة، اسم الشركة المصدّرة، موقعها، بلد المنشأ
 
-### 6. التصميم
-- الحفاظ على نفس tokens من `src/styles.css` (oklch palette + RTL + خط Cairo) عبر `app/assets/css/main.css` بنفس متغيرات `@theme` من Tailwind v4.
-- `app.vue` يضع `dir="rtl" lang="ar"` على `<html>` عبر `useHead`.
-- shadcn-vue components تستخدم نفس CSS variables → نفس المظهر بصرياً.
-- animations: `tw-animate-css` (الموصى به من shadcn-vue) للـ Accordion/Dialog/Dropdown.
+### Tab 3 — بيانات الشحن
+- اختياري: تاريخ الشحن، تاريخ الوصول
+- إجباري: ميناء الشحن، ميناء الوصول (15 خيار)، شروط التسليم (13 خيار Incoterms)، الوجهة النهائية
 
-### 7. Forms
-- استبدال أي react-hook-form بـ **VeeValidate + @vee-validate/zod** مع مكونات `<Form>`, `<FormField>` الخاصة بـ shadcn-vue.
-- نموذج `requests/new.vue` (الأكبر) يستخدم نفس schema الموجود.
+### Tab 4 — الوثائق المطلوبة
+- إجبارية (5): كشوف بـ YER/SAR/USD مناطق الشرعية + البطاقة الضريبية والسجل + الفاتورة
+- اختيارية (8): كشوف منطقة أخرى + كشوف اختيارية + تراخيص + مستندات إضافية
 
-### 8. التحقق
-- بعد البناء: تشغيل `npm install && npm run dev` محلياً للتأكد أن Nuxt يبني.
-- لا يمكن التحقق داخل preview الـ Lovable لأن البنية التحتية لا تدعم Nuxt.
+### Tab 5 — سير العمل
+- نفس مكونات الـ workflow الحالية (timeline + actions حسب المرحلة)
 
----
+## المرحلة 4 — قواعد منع التكرار
 
-## التفاصيل التقنية
+**ملف:** `src/lib/mock.ts` + validation في `requests.new.tsx`
 
-- **Nuxt 4 srcDir**: المحتوى يذهب تحت `app/` بدلاً من جذر المشروع (تغيير افتراضي من Nuxt 3).
-- **shadcn-vue init**: يتم تشغيله مرة عبر `npx shadcn-vue@latest init` لإنشاء `components.json` + الإعدادات.
-- **RTL**: لا يحتاج plugin خاص — Tailwind v4 يدعم logical properties، والأيقونات من lucide تعكس تلقائياً مع `dir="rtl"`.
-- **Vue 4**: غير موجود حالياً (آخر مستقر 3.5.x). الخطة تستخدم Vue 3.5 وهو ما يتطلبه Nuxt 4 فعلياً.
-- **Mock data**: يبقى reactive عبر Pinia مع `localStorage` persistence (نفس سلوك `src/lib/db.ts` الحالي).
+- تحقق قبل الإنشاء: لا يُسمح بطلب بنفس (الرقم الضريبي + رقم الفاتورة) عبر **كل البنوك**
+- استثناء: إذا كانت الطلبات السابقة جزئية ومجموع نسبها + نسبة الطلب الجديد ≤ 100%
 
-## الملفات التي ستُحذف
-كل `src/`، `vite.config.ts`، `wrangler.jsonc`، `server-railway.mjs`، `Dockerfile` (سيتجدد لو لزم).
+## المرحلة 5 — تعديل سير العمل
 
-## النطاق التقديري
-~50 ملف جديد، حجم العمل كبير جداً (نقل 20 صفحة + 7 components workflow + 30+ shadcn component + كل المنطق). يُنصح التنفيذ على دفعات لكن طلبت 1:1 كامل، فسيتم في تنفيذ واحد متتالي.
+**ملفات:** `mock.ts`, `requests.$id.tsx`, مكونات workflow
+
+- **المراجع الداخلي:** إزالة زر "رفض" — يبقى فقط "قبول" و"إرجاع لمدخل البيانات"
+- **اللجنة المساندة:** إزالة قبول/رفض/إرجاع — يبقى فقط:
+  - إضافة ملاحظات
+  - زر "إرسال إلى اللجنة التنفيذية" (بديل "فتح باب التصويت")
+- **اللجنة التنفيذية:** خياران فقط:
+  - موافق
+  - غير مستوفي للشروط
+  - (إزالة "ممتنع" و"إرجاع")
+- **حذف مرحلة** "معاد للمراجعة" من مراحل البنك التجاري
+- **دمج** "رفع السويفت" + "تم رفع السويفت" → مرحلة واحدة `swift_attached`
+- البنك المركزي بدون تغيير
+
+## المرحلة 6 — تحديث وثائق الأدوار
+
+تحديث `roles-reference.md` و `request_lifecycle.mmd` ليعكسا الأدوار والمسميات الجديدة.
 
 ---
 
-**هل توافق على المتابعة رغم أن الـ preview والـ publish في Lovable سيتوقفان؟** أو تفضل أعيد التفكير (مثلاً: نسخة Nuxt في مجلد منفصل بدون لمس React)?
+## ملاحظات تنفيذية
+
+- التطبيق سيشمل ~12-15 ملفاً، أبرزها `mock.ts` (إعادة هيكلة موسّعة)
+- لن تتأثر صلاحيات البنك المركزي ولا الـ UI الخاص بهم
+- البيانات الحالية (mock data) ستُهاجَر إلى الأدوار/الحالات الجديدة لضمان عدم كسر العرض
+- العمل سيتم على أجزاء عرضية (Frontend) — لا يوجد backend حالياً
+
+هل أبدأ التنفيذ؟ أم تريد تعديل/ترتيب أولويات معينة (مثلاً البدء بمرحلة محددة فقط)؟
