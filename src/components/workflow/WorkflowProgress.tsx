@@ -50,15 +50,7 @@ export function WorkflowProgress({ req, compact = false }: { req: ImportRequest;
 
   const isReturn = RETURN_STAGES.includes(req.stage);
   const isReject = REJECT_STAGES.includes(req.stage);
-  const isApproved = TERMINAL_DONE.includes(req.stage);
   const isBankRole = !!role && BANK_ROLES.includes(role);
-
-  // For bank members, when the request reaches a terminal outcome
-  // (approved OR not-meeting-requirements), replace the timeline with a clear
-  // completion message + action to view/download the external remittance.
-  if (isBankRole && (isApproved || isReject)) {
-    return <CompletionPanel req={req} kind={isApproved ? "approved" : "rejected"} />;
-  }
 
   const useBuckets = role && role !== "platform_admin" && !isBankRole;
   const buckets: DisplayBucket[] = useBuckets ? bucketsFor(role!) : [];
