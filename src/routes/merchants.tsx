@@ -330,11 +330,10 @@ function DetailRow({ k, v }: { k: string; v: string }) {
   );
 }
 
-type Company = { id: string; name: string; crNo?: string };
+type Company = { id: string; name: string };
 type Shareholder = { id: string; name: string; percent: number };
 
 function MerchantDialog({ title, initial, defaultEntityId, onSave }: { title: string; initial?: Merchant; defaultEntityId?: string; onSave: (m: Merchant) => void }) {
-  const [name, setName] = useState(initial?.name ?? "");
   const [traderName, setTraderName] = useState(initial?.traderName ?? "");
   const [tax, setTax] = useState(initial?.tax ?? "");
   const [taxExpiry, setTaxExpiry] = useState(initial?.taxExpiry ?? "");
@@ -345,21 +344,23 @@ function MerchantDialog({ title, initial, defaultEntityId, onSave }: { title: st
   const [category, setCategory] = useState(initial?.category ?? CATEGORIES[0]);
   const [status, setStatus] = useState<"active" | "suspended">(initial?.status ?? "active");
   const [entityId, setEntityId] = useState<string>(initial?.entityId ?? defaultEntityId ?? ENTITIES[0].id);
-  const [companies, setCompanies] = useState<Company[]>(initial?.companies ?? []);
+  const [companies, setCompanies] = useState<Company[]>(
+    (initial?.companies ?? []).map((c) => ({ id: c.id, name: c.name })),
+  );
   const [shareholders, setShareholders] = useState<Shareholder[]>(initial?.shareholders ?? []);
 
   const totalShares = shareholders.reduce((s, x) => s + (Number.isFinite(x.percent) ? x.percent : 0), 0);
   const sharesValid = shareholders.every((s) => s.name.trim() && s.percent >= 25 && s.percent <= 100);
 
   const valid =
-    name.trim() && traderName.trim() && tax.trim() && taxExpiry && cr.trim() && crExpiry && entityId &&
+    traderName.trim() && tax.trim() && taxExpiry && cr.trim() && crExpiry && entityId &&
     (shareholders.length === 0 || (sharesValid && totalShares <= 100));
 
   function submit() {
     if (!valid) return;
     onSave({
       id: initial?.id ?? `m_${Date.now()}`,
-      name: name.trim(),
+      name: traderName.trim(),
       traderName: traderName.trim(),
       tax: tax.trim(),
       taxExpiry,
@@ -384,9 +385,6 @@ function MerchantDialog({ title, initial, defaultEntityId, onSave }: { title: st
       <div className="grid sm:grid-cols-2 gap-3 py-2">
         <Field label="اسم التاجر *">
           <Input value={traderName} onChange={(e) => setTraderName(e.target.value)} placeholder="الاسم الكامل" />
-        </Field>
-        <Field label="اسم الشركة *">
-          <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="مثال: شركة الكميم للأدوية" />
         </Field>
         <Field label="الرقم الضريبي *">
           <Input
@@ -449,7 +447,7 @@ function MerchantDialog({ title, initial, defaultEntityId, onSave }: { title: st
           </div>
           <Button
             type="button" size="sm" variant="outline"
-            onClick={() => setCompanies((p) => [...p, { id: `c_${Date.now()}`, name: "", crNo: "" }])}
+            onClick={() => setCompanies((p) => [...p, { id: `c_${Date.now()}`, name: "" }])}
           >
             <Plus className="h-3.5 w-3.5 ml-1" /> إضافة شركة
           </Button>
@@ -459,16 +457,11 @@ function MerchantDialog({ title, initial, defaultEntityId, onSave }: { title: st
         ) : (
           <div className="space-y-2">
             {companies.map((c, i) => (
-              <div key={c.id} className="grid grid-cols-[1fr_180px_auto] gap-2 items-center">
+              <div key={c.id} className="grid grid-cols-[1fr_auto] gap-2 items-center">
                 <Input
                   placeholder="اسم الشركة"
                   value={c.name}
                   onChange={(e) => setCompanies((p) => p.map((x, idx) => idx === i ? { ...x, name: e.target.value } : x))}
-                />
-                <Input
-                  placeholder="رقم السجل (اختياري)"
-                  value={c.crNo ?? ""}
-                  onChange={(e) => setCompanies((p) => p.map((x, idx) => idx === i ? { ...x, crNo: e.target.value } : x))}
                 />
                 <Button type="button" size="icon" variant="ghost" className="h-9 w-9 text-destructive"
                   onClick={() => setCompanies((p) => p.filter((_, idx) => idx !== i))}>
