@@ -1218,7 +1218,7 @@ export type Merchant = {
   /** تاريخ انتهاء السجل التجاري (ISO date). */
   crExpiry?: string;
   /** الشركات المرتبطة بنفس التاجر (1→N). */
-  companies?: { id: string; name: string; crNo?: string }[];
+  companies?: { id: string; name: string }[];
   /** الملاك والمساهمون بنسبة ≥ 25%. */
   shareholders?: { id: string; name: string; percent: number }[];
   address: string;
@@ -1236,7 +1236,7 @@ export const MERCHANTS: Merchant[] = importers.map((n, i) => ({
   taxExpiry: new Date(Date.now() + (180 + i * 30) * 86400000).toISOString().slice(0, 10),
   cr: `CR-${String(50000 + i * 13)}`,
   crExpiry: new Date(Date.now() + (240 + i * 30) * 86400000).toISOString().slice(0, 10),
-  companies: [{ id: `c_${i}_1`, name: n, crNo: `CR-${String(50000 + i * 13)}` }],
+  companies: [{ id: `c_${i}_1`, name: n }],
   shareholders: [
     { id: `sh_${i}_1`, name: ["محمد هائل سعيد", "علي الشيباني", "ثابت ثابت", "د. عبدالله الكميم", "أحمد الأهدل"][i % 5], percent: 60 },
     { id: `sh_${i}_2`, name: "شريك ثانٍ", percent: 40 },
