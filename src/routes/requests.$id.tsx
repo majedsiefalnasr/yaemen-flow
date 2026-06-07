@@ -368,66 +368,6 @@ function RequestDetail() {
         </Card>
       )}
 
-      {/* بانر الرفض من المراجع الداخلي بالبنك */}
-      {req.stage === "bank_rejected" && (
-        <Card className="p-4 mb-4 border-rose-300 bg-rose-50/70 shadow-card border-r-4 border-r-rose-600">
-          <div className="flex items-start gap-3">
-            <XCircle className="h-5 w-5 text-rose-600 shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <div className="font-semibold text-rose-700">غير مستوفٍ للشروط — المراجعة الداخلية بالبنك</div>
-              {bankRejectedReason && (
-                <div className="mt-2 text-sm bg-card border border-rose-200 rounded-md px-3 py-2">
-                  <span className="font-semibold text-rose-700">سبب عدم الاستيفاء: </span>
-                  <span>{bankRejectedReason}</span>
-                </div>
-              )}
-            </div>
-          </div>
-        </Card>
-      )}
-
-      {/* بانر الرفض النهائي من اللجنة التنفيذية — لا يمكن إعادة إرسال نفس الطلب */}
-      {req.stage === "executive_rejected" && (
-        <Card className="p-4 mb-4 border-rose-300 bg-rose-50/70 shadow-card border-r-4 border-r-rose-600">
-          <div className="flex items-start gap-3">
-            <XCircle className="h-5 w-5 text-rose-600 shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <div className="font-semibold text-rose-700">الطلب غير مستوفٍ للشروط</div>
-              <div className="text-xs text-muted-foreground mt-1">
-                تم إغلاق الطلب لعدم استيفاء أحد الشروط المطلوبة. لا يمكن متابعة هذا الطلب ضمن مساره.
-              </div>
-              {execRejectedReason && (
-                <div className="mt-2 text-sm bg-card border border-rose-200 rounded-md px-3 py-2">
-                  <span className="font-semibold text-rose-700">سبب عدم الاستيفاء: </span>
-                  <span>{execRejectedReason}</span>
-                </div>
-              )}
-            </div>
-          </div>
-        </Card>
-      )}
-
-      {/* بانر الرفض من المساندة */}
-      {req.stage === "support_rejected" && (
-        <Card className="p-4 mb-4 border-rose-300 bg-rose-50/60 shadow-card border-r-4 border-r-rose-500">
-          <div className="flex items-start gap-3">
-            <XCircle className="h-5 w-5 text-rose-600 shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <div className="font-semibold text-rose-700">غير مستوفٍ للشروط — اللجنة المساندة</div>
-              <div className="text-xs text-muted-foreground mt-1">
-                تم إغلاق الطلب لعدم استيفاء أحد الشروط المطلوبة. لا يمكن متابعة هذا الطلب ضمن مساره.
-              </div>
-              {supportRejectedReason && (
-                <div className="mt-2 text-sm bg-card border border-rose-200 rounded-md px-3 py-2">
-                  <span className="font-semibold text-rose-700">سبب عدم الاستيفاء: </span>
-                  <span>{supportRejectedReason}</span>
-                </div>
-              )}
-            </div>
-          </div>
-        </Card>
-      )}
-
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           {req.customsStampedFile && (
@@ -535,37 +475,6 @@ function RequestDetail() {
                       </div>
                     </div>
                   </div>
-                  {isApproved && customsDocDataUrl && (
-                    <div className="mt-4 pt-4 border-t border-success/20 space-y-2">
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <FileSignature className="h-3.5 w-3.5" />
-                        <span>تأكيد المصارفة الخارجية</span>
-                        {req.customsNo && (
-                          <span className="font-mono font-semibold text-foreground">
-                            · {req.customsNo}
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        <Button asChild size="sm" className="h-8">
-                          <a href={customsDocDataUrl} target="_blank" rel="noreferrer">
-                            <Eye className="h-3.5 w-3.5 ml-1.5" /> مشاهدة التأكيد
-                          </a>
-                        </Button>
-                        <Button asChild variant="outline" size="sm" className="h-8">
-                          <a
-                            href={customsDocDataUrl}
-                            download={
-                              req.customsStampedFile?.name ??
-                              "external-remittance-confirmation.pdf"
-                            }
-                          >
-                            <Download className="h-3.5 w-3.5 ml-1.5" /> تحميل التأكيد
-                          </a>
-                        </Button>
-                      </div>
-                    </div>
-                  )}
                 </Card>
               );
             }
