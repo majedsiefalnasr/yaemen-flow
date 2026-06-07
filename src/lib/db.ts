@@ -3,7 +3,7 @@
 
 const NS = "cby.v2";
 const VERSION_KEY = `${NS}.version`;
-const CURRENT_VERSION = "2026-06-07-merchant-model-v2";
+const CURRENT_VERSION = "2026-06-07-merchant-model-v3";
 
 const isBrowser = typeof window !== "undefined";
 
