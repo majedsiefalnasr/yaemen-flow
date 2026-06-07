@@ -80,7 +80,6 @@ type FormState = {
   // Tab 1 — basic merchant
   taxNo: string;
   traderName: string;
-  companyName: string;
   taxExpiry: string;
   crNo: string;
   crExpiry: string;
@@ -88,6 +87,8 @@ type FormState = {
   address: string;
   contact: string;
   shareholders: { name: string; percent: string }[];
+  /** الشركات المرتبطة بالتاجر (تُسجَّل عند إنشاء تاجر جديد من شاشة الطلب). */
+  companies: { name: string }[];
 
   // Tab 2 — invoice
   invoiceNo: string;
@@ -116,9 +117,10 @@ type FormState = {
 };
 
 const INITIAL: FormState = {
-  taxNo: "", traderName: "", companyName: "", taxExpiry: "", crNo: "", crExpiry: "",
+  taxNo: "", traderName: "", taxExpiry: "", crNo: "", crExpiry: "",
   activity: "", address: "", contact: "",
   shareholders: [{ name: "", percent: "" }],
+  companies: [],
   invoiceNo: "", invoiceDate: "", invoiceAmount: "", currency: "USD",
   supplier: "", originCountry: "", type: "مواد غذائية",
   paymentKind: "full", fundingPercent: "100",
