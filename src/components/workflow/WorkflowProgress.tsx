@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import { Check, CheckCircle2, Download, Eye, FileSignature, XCircle } from "lucide-react";
+import { Check } from "lucide-react";
 import {
   BANK_ROLES,
   STAGE_LABELS,
@@ -10,8 +9,6 @@ import {
   type ImportRequest,
   type DisplayBucket,
 } from "@/lib/mock";
-import { getLocalFile } from "@/lib/local-files";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const RETURN_STAGES: RequestStage[] = ["support_returned", "bank_returned"];
