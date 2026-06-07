@@ -258,13 +258,12 @@ function Merchants() {
           <DialogContent dir="rtl" className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                <Building2 className="h-5 w-5" /> {viewing.name}
+                <Building2 className="h-5 w-5" /> {viewing.traderName ?? viewing.name}
               </DialogTitle>
               <DialogDescription>تفاصيل التاجر — عرض فقط</DialogDescription>
             </DialogHeader>
             <div className="grid sm:grid-cols-2 gap-3 py-2 text-sm">
               <DetailRow k="اسم التاجر" v={viewing.traderName ?? "—"} />
-              <DetailRow k="اسم الشركة" v={viewing.name} />
               <DetailRow k="الرقم الضريبي" v={viewing.tax} />
               <DetailRow k="انتهاء البطاقة الضريبية" v={viewing.taxExpiry ?? "—"} />
               <DetailRow k="السجل التجاري" v={viewing.cr} />
@@ -282,9 +281,8 @@ function Merchants() {
                 <div className="text-xs font-semibold mb-2 flex items-center gap-1.5"><Building2 className="h-3.5 w-3.5" /> الشركات المرتبطة</div>
                 <div className="rounded-lg border divide-y">
                   {viewing.companies!.map((c) => (
-                    <div key={c.id} className="p-2.5 text-sm flex justify-between gap-2">
+                    <div key={c.id} className="p-2.5 text-sm">
                       <span className="font-medium">{c.name}</span>
-                      <span className="text-muted-foreground text-xs">{c.crNo ?? "—"}</span>
                     </div>
                   ))}
                 </div>
