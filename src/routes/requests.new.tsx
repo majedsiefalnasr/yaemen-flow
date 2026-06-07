@@ -80,7 +80,6 @@ type FormState = {
   // Tab 1 — basic merchant
   taxNo: string;
   traderName: string;
-  companyName: string;
   taxExpiry: string;
   crNo: string;
   crExpiry: string;
@@ -88,6 +87,8 @@ type FormState = {
   address: string;
   contact: string;
   shareholders: { name: string; percent: string }[];
+  /** الشركات المرتبطة بالتاجر (تُسجَّل عند إنشاء تاجر جديد من شاشة الطلب). */
+  companies: { name: string }[];
 
   // Tab 2 — invoice
   invoiceNo: string;
@@ -116,9 +117,10 @@ type FormState = {
 };
 
 const INITIAL: FormState = {
-  taxNo: "", traderName: "", companyName: "", taxExpiry: "", crNo: "", crExpiry: "",
+  taxNo: "", traderName: "", taxExpiry: "", crNo: "", crExpiry: "",
   activity: "", address: "", contact: "",
   shareholders: [{ name: "", percent: "" }],
+  companies: [],
   invoiceNo: "", invoiceDate: "", invoiceAmount: "", currency: "USD",
   supplier: "", originCountry: "", type: "مواد غذائية",
   paymentKind: "full", fundingPercent: "100",
@@ -203,13 +205,12 @@ function NewRequest() {
     const m = findMerchantByTax(allMerchants, form.taxNo);
     if (!m) {
       setMatchedMerchant(null);
-      toast.error("لا يوجد تاجر بهذا الرقم الضريبي — يرجى تسجيله أولاً من شاشة التجار.");
+      toast.info("لا يوجد تاجر بهذا الرقم الضريبي — يمكنك إدخال بياناته وحفظه ضمن هذا الطلب.");
       return;
     }
     setMatchedMerchant(m);
     update({
       traderName: m.traderName ?? "",
-      companyName: m.name,
       taxExpiry: m.taxExpiry ?? "",
       crNo: m.cr,
       crExpiry: m.crExpiry ?? "",
@@ -219,8 +220,9 @@ function NewRequest() {
       shareholders: (m.shareholders ?? []).length
         ? m.shareholders!.map((s) => ({ name: s.name, percent: String(s.percent) }))
         : [{ name: "", percent: "" }],
+      companies: (m.companies ?? []).map((c) => ({ name: c.name })),
     });
-    toast.success(`تم جلب بيانات التاجر: ${m.name}`);
+    toast.success(`تم جلب بيانات التاجر: ${m.traderName ?? m.name}`);
   }
 
   // Derived
@@ -236,8 +238,13 @@ function NewRequest() {
 
   function validateBasic(): string | null {
     if (!form.taxNo) return "الرقم الضريبي مطلوب";
-    if (!matchedMerchant) return "يجب جلب بيانات التاجر بالرقم الضريبي أولاً";
-    if (!form.companyName) return "اسم الشركة مطلوب";
+    if (!form.traderName.trim()) return "اسم التاجر مطلوب";
+    if (!matchedMerchant) {
+      // سيتم إنشاء تاجر جديد — تحقق من توفر الحقول الأساسية
+      if (!form.taxExpiry) return "تاريخ انتهاء البطاقة الضريبية مطلوب لإنشاء تاجر جديد";
+      if (!form.crNo.trim()) return "رقم السجل التجاري مطلوب لإنشاء تاجر جديد";
+      if (!form.crExpiry) return "تاريخ انتهاء السجل التجاري مطلوب لإنشاء تاجر جديد";
+    }
     return null;
   }
   function validateInvoice(): string | null {
@@ -283,7 +290,7 @@ function NewRequest() {
     };
     return {
       id, ref,
-      importer: form.companyName,
+      importer: form.traderName,
       entityId: user?.entityId ?? entity.id,
       bank: entity.name,
       amount: requestedAmount,
@@ -325,11 +332,50 @@ function NewRequest() {
       const err = validateAll();
       if (err) { toast.error(err); return; }
     } else {
-      if (!form.taxNo || !form.companyName) {
-        toast.error("الرقم الضريبي واسم الشركة على الأقل مطلوبان لحفظ المسودة");
+      if (!form.taxNo || !form.traderName.trim()) {
+        toast.error("الرقم الضريبي واسم التاجر على الأقل مطلوبان لحفظ المسودة");
         return;
       }
     }
+
+    // إنشاء تاجر جديد مباشرةً إذا لم يكن مسجَّلاً
+    if (!matchedMerchant && form.taxNo && form.traderName.trim()) {
+      const exists = findMerchantByTax(allMerchants, form.taxNo);
+      if (exists) {
+        toast.error(`الرقم الضريبي ${form.taxNo} مسجَّل لتاجر آخر — أعد جلب البيانات.`);
+        return;
+      }
+      const newMerchant: Merchant = {
+        id: `m_${Date.now()}`,
+        name: form.traderName.trim(),
+        traderName: form.traderName.trim(),
+        tax: form.taxNo.trim(),
+        taxExpiry: form.taxExpiry || undefined,
+        cr: form.crNo.trim(),
+        crExpiry: form.crExpiry || undefined,
+        companies: form.companies.filter((c) => c.name.trim()).map((c, i) => ({
+          id: `c_${Date.now()}_${i}`, name: c.name.trim(),
+        })),
+        shareholders: form.shareholders
+          .filter((s) => s.name.trim() && Number(s.percent) >= 25)
+          .map((s, i) => ({ id: `sh_${Date.now()}_${i}`, name: s.name.trim(), percent: Number(s.percent) })),
+        address: form.address.trim() || "—",
+        contact: form.contact.trim() || "—",
+        category: form.activity || "غير محدد",
+        status: "active",
+        entityId: user.entityId ?? undefined,
+        transactions: 0,
+      };
+      merchantsCell.set((prev) => [newMerchant, ...prev]);
+      setMatchedMerchant(newMerchant);
+      logAudit({
+        userId: user.id, userName: user.name, role: user.role,
+        action: "إنشاء تاجر جديد من شاشة الطلب",
+        ref: newMerchant.cr, notes: newMerchant.traderName,
+      });
+      toast.success(`تم تسجيل تاجر جديد: ${newMerchant.traderName}`);
+    }
+
     const req = buildRequest(stage);
     requestsCell.set((prev) => [req, ...prev]);
     logAudit({
@@ -398,10 +444,12 @@ function NewRequest() {
           <Button variant="outline" onClick={() => nav({ to: "/requests" })}>إلغاء</Button>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => persist("draft")}>
-              <Save className="h-4 w-4 ml-1" /> حفظ كمسودة
+              <Save className="h-4 w-4 ml-1" />
+              {matchedMerchant ? "حفظ كمسودة" : "حفظ التاجر + مسودة"}
             </Button>
             <Button onClick={() => persist("bank_submitted")}>
-              <Send className="h-4 w-4 ml-1" /> إرسال للمراجعة الداخلية
+              <Send className="h-4 w-4 ml-1" />
+              {matchedMerchant ? "إرسال للمراجعة الداخلية" : "حفظ التاجر + إرسال للمراجعة"}
             </Button>
           </div>
         </div>
@@ -452,14 +500,16 @@ function BasicTab({ form, update, lookup, matched }: TabProps & { lookup: () => 
             <CheckCircle2 className="h-3.5 w-3.5" /> تم جلب بيانات التاجر — يمكنك تعديلها لهذا الطلب دون التأثير على السجل الأصلي.
           </p>
         )}
+        {!matched && form.taxNo && (
+          <p className="text-xs text-info mt-2 flex items-center gap-1">
+            <AlertCircle className="h-3.5 w-3.5" /> الرقم الضريبي غير مسجَّل — أكمل البيانات الأساسية وسيتم إنشاء تاجر جديد تلقائياً عند الحفظ أو الإرسال.
+          </p>
+        )}
       </div>
 
       <div className="grid md:grid-cols-2 gap-5">
         <Field label="اسم التاجر" required>
           <Input value={form.traderName} onChange={(e) => update({ traderName: e.target.value })} />
-        </Field>
-        <Field label="اسم الشركة" required>
-          <Input value={form.companyName} onChange={(e) => update({ companyName: e.target.value })} />
         </Field>
         <Field label="تاريخ انتهاء البطاقة الضريبية" required>
           <Input type="date" value={form.taxExpiry} onChange={(e) => update({ taxExpiry: e.target.value })} />
@@ -479,6 +529,32 @@ function BasicTab({ form, update, lookup, matched }: TabProps & { lookup: () => 
         <Field label="رقم التواصل">
           <Input value={form.contact} onChange={(e) => update({ contact: e.target.value })} />
         </Field>
+      </div>
+
+      <div className="pt-4 border-t">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-semibold text-sm">الشركات المرتبطة بالتاجر</h3>
+          <Button type="button" size="sm" variant="outline"
+            onClick={() => update({ companies: [...form.companies, { name: "" }] })}>
+            + إضافة شركة
+          </Button>
+        </div>
+        {form.companies.length === 0 ? (
+          <p className="text-xs text-muted-foreground">لا توجد شركات مضافة بعد.</p>
+        ) : (
+          <div className="space-y-2">
+            {form.companies.map((c, i) => (
+              <div key={i} className="grid grid-cols-[1fr_auto] gap-2 items-center">
+                <Input placeholder="اسم الشركة" value={c.name}
+                  onChange={(e) => update({ companies: form.companies.map((x, idx) => idx === i ? { name: e.target.value } : x) })} />
+                <Button type="button" variant="ghost" size="icon" className="text-destructive h-9 w-9"
+                  onClick={() => update({ companies: form.companies.filter((_, idx) => idx !== i) })} aria-label="حذف">
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="pt-4 border-t">
@@ -739,7 +815,7 @@ function WorkflowTab({ form, requestedAmount }: { form: FormState; requestedAmou
         <h3 className="font-semibold mb-4">ملخص الطلب قبل الإرسال</h3>
         <div className="grid md:grid-cols-2 gap-x-8 gap-y-2 text-sm">
           {[
-            ["الشركة", form.companyName || "—"],
+            ["التاجر", form.traderName || "—"],
             ["الرقم الضريبي", form.taxNo || "—"],
             ["رقم الفاتورة", form.invoiceNo || "—"],
             ["مبلغ الفاتورة", form.invoiceAmount ? `${Number(form.invoiceAmount).toLocaleString()} ${form.currency}` : "—"],

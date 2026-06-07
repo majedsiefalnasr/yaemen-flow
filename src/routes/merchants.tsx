@@ -59,7 +59,6 @@ function Merchants() {
       if (isPlatform && bankFilter !== "all" && m.entityId !== bankFilter) return false;
       if (!s) return true;
       return (
-        m.name.toLowerCase().includes(s) ||
         (m.traderName ?? "").toLowerCase().includes(s) ||
         m.cr.toLowerCase().includes(s) ||
         m.tax.toLowerCase().includes(s) ||
@@ -83,9 +82,9 @@ function Merchants() {
     merchantsCell.set((prev) => [m, ...prev]);
     logAudit({
       userId: user!.id, userName: user!.name, role: user!.role,
-      action: "إضافة تاجر جديد", ref: m.cr, notes: m.name,
+      action: "إضافة تاجر جديد", ref: m.cr, notes: m.traderName ?? m.name,
     });
-    toast.success(`تم تسجيل التاجر "${m.name}"`);
+    toast.success(`تم تسجيل التاجر "${m.traderName ?? m.name}"`);
     return true;
   }
 
@@ -97,7 +96,7 @@ function Merchants() {
     merchantsCell.set((prev) =>
       prev.map((x) => (x.id === original.id ? { ...m, id: original.id, transactions: original.transactions } : x)),
     );
-    logAudit({ userId: user!.id, userName: user!.name, role: user!.role, action: "تعديل بيانات تاجر", ref: m.cr, notes: m.name });
+    logAudit({ userId: user!.id, userName: user!.name, role: user!.role, action: "تعديل بيانات تاجر", ref: m.cr, notes: m.traderName ?? m.name });
     toast.success("تم تحديث بيانات التاجر");
     return true;
   }
@@ -170,11 +169,11 @@ function Merchants() {
           <table className="w-full text-sm">
             <thead className="bg-muted/40 text-xs text-muted-foreground">
               <tr className="text-right">
-                <th className="p-3 font-semibold">الشركة</th>
                 <th className="p-3 font-semibold">التاجر</th>
                 <th className="p-3 font-semibold">الرقم الضريبي</th>
                 <th className="p-3 font-semibold">السجل التجاري</th>
                 <th className="p-3 font-semibold">القطاع</th>
+                <th className="p-3 font-semibold">الشركات المرتبطة</th>
                 {isPlatform && <th className="p-3 font-semibold">البنك</th>}
                 <th className="p-3 font-semibold">الحالة</th>
                 <th className="p-3 font-semibold tabular-nums">المعاملات</th>
@@ -184,11 +183,11 @@ function Merchants() {
             <tbody className="divide-y">
               {filtered.map((m) => (
                 <tr key={m.id} className="hover:bg-muted/30">
-                  <td className="p-3 font-medium">{m.name}</td>
-                  <td className="p-3 text-muted-foreground">{m.traderName ?? "—"}</td>
+                  <td className="p-3 font-medium">{m.traderName ?? m.name}</td>
                   <td className="p-3 text-muted-foreground tabular-nums">{m.tax}</td>
                   <td className="p-3 text-muted-foreground">{m.cr}</td>
                   <td className="p-3 text-muted-foreground">{m.category}</td>
+                  <td className="p-3 text-muted-foreground tabular-nums">{m.companies?.length ?? 0}</td>
                   {isPlatform && (
                     <td className="p-3">
                       <Badge variant="outline" className="font-normal">
@@ -218,9 +217,9 @@ function Merchants() {
                             variant="ghost"
                             className="h-8 w-8 text-destructive"
                             onClick={() => {
-                              if (!confirm(`حذف التاجر "${m.name}"؟`)) return;
+                              if (!confirm(`حذف التاجر "${m.traderName ?? m.name}"؟`)) return;
                               merchantsCell.set((prev) => prev.filter((x) => x.id !== m.id));
-                              logAudit({ userId: user!.id, userName: user!.name, role: user!.role, action: "حذف تاجر", ref: m.cr, notes: m.name });
+                              logAudit({ userId: user!.id, userName: user!.name, role: user!.role, action: "حذف تاجر", ref: m.cr, notes: m.traderName ?? m.name });
                               toast.success("تم حذف التاجر");
                             }}
                             aria-label="حذف"
@@ -259,13 +258,12 @@ function Merchants() {
           <DialogContent dir="rtl" className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                <Building2 className="h-5 w-5" /> {viewing.name}
+                <Building2 className="h-5 w-5" /> {viewing.traderName ?? viewing.name}
               </DialogTitle>
               <DialogDescription>تفاصيل التاجر — عرض فقط</DialogDescription>
             </DialogHeader>
             <div className="grid sm:grid-cols-2 gap-3 py-2 text-sm">
               <DetailRow k="اسم التاجر" v={viewing.traderName ?? "—"} />
-              <DetailRow k="اسم الشركة" v={viewing.name} />
               <DetailRow k="الرقم الضريبي" v={viewing.tax} />
               <DetailRow k="انتهاء البطاقة الضريبية" v={viewing.taxExpiry ?? "—"} />
               <DetailRow k="السجل التجاري" v={viewing.cr} />
@@ -283,9 +281,8 @@ function Merchants() {
                 <div className="text-xs font-semibold mb-2 flex items-center gap-1.5"><Building2 className="h-3.5 w-3.5" /> الشركات المرتبطة</div>
                 <div className="rounded-lg border divide-y">
                   {viewing.companies!.map((c) => (
-                    <div key={c.id} className="p-2.5 text-sm flex justify-between gap-2">
+                    <div key={c.id} className="p-2.5 text-sm">
                       <span className="font-medium">{c.name}</span>
-                      <span className="text-muted-foreground text-xs">{c.crNo ?? "—"}</span>
                     </div>
                   ))}
                 </div>
@@ -333,11 +330,10 @@ function DetailRow({ k, v }: { k: string; v: string }) {
   );
 }
 
-type Company = { id: string; name: string; crNo?: string };
+type Company = { id: string; name: string };
 type Shareholder = { id: string; name: string; percent: number };
 
 function MerchantDialog({ title, initial, defaultEntityId, onSave }: { title: string; initial?: Merchant; defaultEntityId?: string; onSave: (m: Merchant) => void }) {
-  const [name, setName] = useState(initial?.name ?? "");
   const [traderName, setTraderName] = useState(initial?.traderName ?? "");
   const [tax, setTax] = useState(initial?.tax ?? "");
   const [taxExpiry, setTaxExpiry] = useState(initial?.taxExpiry ?? "");
@@ -348,21 +344,23 @@ function MerchantDialog({ title, initial, defaultEntityId, onSave }: { title: st
   const [category, setCategory] = useState(initial?.category ?? CATEGORIES[0]);
   const [status, setStatus] = useState<"active" | "suspended">(initial?.status ?? "active");
   const [entityId, setEntityId] = useState<string>(initial?.entityId ?? defaultEntityId ?? ENTITIES[0].id);
-  const [companies, setCompanies] = useState<Company[]>(initial?.companies ?? []);
+  const [companies, setCompanies] = useState<Company[]>(
+    (initial?.companies ?? []).map((c) => ({ id: c.id, name: c.name })),
+  );
   const [shareholders, setShareholders] = useState<Shareholder[]>(initial?.shareholders ?? []);
 
   const totalShares = shareholders.reduce((s, x) => s + (Number.isFinite(x.percent) ? x.percent : 0), 0);
   const sharesValid = shareholders.every((s) => s.name.trim() && s.percent >= 25 && s.percent <= 100);
 
   const valid =
-    name.trim() && traderName.trim() && tax.trim() && taxExpiry && cr.trim() && crExpiry && entityId &&
+    traderName.trim() && tax.trim() && taxExpiry && cr.trim() && crExpiry && entityId &&
     (shareholders.length === 0 || (sharesValid && totalShares <= 100));
 
   function submit() {
     if (!valid) return;
     onSave({
       id: initial?.id ?? `m_${Date.now()}`,
-      name: name.trim(),
+      name: traderName.trim(),
       traderName: traderName.trim(),
       tax: tax.trim(),
       taxExpiry,
@@ -387,9 +385,6 @@ function MerchantDialog({ title, initial, defaultEntityId, onSave }: { title: st
       <div className="grid sm:grid-cols-2 gap-3 py-2">
         <Field label="اسم التاجر *">
           <Input value={traderName} onChange={(e) => setTraderName(e.target.value)} placeholder="الاسم الكامل" />
-        </Field>
-        <Field label="اسم الشركة *">
-          <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="مثال: شركة الكميم للأدوية" />
         </Field>
         <Field label="الرقم الضريبي *">
           <Input
@@ -452,7 +447,7 @@ function MerchantDialog({ title, initial, defaultEntityId, onSave }: { title: st
           </div>
           <Button
             type="button" size="sm" variant="outline"
-            onClick={() => setCompanies((p) => [...p, { id: `c_${Date.now()}`, name: "", crNo: "" }])}
+            onClick={() => setCompanies((p) => [...p, { id: `c_${Date.now()}`, name: "" }])}
           >
             <Plus className="h-3.5 w-3.5 ml-1" /> إضافة شركة
           </Button>
@@ -462,16 +457,11 @@ function MerchantDialog({ title, initial, defaultEntityId, onSave }: { title: st
         ) : (
           <div className="space-y-2">
             {companies.map((c, i) => (
-              <div key={c.id} className="grid grid-cols-[1fr_180px_auto] gap-2 items-center">
+              <div key={c.id} className="grid grid-cols-[1fr_auto] gap-2 items-center">
                 <Input
                   placeholder="اسم الشركة"
                   value={c.name}
                   onChange={(e) => setCompanies((p) => p.map((x, idx) => idx === i ? { ...x, name: e.target.value } : x))}
-                />
-                <Input
-                  placeholder="رقم السجل (اختياري)"
-                  value={c.crNo ?? ""}
-                  onChange={(e) => setCompanies((p) => p.map((x, idx) => idx === i ? { ...x, crNo: e.target.value } : x))}
                 />
                 <Button type="button" size="icon" variant="ghost" className="h-9 w-9 text-destructive"
                   onClick={() => setCompanies((p) => p.filter((_, idx) => idx !== i))}>
