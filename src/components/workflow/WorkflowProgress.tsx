@@ -93,7 +93,7 @@ export function WorkflowProgress({ req, compact = false }: { req: ImportRequest;
               isReject && "bg-destructive/15 text-destructive",
             )}
           >
-            {isReturn ? "مُعاد للتعديل" : "مرفوض"}
+            {isReturn ? "مُعاد للتعديل" : "غير مستوفٍ للشروط"}
           </span>
         )}
       </div>
@@ -170,7 +170,7 @@ export function WorkflowProgress({ req, compact = false }: { req: ImportRequest;
                   >
                     {current
                       ? rejectHere
-                        ? "مرفوض في هذه المرحلة"
+                      ? "غير مستوفٍ للشروط في هذه المرحلة"
                         : "المرحلة الحالية"
                       : done
                         ? "مكتملة"
