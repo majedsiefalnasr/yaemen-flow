@@ -373,10 +373,10 @@ function RequestDetail() {
           <div className="flex items-start gap-3">
             <XCircle className="h-5 w-5 text-rose-600 shrink-0 mt-0.5" />
             <div className="flex-1">
-              <div className="font-semibold text-rose-700">مرفوض من المراجعة الداخلية بالبنك</div>
+              <div className="font-semibold text-rose-700">غير مستوفٍ للشروط — المراجعة الداخلية بالبنك</div>
               {bankRejectedReason && (
                 <div className="mt-2 text-sm bg-card border border-rose-200 rounded-md px-3 py-2">
-                  <span className="font-semibold text-rose-700">سبب الرفض: </span>
+                  <span className="font-semibold text-rose-700">سبب عدم الاستيفاء: </span>
                   <span>{bankRejectedReason}</span>
                 </div>
               )}
