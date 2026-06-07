@@ -203,7 +203,23 @@ export const DEMO_USERS: User[] = [
 // AUTH STORE
 // ============================================================
 
-let currentUser: User | null = null;
+const AUTH_STORAGE_KEY = "ncrfi.auth.user";
+
+function loadStoredUser(): User | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(AUTH_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as { id?: string };
+    if (!parsed?.id) return null;
+    const match = DEMO_USERS.find((u) => u.id === parsed.id);
+    return match ?? null;
+  } catch {
+    return null;
+  }
+}
+
+let currentUser: User | null = loadStoredUser();
 let lang: "ar" | "en" = "ar";
 let theme: "light" | "dark" = "light";
 let snapshot: { user: User | null; lang: "ar" | "en"; theme: "light" | "dark" } = {
@@ -230,10 +246,20 @@ export const auth = {
   },
   login(u: User) {
     currentUser = u;
+    if (typeof window !== "undefined") {
+      try {
+        window.localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify({ id: u.id }));
+      } catch {}
+    }
     emit();
   },
   logout() {
     currentUser = null;
+    if (typeof window !== "undefined") {
+      try {
+        window.localStorage.removeItem(AUTH_STORAGE_KEY);
+      } catch {}
+    }
     emit();
   },
   setLang(l: "ar" | "en") {
