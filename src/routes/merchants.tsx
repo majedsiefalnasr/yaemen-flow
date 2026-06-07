@@ -59,7 +59,6 @@ function Merchants() {
       if (isPlatform && bankFilter !== "all" && m.entityId !== bankFilter) return false;
       if (!s) return true;
       return (
-        m.name.toLowerCase().includes(s) ||
         (m.traderName ?? "").toLowerCase().includes(s) ||
         m.cr.toLowerCase().includes(s) ||
         m.tax.toLowerCase().includes(s) ||
@@ -83,9 +82,9 @@ function Merchants() {
     merchantsCell.set((prev) => [m, ...prev]);
     logAudit({
       userId: user!.id, userName: user!.name, role: user!.role,
-      action: "إضافة تاجر جديد", ref: m.cr, notes: m.name,
+      action: "إضافة تاجر جديد", ref: m.cr, notes: m.traderName ?? m.name,
     });
-    toast.success(`تم تسجيل التاجر "${m.name}"`);
+    toast.success(`تم تسجيل التاجر "${m.traderName ?? m.name}"`);
     return true;
   }
 
@@ -97,7 +96,7 @@ function Merchants() {
     merchantsCell.set((prev) =>
       prev.map((x) => (x.id === original.id ? { ...m, id: original.id, transactions: original.transactions } : x)),
     );
-    logAudit({ userId: user!.id, userName: user!.name, role: user!.role, action: "تعديل بيانات تاجر", ref: m.cr, notes: m.name });
+    logAudit({ userId: user!.id, userName: user!.name, role: user!.role, action: "تعديل بيانات تاجر", ref: m.cr, notes: m.traderName ?? m.name });
     toast.success("تم تحديث بيانات التاجر");
     return true;
   }
