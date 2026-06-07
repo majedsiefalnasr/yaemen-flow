@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { auth, DEMO_USERS, ROLE_LABELS } from "@/lib/mock";
 import { cn } from "@/lib/utils";
+import ncrfiLogo from "@/assets/ncrfi-logo.png.asset.json";
 
 export const Route = createFileRoute("/login")({ component: Login });
 
@@ -38,12 +39,18 @@ function Login() {
         }} />
         <div className="relative">
           <div className="flex items-center gap-3">
-            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-white/10 backdrop-blur border border-white/20 text-2xl font-bold">
-              ب.م
-            </div>
+            <img
+              src={ncrfiLogo.url}
+              alt="شعار اللجنة الوطنية لتنظيم وتمويل الواردات"
+              className="h-14 w-14 rounded-2xl bg-white p-1 object-contain border border-white/20 shadow-md"
+            />
             <div>
-              <div className="font-bold text-lg">اللجنة الوطنية لتنظيم وتمويل الواردات</div>
-              <div className="text-sm text-white/70">National Committee for Regulating & Financing Imports</div>
+              <div className="font-bold text-lg leading-tight">
+                اللجنة الوطنية لتنظيم وتمويل الواردات
+              </div>
+              <div className="text-sm text-white/70 leading-tight mt-1">
+                National Committee for Regulating &amp; Financing Imports
+              </div>
             </div>
           </div>
         </div>
