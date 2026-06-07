@@ -124,16 +124,17 @@ function RequestDetail() {
 
     async function loadStoredCustomsFile() {
       if (!req?.customsStampedFile?.storageKey) {
-        setCustomsDocDataUrl(null);
+        setCustomsDocDataUrl(req?.customsStampedFile?.publicUrl ?? null);
         return;
       }
 
       try {
         const stored = await getLocalFile(req.customsStampedFile.storageKey);
-        if (!cancelled) setCustomsDocDataUrl(stored?.dataUrl ?? null);
+        if (!cancelled)
+          setCustomsDocDataUrl(stored?.dataUrl ?? req.customsStampedFile?.publicUrl ?? null);
       } catch (error) {
         console.error("Failed to load the stored customs confirmation file.", error);
-        if (!cancelled) setCustomsDocDataUrl(null);
+        if (!cancelled) setCustomsDocDataUrl(req.customsStampedFile?.publicUrl ?? null);
       }
     }
 
@@ -142,7 +143,7 @@ function RequestDetail() {
     return () => {
       cancelled = true;
     };
-  }, [req?.id, req?.customsStampedFile?.storageKey]);
+  }, [req?.id, req?.customsStampedFile?.storageKey, req?.customsStampedFile?.publicUrl]);
 
   if (path !== `/requests/${id}`) {
     return <Outlet />;
@@ -373,10 +374,10 @@ function RequestDetail() {
           <div className="flex items-start gap-3">
             <XCircle className="h-5 w-5 text-rose-600 shrink-0 mt-0.5" />
             <div className="flex-1">
-              <div className="font-semibold text-rose-700">مرفوض من المراجعة الداخلية بالبنك</div>
+              <div className="font-semibold text-rose-700">غير مستوفٍ للشروط — المراجعة الداخلية بالبنك</div>
               {bankRejectedReason && (
                 <div className="mt-2 text-sm bg-card border border-rose-200 rounded-md px-3 py-2">
-                  <span className="font-semibold text-rose-700">سبب الرفض: </span>
+                  <span className="font-semibold text-rose-700">سبب عدم الاستيفاء: </span>
                   <span>{bankRejectedReason}</span>
                 </div>
               )}
@@ -391,14 +392,13 @@ function RequestDetail() {
           <div className="flex items-start gap-3">
             <XCircle className="h-5 w-5 text-rose-600 shrink-0 mt-0.5" />
             <div className="flex-1">
-              <div className="font-semibold text-rose-700">رفض نهائي من اللجنة التنفيذية</div>
+              <div className="font-semibold text-rose-700">الطلب غير مستوفٍ للشروط</div>
               <div className="text-xs text-muted-foreground mt-1">
-                هذا قرار نهائي ولا يمكن إعادة إرسال الطلب نفسه مرة أخرى. لتقديم طلب جديد، يلزم إنشاء
-                طلب مستقل ببيانات مختلفة.
+                تم إغلاق الطلب لعدم استيفاء أحد الشروط المطلوبة. لا يمكن متابعة هذا الطلب ضمن مساره.
               </div>
               {execRejectedReason && (
                 <div className="mt-2 text-sm bg-card border border-rose-200 rounded-md px-3 py-2">
-                  <span className="font-semibold text-rose-700">سبب الرفض: </span>
+                  <span className="font-semibold text-rose-700">سبب عدم الاستيفاء: </span>
                   <span>{execRejectedReason}</span>
                 </div>
               )}
@@ -413,14 +413,13 @@ function RequestDetail() {
           <div className="flex items-start gap-3">
             <XCircle className="h-5 w-5 text-rose-600 shrink-0 mt-0.5" />
             <div className="flex-1">
-              <div className="font-semibold text-rose-700">مرفوض من اللجنة المساندة</div>
+              <div className="font-semibold text-rose-700">غير مستوفٍ للشروط — اللجنة المساندة</div>
               <div className="text-xs text-muted-foreground mt-1">
-                لا يمكن متابعة هذا الطلب ضمن مساره الحالي. يمكنك الإبقاء عليه للأرشفة أو إنشاء طلب
-                جديد بعد معالجة سبب الرفض.
+                تم إغلاق الطلب لعدم استيفاء أحد الشروط المطلوبة. لا يمكن متابعة هذا الطلب ضمن مساره.
               </div>
               {supportRejectedReason && (
                 <div className="mt-2 text-sm bg-card border border-rose-200 rounded-md px-3 py-2">
-                  <span className="font-semibold text-rose-700">سبب الرفض: </span>
+                  <span className="font-semibold text-rose-700">سبب عدم الاستيفاء: </span>
                   <span>{supportRejectedReason}</span>
                 </div>
               )}
