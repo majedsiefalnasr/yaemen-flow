@@ -1650,11 +1650,22 @@ export function progressionBucketsFor(role: Role): DisplayBucket[] {
 
 /**
  * Role-aware progress percentage. The last bucket in the role's progression
- * chain represents "done from this role's perspective" → 100%. Off-track
- * (returned/rejected) stages fall back to the global STAGE_PROGRESS value.
+ * chain represents "done from this role's perspective" → 100%.
+ *
+ * For bank-side roles, a request is considered fully concluded whenever it
+ * reaches a terminal outcome — either approved (customs released / completed)
+ * OR not-meeting-requirements (any rejection) — so progress is forced to 100%.
  */
+const TERMINAL_DONE_STAGES = new Set<RequestStage>([
+  "customs_released",
+  "completed",
+  "bank_rejected",
+  "support_rejected",
+  "executive_rejected",
+]);
 export function progressForRole(stage: RequestStage, role: Role | null | undefined): number {
   if (!role) return progressFor(stage);
+  if (BANK_ROLES.includes(role) && TERMINAL_DONE_STAGES.has(stage)) return 100;
   const chain = progressionBucketsFor(role);
   const idx = chain.findIndex((b) => b.stages.includes(stage));
   if (idx >= 0) return Math.round(((idx + 1) / chain.length) * 100);
