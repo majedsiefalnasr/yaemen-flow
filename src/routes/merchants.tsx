@@ -169,11 +169,11 @@ function Merchants() {
           <table className="w-full text-sm">
             <thead className="bg-muted/40 text-xs text-muted-foreground">
               <tr className="text-right">
-                <th className="p-3 font-semibold">الشركة</th>
                 <th className="p-3 font-semibold">التاجر</th>
                 <th className="p-3 font-semibold">الرقم الضريبي</th>
                 <th className="p-3 font-semibold">السجل التجاري</th>
                 <th className="p-3 font-semibold">القطاع</th>
+                <th className="p-3 font-semibold">الشركات المرتبطة</th>
                 {isPlatform && <th className="p-3 font-semibold">البنك</th>}
                 <th className="p-3 font-semibold">الحالة</th>
                 <th className="p-3 font-semibold tabular-nums">المعاملات</th>
@@ -183,11 +183,11 @@ function Merchants() {
             <tbody className="divide-y">
               {filtered.map((m) => (
                 <tr key={m.id} className="hover:bg-muted/30">
-                  <td className="p-3 font-medium">{m.name}</td>
-                  <td className="p-3 text-muted-foreground">{m.traderName ?? "—"}</td>
+                  <td className="p-3 font-medium">{m.traderName ?? m.name}</td>
                   <td className="p-3 text-muted-foreground tabular-nums">{m.tax}</td>
                   <td className="p-3 text-muted-foreground">{m.cr}</td>
                   <td className="p-3 text-muted-foreground">{m.category}</td>
+                  <td className="p-3 text-muted-foreground tabular-nums">{m.companies?.length ?? 0}</td>
                   {isPlatform && (
                     <td className="p-3">
                       <Badge variant="outline" className="font-normal">
@@ -217,9 +217,9 @@ function Merchants() {
                             variant="ghost"
                             className="h-8 w-8 text-destructive"
                             onClick={() => {
-                              if (!confirm(`حذف التاجر "${m.name}"؟`)) return;
+                              if (!confirm(`حذف التاجر "${m.traderName ?? m.name}"؟`)) return;
                               merchantsCell.set((prev) => prev.filter((x) => x.id !== m.id));
-                              logAudit({ userId: user!.id, userName: user!.name, role: user!.role, action: "حذف تاجر", ref: m.cr, notes: m.name });
+                              logAudit({ userId: user!.id, userName: user!.name, role: user!.role, action: "حذف تاجر", ref: m.cr, notes: m.traderName ?? m.name });
                               toast.success("تم حذف التاجر");
                             }}
                             aria-label="حذف"
