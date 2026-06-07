@@ -412,14 +412,13 @@ function RequestDetail() {
           <div className="flex items-start gap-3">
             <XCircle className="h-5 w-5 text-rose-600 shrink-0 mt-0.5" />
             <div className="flex-1">
-              <div className="font-semibold text-rose-700">مرفوض من اللجنة المساندة</div>
+              <div className="font-semibold text-rose-700">غير مستوفٍ للشروط — اللجنة المساندة</div>
               <div className="text-xs text-muted-foreground mt-1">
-                لا يمكن متابعة هذا الطلب ضمن مساره الحالي. يمكنك الإبقاء عليه للأرشفة أو إنشاء طلب
-                جديد بعد معالجة سبب الرفض.
+                تم إغلاق الطلب لعدم استيفاء أحد الشروط المطلوبة. لا يمكن متابعة هذا الطلب ضمن مساره.
               </div>
               {supportRejectedReason && (
                 <div className="mt-2 text-sm bg-card border border-rose-200 rounded-md px-3 py-2">
-                  <span className="font-semibold text-rose-700">سبب الرفض: </span>
+                  <span className="font-semibold text-rose-700">سبب عدم الاستيفاء: </span>
                   <span>{supportRejectedReason}</span>
                 </div>
               )}
