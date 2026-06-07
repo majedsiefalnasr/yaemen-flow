@@ -12,6 +12,7 @@ import appCss from "../styles.css?url";
 import { AppShell } from "@/components/layout/AppShell";
 import { useAuth } from "@/lib/mock";
 import { Toaster } from "@/components/ui/sonner";
+import ncrfiLogo from "@/assets/ncrfi-logo.png.asset.json";
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
@@ -24,13 +25,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:title", content: "منصة إدارة وتمويل الواردات — اللجنة الوطنية لتنظيم وتمويل الواردات" },
       { property: "og:description", content: "منصة رقمية لإدارة ومراجعة طلبات تمويل الواردات للجنة الوطنية لتنظيم وتمويل الواردات" },
       { name: "twitter:description", content: "منصة رقمية لإدارة ومراجعة طلبات تمويل الواردات للجنة الوطنية لتنظيم وتمويل الواردات" },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/uCWYibmUVBhcjtCCADDdZqetr0F2/social-images/social-1778277825171-logo.webp" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/uCWYibmUVBhcjtCCADDdZqetr0F2/social-images/social-1778277825171-logo.webp" },
+      { property: "og:image", content: ncrfiLogo.url },
+      { name: "twitter:image", content: ncrfiLogo.url },
       { name: "twitter:card", content: "summary_large_image" },
       { property: "og:type", content: "website" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
+      { rel: "icon", type: "image/png", href: ncrfiLogo.url },
+      { rel: "apple-touch-icon", href: ncrfiLogo.url },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "" },
       { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Tajawal:wght@500;700;800&display=swap" },
