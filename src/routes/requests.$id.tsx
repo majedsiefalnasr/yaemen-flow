@@ -124,16 +124,17 @@ function RequestDetail() {
 
     async function loadStoredCustomsFile() {
       if (!req?.customsStampedFile?.storageKey) {
-        setCustomsDocDataUrl(null);
+        setCustomsDocDataUrl(req?.customsStampedFile?.publicUrl ?? null);
         return;
       }
 
       try {
         const stored = await getLocalFile(req.customsStampedFile.storageKey);
-        if (!cancelled) setCustomsDocDataUrl(stored?.dataUrl ?? null);
+        if (!cancelled)
+          setCustomsDocDataUrl(stored?.dataUrl ?? req.customsStampedFile?.publicUrl ?? null);
       } catch (error) {
         console.error("Failed to load the stored customs confirmation file.", error);
-        if (!cancelled) setCustomsDocDataUrl(null);
+        if (!cancelled) setCustomsDocDataUrl(req.customsStampedFile?.publicUrl ?? null);
       }
     }
 
