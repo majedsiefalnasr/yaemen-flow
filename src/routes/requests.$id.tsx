@@ -475,37 +475,6 @@ function RequestDetail() {
                       </div>
                     </div>
                   </div>
-                  {isApproved && customsDocDataUrl && (
-                    <div className="mt-4 pt-4 border-t border-success/20 space-y-2">
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <FileSignature className="h-3.5 w-3.5" />
-                        <span>تأكيد المصارفة الخارجية</span>
-                        {req.customsNo && (
-                          <span className="font-mono font-semibold text-foreground">
-                            · {req.customsNo}
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        <Button asChild size="sm" className="h-8">
-                          <a href={customsDocDataUrl} target="_blank" rel="noreferrer">
-                            <Eye className="h-3.5 w-3.5 ml-1.5" /> مشاهدة التأكيد
-                          </a>
-                        </Button>
-                        <Button asChild variant="outline" size="sm" className="h-8">
-                          <a
-                            href={customsDocDataUrl}
-                            download={
-                              req.customsStampedFile?.name ??
-                              "external-remittance-confirmation.pdf"
-                            }
-                          >
-                            <Download className="h-3.5 w-3.5 ml-1.5" /> تحميل التأكيد
-                          </a>
-                        </Button>
-                      </div>
-                    </div>
-                  )}
                 </Card>
               );
             }
