@@ -407,19 +407,10 @@ export const TRANSITIONS: Record<RequestStage, Transition[]> = {
     },
     {
       to: "bank_returned",
-      label: "إعادة لإعادة الإدخال",
+      label: "إعادة لمدخل البيانات للتعديل",
       roles: ["bank_reviewer", "bank_admin"],
       requiresEntityMatch: true,
       forbidIntakeUser: true,
-      requiresComment: true,
-    },
-    {
-      to: "bank_rejected",
-      label: "رفض الطلب",
-      roles: ["bank_reviewer", "bank_admin"],
-      requiresEntityMatch: true,
-      forbidIntakeUser: true,
-      destructive: true,
       requiresComment: true,
     },
   ],
@@ -429,21 +420,8 @@ export const TRANSITIONS: Record<RequestStage, Transition[]> = {
   support_review: [
     {
       to: "executive_voting",
-      label: "اعتماد المساندة وفتح باب التصويت",
+      label: "إرسال إلى اللجنة التنفيذية",
       roles: ["support_member"],
-    },
-    {
-      to: "support_returned",
-      label: "إعادة للبنك للتعديل",
-      roles: ["support_member"],
-      requiresComment: true,
-    },
-    {
-      to: "support_rejected",
-      label: "رفض الطلب",
-      roles: ["support_member"],
-      destructive: true,
-      requiresComment: true,
     },
   ],
   support_returned: [
