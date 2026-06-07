@@ -1118,6 +1118,42 @@ const REQUEST_SEED_META = SEED_ROWS.map((row, i) => ({
   baseDate: new Date(2026, 4, (i % 28) + 1),
 }));
 
+// ---- Merchant-aligned seed lookup (mirrors MERCHANTS construction) ----
+const SEED_TRADER_NAMES = [
+  "محمد هائل سعيد",
+  "علي الشيباني",
+  "ثابت ثابت",
+  "د. عبدالله الكميم",
+  "أحمد الأهدل",
+];
+const SEED_ACTIVITIES = [
+  "تجارة عامة — مواد غذائية",
+  "استيراد أدوية ومستلزمات طبية",
+  "تجارة مشتقات نفطية",
+  "قطع غيار وآليات ثقيلة",
+  "مواد بناء وحديد تسليح",
+  "أجهزة إلكترونية ومنزلية",
+];
+const SEED_ORIGINS = ["الإمارات", "السعودية", "ألمانيا", "الصين", "تركيا", "الهند"];
+const SEED_PAYMENT_TERMS = ["TT", "LC", "DP", "CAD"];
+const SEED_COVERAGE = ["تحويل عبر مراسل", "اعتماد مستندي", "حساب جاري بالعملة الأجنبية"];
+const SEED_FX_SOURCES = ["شراء من السوق المحلي", "تحويلات مغتربين", "صادرات"];
+const SEED_YER_SOURCES = ["إيداعات نقدية بالريال", "تحصيلات تجارية محلية"];
+const SEED_SHIP_PORTS = ["جبل علي — الإمارات", "جدة الإسلامي — السعودية", "هامبورغ — ألمانيا", "شنغهاي — الصين", "إسطنبول — تركيا"];
+
+function merchantSeedFor(i: number) {
+  const mIdx = i % 5;
+  return {
+    traderName: SEED_TRADER_NAMES[mIdx],
+    taxNo: `4${String(100000 + mIdx * 7777)}`,
+    crNo: `CR-${String(50000 + mIdx * 13)}`,
+    shareholders: [
+      { name: SEED_TRADER_NAMES[mIdx], percent: 60 },
+      { name: "شريك ثانٍ", percent: 40 },
+    ] as { name: string; percent: number }[],
+  };
+}
+
 export const REQUESTS: ImportRequest[] = REQUEST_SEED_META.map(
   ({ row, index, requestId, ref, baseDate }) => {
     const entity = ENTITIES[row.entity];
@@ -1184,6 +1220,20 @@ export const REQUESTS: ImportRequest[] = REQUEST_SEED_META.map(
         ? new Date(baseDate.getTime() + 8 * 3600_000).toISOString()
         : undefined,
       customsBy,
+      // ---- merchant / invoice / shipping enrichment ----
+      activity: SEED_ACTIVITIES[index % SEED_ACTIVITIES.length],
+      taxNo: merchantSeedFor(index).taxNo,
+      crNo: merchantSeedFor(index).crNo,
+      originCountry: SEED_ORIGINS[index % SEED_ORIGINS.length],
+      invoiceAmount: Math.round(row.amount * (1 + ((index % 5) * 0.04))),
+      invoiceDate: new Date(baseDate.getTime() - 14 * 86400_000).toISOString().slice(0, 10),
+      paymentTerms: SEED_PAYMENT_TERMS[index % SEED_PAYMENT_TERMS.length],
+      shipmentDate: new Date(baseDate.getTime() + 21 * 86400_000).toISOString().slice(0, 10),
+      shipPort: SEED_SHIP_PORTS[index % SEED_SHIP_PORTS.length],
+      shareholders: merchantSeedFor(index).shareholders,
+      yerSources: SEED_YER_SOURCES[index % SEED_YER_SOURCES.length],
+      fxSources: SEED_FX_SOURCES[index % SEED_FX_SOURCES.length],
+      coverageMethod: SEED_COVERAGE[index % SEED_COVERAGE.length],
     };
   },
 );
@@ -1650,11 +1700,22 @@ export function progressionBucketsFor(role: Role): DisplayBucket[] {
 
 /**
  * Role-aware progress percentage. The last bucket in the role's progression
- * chain represents "done from this role's perspective" → 100%. Off-track
- * (returned/rejected) stages fall back to the global STAGE_PROGRESS value.
+ * chain represents "done from this role's perspective" → 100%.
+ *
+ * For bank-side roles, a request is considered fully concluded whenever it
+ * reaches a terminal outcome — either approved (customs released / completed)
+ * OR not-meeting-requirements (any rejection) — so progress is forced to 100%.
  */
+const TERMINAL_DONE_STAGES = new Set<RequestStage>([
+  "customs_released",
+  "completed",
+  "bank_rejected",
+  "support_rejected",
+  "executive_rejected",
+]);
 export function progressForRole(stage: RequestStage, role: Role | null | undefined): number {
   if (!role) return progressFor(stage);
+  if (BANK_ROLES.includes(role) && TERMINAL_DONE_STAGES.has(stage)) return 100;
   const chain = progressionBucketsFor(role);
   const idx = chain.findIndex((b) => b.stages.includes(stage));
   if (idx >= 0) return Math.round(((idx + 1) / chain.length) * 100);
