@@ -773,32 +773,6 @@ const SEED_ROWS: SeedRow[] = [
     supportReviewerId: "u3",
   },
 
-  // ─── support_returned × 2 ──────────────────────────────────────────
-  {
-    stage: "support_returned",
-    importer: importers[0],
-    entity: 0,
-    amount: 67000,
-    currency: "EUR",
-    type: types[5],
-    supplier: suppliers[4],
-    port: ports[3],
-    risk: "low",
-    intake: "u5",
-  },
-  {
-    stage: "support_returned",
-    importer: importers[1],
-    entity: 0,
-    amount: 295000,
-    currency: "USD",
-    type: types[3],
-    supplier: suppliers[3],
-    port: ports[1],
-    risk: "medium",
-    intake: "u4",
-  },
-
   // ─── bank_returned × 2 (returned by bank reviewer to intake) ───────
   {
     stage: "bank_returned",
@@ -820,32 +794,6 @@ const SEED_ROWS: SeedRow[] = [
     currency: "EUR",
     type: types[3],
     supplier: suppliers[3],
-    port: ports[2],
-    risk: "medium",
-    intake: "u4",
-  },
-
-  // ─── support_rejected × 2 ──────────────────────────────────────────
-  {
-    stage: "support_rejected",
-    importer: importers[2],
-    entity: 0,
-    amount: 780000,
-    currency: "USD",
-    type: types[2],
-    supplier: suppliers[2],
-    port: ports[0],
-    risk: "high",
-    intake: "u5",
-  },
-  {
-    stage: "support_rejected",
-    importer: importers[3],
-    entity: 0,
-    amount: 158000,
-    currency: "SAR",
-    type: types[1],
-    supplier: suppliers[1],
     port: ports[2],
     risk: "medium",
     intake: "u4",
