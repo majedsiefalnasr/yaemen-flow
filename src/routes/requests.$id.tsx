@@ -476,18 +476,115 @@ function RequestDetail() {
             </Card>
           )}
 
-          <Card className="p-5 shadow-card border-0">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold">تقدم الطلب في الدورة التنظيمية</h3>
-              <span className="text-2xl font-bold tabular-nums">
-                {progressForRole(req.stage, user!.role)}%
-              </span>
-            </div>
-            <Progress value={progressForRole(req.stage, user!.role)} className="h-2 mb-2" />
-            <div className="text-xs text-muted-foreground">
-              المرحلة الحالية: {displayStatusFor(req.stage, user!.role).label}
-            </div>
-          </Card>
+          {(() => {
+            const approvedStages = ["customs_released", "completed"];
+            const rejectedStages = ["executive_rejected", "support_rejected", "bank_rejected"];
+            const isApproved = approvedStages.includes(req.stage);
+            const isRejected = rejectedStages.includes(req.stage);
+
+            if (isApproved || isRejected) {
+              const Icon = isApproved ? CheckCircle2 : XCircle;
+              return (
+                <Card
+                  className={cn(
+                    "p-5 shadow-card border",
+                    isApproved
+                      ? "bg-gradient-to-br from-success/10 to-success/5 border-success/30"
+                      : "bg-gradient-to-br from-destructive/10 to-destructive/5 border-destructive/30",
+                  )}
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-semibold">تقدم الطلب في الدورة التنظيمية</h3>
+                    <span
+                      className={cn(
+                        "text-[10px] px-2 py-0.5 rounded-full font-semibold",
+                        isApproved
+                          ? "bg-success/20 text-success"
+                          : "bg-destructive/20 text-destructive",
+                      )}
+                    >
+                      100% — مكتمل
+                    </span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div
+                      className={cn(
+                        "h-11 w-11 rounded-xl grid place-items-center shrink-0",
+                        isApproved
+                          ? "bg-success/15 text-success"
+                          : "bg-destructive/15 text-destructive",
+                      )}
+                    >
+                      <Icon className="h-6 w-6" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div
+                        className={cn(
+                          "font-semibold",
+                          isApproved ? "text-success" : "text-destructive",
+                        )}
+                      >
+                        {isApproved
+                          ? "الطلب مستوفٍ للشروط"
+                          : "الطلب غير مستوفٍ للشروط"}
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                        {isApproved
+                          ? "اكتملت دورة الطلب باعتماد جميع الأطراف وصدر تأكيد المصارفة الخارجية."
+                          : "تم إغلاق الطلب لعدم استيفاء أحد الشروط المطلوبة. لا يمكن متابعة هذا الطلب ضمن مساره."}
+                      </div>
+                    </div>
+                  </div>
+                  {isApproved && customsDocDataUrl && (
+                    <div className="mt-4 pt-4 border-t border-success/20 space-y-2">
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <FileSignature className="h-3.5 w-3.5" />
+                        <span>تأكيد المصارفة الخارجية</span>
+                        {req.customsNo && (
+                          <span className="font-mono font-semibold text-foreground">
+                            · {req.customsNo}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <Button asChild size="sm" className="h-8">
+                          <a href={customsDocDataUrl} target="_blank" rel="noreferrer">
+                            <Eye className="h-3.5 w-3.5 ml-1.5" /> مشاهدة التأكيد
+                          </a>
+                        </Button>
+                        <Button asChild variant="outline" size="sm" className="h-8">
+                          <a
+                            href={customsDocDataUrl}
+                            download={
+                              req.customsStampedFile?.name ??
+                              "external-remittance-confirmation.pdf"
+                            }
+                          >
+                            <Download className="h-3.5 w-3.5 ml-1.5" /> تحميل التأكيد
+                          </a>
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </Card>
+              );
+            }
+
+            return (
+              <Card className="p-5 shadow-card border-0">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-semibold">تقدم الطلب في الدورة التنظيمية</h3>
+                  <span className="text-2xl font-bold tabular-nums">
+                    {progressForRole(req.stage, user!.role)}%
+                  </span>
+                </div>
+                <Progress value={progressForRole(req.stage, user!.role)} className="h-2 mb-2" />
+                <div className="text-xs text-muted-foreground">
+                  المرحلة الحالية: {displayStatusFor(req.stage, user!.role).label}
+                </div>
+              </Card>
+            );
+          })()}
 
           {/* Lock notice when another support reviewer has the request */}
           {(req.stage === "bank_approved" || req.stage === "support_review") &&
