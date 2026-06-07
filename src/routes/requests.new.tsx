@@ -205,13 +205,12 @@ function NewRequest() {
     const m = findMerchantByTax(allMerchants, form.taxNo);
     if (!m) {
       setMatchedMerchant(null);
-      toast.error("لا يوجد تاجر بهذا الرقم الضريبي — يرجى تسجيله أولاً من شاشة التجار.");
+      toast.info("لا يوجد تاجر بهذا الرقم الضريبي — يمكنك إدخال بياناته وحفظه ضمن هذا الطلب.");
       return;
     }
     setMatchedMerchant(m);
     update({
       traderName: m.traderName ?? "",
-      companyName: m.name,
       taxExpiry: m.taxExpiry ?? "",
       crNo: m.cr,
       crExpiry: m.crExpiry ?? "",
@@ -221,8 +220,9 @@ function NewRequest() {
       shareholders: (m.shareholders ?? []).length
         ? m.shareholders!.map((s) => ({ name: s.name, percent: String(s.percent) }))
         : [{ name: "", percent: "" }],
+      companies: (m.companies ?? []).map((c) => ({ name: c.name })),
     });
-    toast.success(`تم جلب بيانات التاجر: ${m.name}`);
+    toast.success(`تم جلب بيانات التاجر: ${m.traderName ?? m.name}`);
   }
 
   // Derived
@@ -238,8 +238,13 @@ function NewRequest() {
 
   function validateBasic(): string | null {
     if (!form.taxNo) return "الرقم الضريبي مطلوب";
-    if (!matchedMerchant) return "يجب جلب بيانات التاجر بالرقم الضريبي أولاً";
-    if (!form.companyName) return "اسم الشركة مطلوب";
+    if (!form.traderName.trim()) return "اسم التاجر مطلوب";
+    if (!matchedMerchant) {
+      // سيتم إنشاء تاجر جديد — تحقق من توفر الحقول الأساسية
+      if (!form.taxExpiry) return "تاريخ انتهاء البطاقة الضريبية مطلوب لإنشاء تاجر جديد";
+      if (!form.crNo.trim()) return "رقم السجل التجاري مطلوب لإنشاء تاجر جديد";
+      if (!form.crExpiry) return "تاريخ انتهاء السجل التجاري مطلوب لإنشاء تاجر جديد";
+    }
     return null;
   }
   function validateInvoice(): string | null {
@@ -285,7 +290,7 @@ function NewRequest() {
     };
     return {
       id, ref,
-      importer: form.companyName,
+      importer: form.traderName,
       entityId: user?.entityId ?? entity.id,
       bank: entity.name,
       amount: requestedAmount,
@@ -327,11 +332,50 @@ function NewRequest() {
       const err = validateAll();
       if (err) { toast.error(err); return; }
     } else {
-      if (!form.taxNo || !form.companyName) {
-        toast.error("الرقم الضريبي واسم الشركة على الأقل مطلوبان لحفظ المسودة");
+      if (!form.taxNo || !form.traderName.trim()) {
+        toast.error("الرقم الضريبي واسم التاجر على الأقل مطلوبان لحفظ المسودة");
         return;
       }
     }
+
+    // إنشاء تاجر جديد مباشرةً إذا لم يكن مسجَّلاً
+    if (!matchedMerchant && form.taxNo && form.traderName.trim()) {
+      const exists = findMerchantByTax(allMerchants, form.taxNo);
+      if (exists) {
+        toast.error(`الرقم الضريبي ${form.taxNo} مسجَّل لتاجر آخر — أعد جلب البيانات.`);
+        return;
+      }
+      const newMerchant: Merchant = {
+        id: `m_${Date.now()}`,
+        name: form.traderName.trim(),
+        traderName: form.traderName.trim(),
+        tax: form.taxNo.trim(),
+        taxExpiry: form.taxExpiry || undefined,
+        cr: form.crNo.trim(),
+        crExpiry: form.crExpiry || undefined,
+        companies: form.companies.filter((c) => c.name.trim()).map((c, i) => ({
+          id: `c_${Date.now()}_${i}`, name: c.name.trim(),
+        })),
+        shareholders: form.shareholders
+          .filter((s) => s.name.trim() && Number(s.percent) >= 25)
+          .map((s, i) => ({ id: `sh_${Date.now()}_${i}`, name: s.name.trim(), percent: Number(s.percent) })),
+        address: form.address.trim() || "—",
+        contact: form.contact.trim() || "—",
+        category: form.activity || "غير محدد",
+        status: "active",
+        entityId: user.entityId ?? undefined,
+        transactions: 0,
+      };
+      merchantsCell.set((prev) => [newMerchant, ...prev]);
+      setMatchedMerchant(newMerchant);
+      logAudit({
+        userId: user.id, userName: user.name, role: user.role,
+        action: "إنشاء تاجر جديد من شاشة الطلب",
+        ref: newMerchant.cr, notes: newMerchant.traderName,
+      });
+      toast.success(`تم تسجيل تاجر جديد: ${newMerchant.traderName}`);
+    }
+
     const req = buildRequest(stage);
     requestsCell.set((prev) => [req, ...prev]);
     logAudit({
