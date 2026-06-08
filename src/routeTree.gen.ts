@@ -20,12 +20,14 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as RequestsIndexRouteImport } from './routes/requests.index'
 import { Route as RequestsNewRouteImport } from './routes/requests.new'
 import { Route as RequestsIdRouteImport } from './routes/requests.$id'
+import { Route as MerchantsNewRouteImport } from './routes/merchants.new'
 import { Route as BankUsersRouteImport } from './routes/bank.users'
 import { Route as AdminWorkflowDocsRouteImport } from './routes/admin.workflow-docs'
 import { Route as AdminRolesRouteImport } from './routes/admin.roles'
 import { Route as AdminEntitiesRouteImport } from './routes/admin.entities'
 import { Route as AdminCbyStaffRouteImport } from './routes/admin.cby-staff'
 import { Route as RequestsIdSwiftRouteImport } from './routes/requests.$id.swift'
+import { Route as MerchantsIdEditRouteImport } from './routes/merchants.$id.edit'
 
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
@@ -82,6 +84,11 @@ const RequestsIdRoute = RequestsIdRouteImport.update({
   path: '/requests/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MerchantsNewRoute = MerchantsNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => MerchantsRoute,
+} as any)
 const BankUsersRoute = BankUsersRouteImport.update({
   id: '/bank/users',
   path: '/bank/users',
@@ -112,12 +119,17 @@ const RequestsIdSwiftRoute = RequestsIdSwiftRouteImport.update({
   path: '/swift',
   getParentRoute: () => RequestsIdRoute,
 } as any)
+const MerchantsIdEditRoute = MerchantsIdEditRouteImport.update({
+  id: '/$id/edit',
+  path: '/$id/edit',
+  getParentRoute: () => MerchantsRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/audit': typeof AuditRoute
   '/login': typeof LoginRoute
-  '/merchants': typeof MerchantsRoute
+  '/merchants': typeof MerchantsRouteWithChildren
   '/notifications': typeof NotificationsRoute
   '/profile': typeof ProfileRoute
   '/reports': typeof ReportsRoute
@@ -127,16 +139,18 @@ export interface FileRoutesByFullPath {
   '/admin/roles': typeof AdminRolesRoute
   '/admin/workflow-docs': typeof AdminWorkflowDocsRoute
   '/bank/users': typeof BankUsersRoute
+  '/merchants/new': typeof MerchantsNewRoute
   '/requests/$id': typeof RequestsIdRouteWithChildren
   '/requests/new': typeof RequestsNewRoute
   '/requests/': typeof RequestsIndexRoute
+  '/merchants/$id/edit': typeof MerchantsIdEditRoute
   '/requests/$id/swift': typeof RequestsIdSwiftRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/audit': typeof AuditRoute
   '/login': typeof LoginRoute
-  '/merchants': typeof MerchantsRoute
+  '/merchants': typeof MerchantsRouteWithChildren
   '/notifications': typeof NotificationsRoute
   '/profile': typeof ProfileRoute
   '/reports': typeof ReportsRoute
@@ -146,9 +160,11 @@ export interface FileRoutesByTo {
   '/admin/roles': typeof AdminRolesRoute
   '/admin/workflow-docs': typeof AdminWorkflowDocsRoute
   '/bank/users': typeof BankUsersRoute
+  '/merchants/new': typeof MerchantsNewRoute
   '/requests/$id': typeof RequestsIdRouteWithChildren
   '/requests/new': typeof RequestsNewRoute
   '/requests': typeof RequestsIndexRoute
+  '/merchants/$id/edit': typeof MerchantsIdEditRoute
   '/requests/$id/swift': typeof RequestsIdSwiftRoute
 }
 export interface FileRoutesById {
@@ -156,7 +172,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/audit': typeof AuditRoute
   '/login': typeof LoginRoute
-  '/merchants': typeof MerchantsRoute
+  '/merchants': typeof MerchantsRouteWithChildren
   '/notifications': typeof NotificationsRoute
   '/profile': typeof ProfileRoute
   '/reports': typeof ReportsRoute
@@ -166,9 +182,11 @@ export interface FileRoutesById {
   '/admin/roles': typeof AdminRolesRoute
   '/admin/workflow-docs': typeof AdminWorkflowDocsRoute
   '/bank/users': typeof BankUsersRoute
+  '/merchants/new': typeof MerchantsNewRoute
   '/requests/$id': typeof RequestsIdRouteWithChildren
   '/requests/new': typeof RequestsNewRoute
   '/requests/': typeof RequestsIndexRoute
+  '/merchants/$id/edit': typeof MerchantsIdEditRoute
   '/requests/$id/swift': typeof RequestsIdSwiftRoute
 }
 export interface FileRouteTypes {
@@ -187,9 +205,11 @@ export interface FileRouteTypes {
     | '/admin/roles'
     | '/admin/workflow-docs'
     | '/bank/users'
+    | '/merchants/new'
     | '/requests/$id'
     | '/requests/new'
     | '/requests/'
+    | '/merchants/$id/edit'
     | '/requests/$id/swift'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -206,9 +226,11 @@ export interface FileRouteTypes {
     | '/admin/roles'
     | '/admin/workflow-docs'
     | '/bank/users'
+    | '/merchants/new'
     | '/requests/$id'
     | '/requests/new'
     | '/requests'
+    | '/merchants/$id/edit'
     | '/requests/$id/swift'
   id:
     | '__root__'
@@ -225,9 +247,11 @@ export interface FileRouteTypes {
     | '/admin/roles'
     | '/admin/workflow-docs'
     | '/bank/users'
+    | '/merchants/new'
     | '/requests/$id'
     | '/requests/new'
     | '/requests/'
+    | '/merchants/$id/edit'
     | '/requests/$id/swift'
   fileRoutesById: FileRoutesById
 }
@@ -235,7 +259,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuditRoute: typeof AuditRoute
   LoginRoute: typeof LoginRoute
-  MerchantsRoute: typeof MerchantsRoute
+  MerchantsRoute: typeof MerchantsRouteWithChildren
   NotificationsRoute: typeof NotificationsRoute
   ProfileRoute: typeof ProfileRoute
   ReportsRoute: typeof ReportsRoute
@@ -329,6 +353,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RequestsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/merchants/new': {
+      id: '/merchants/new'
+      path: '/new'
+      fullPath: '/merchants/new'
+      preLoaderRoute: typeof MerchantsNewRouteImport
+      parentRoute: typeof MerchantsRoute
+    }
     '/bank/users': {
       id: '/bank/users'
       path: '/bank/users'
@@ -371,8 +402,29 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RequestsIdSwiftRouteImport
       parentRoute: typeof RequestsIdRoute
     }
+    '/merchants/$id/edit': {
+      id: '/merchants/$id/edit'
+      path: '/$id/edit'
+      fullPath: '/merchants/$id/edit'
+      preLoaderRoute: typeof MerchantsIdEditRouteImport
+      parentRoute: typeof MerchantsRoute
+    }
   }
 }
+
+interface MerchantsRouteChildren {
+  MerchantsNewRoute: typeof MerchantsNewRoute
+  MerchantsIdEditRoute: typeof MerchantsIdEditRoute
+}
+
+const MerchantsRouteChildren: MerchantsRouteChildren = {
+  MerchantsNewRoute: MerchantsNewRoute,
+  MerchantsIdEditRoute: MerchantsIdEditRoute,
+}
+
+const MerchantsRouteWithChildren = MerchantsRoute._addFileChildren(
+  MerchantsRouteChildren,
+)
 
 interface RequestsIdRouteChildren {
   RequestsIdSwiftRoute: typeof RequestsIdSwiftRoute
@@ -390,7 +442,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuditRoute: AuditRoute,
   LoginRoute: LoginRoute,
-  MerchantsRoute: MerchantsRoute,
+  MerchantsRoute: MerchantsRouteWithChildren,
   NotificationsRoute: NotificationsRoute,
   ProfileRoute: ProfileRoute,
   ReportsRoute: ReportsRoute,

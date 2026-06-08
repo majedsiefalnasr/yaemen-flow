@@ -1230,25 +1230,108 @@ export type Merchant = {
   name: string;
   tax: string;
   cr: string;
-  address: string;
-  contact: string;
-  category: string;
+  /** Tax-card expiry (ISO date). */
+  taxCardExpiry?: string;
+  /** Commercial-register expiry (ISO date). */
+  crExpiry?: string;
+  /** Owners / shareholders holding 25% or more. */
+  owners?: { name: string; percent: number }[];
+  /** Companies linked to this merchant (name + sector). */
+  companies?: { name: string; sector: string }[];
   status: "active" | "suspended";
   transactions: number;
   entityId?: string; // bank the merchant is registered with
 };
-export const MERCHANTS: Merchant[] = importers.map((n, i) => ({
-  id: `m${i + 1}`,
-  name: n,
-  tax: `4${String(100000 + i * 7777)}`,
-  cr: `CR-${String(50000 + i * 13)}`,
-  address: ["صنعاء – شارع الزبيري", "عدن – كريتر", "الحديدة – شارع صنعاء", "المكلا", "تعز"][i % 5],
-  contact: `+9677${String(11000000 + i * 9999)}`,
-  category: types[i % types.length],
-  status: i === 4 ? "suspended" : "active",
-  transactions: 3 + i * 4,
-  entityId: ENTITIES[i % ENTITIES.length].id,
-}));
+
+const futureDate = (months: number) => {
+  const d = new Date();
+  d.setMonth(d.getMonth() + months);
+  return d.toISOString().slice(0, 10);
+};
+
+export const MERCHANTS: Merchant[] = [
+  {
+    id: "m1",
+    name: "شركة هائل سعيد أنعم",
+    tax: "4100007",
+    cr: "CR-50000",
+    taxCardExpiry: futureDate(14),
+    crExpiry: futureDate(20),
+    status: "active",
+    transactions: 12,
+    entityId: ENTITIES[0].id,
+    owners: [
+      { name: "هائل سعيد أنعم", percent: 60 },
+      { name: "محمد هائل سعيد", percent: 30 },
+    ],
+    companies: [
+      { name: "مصانع هائل سعيد للمواد الغذائية", sector: "مواد غذائية" },
+      { name: "هائل سعيد لمواد البناء", sector: "مواد بناء" },
+    ],
+  },
+  {
+    id: "m2",
+    name: "مجموعة الشيباني",
+    tax: "4100123",
+    cr: "CR-50013",
+    taxCardExpiry: futureDate(8),
+    crExpiry: futureDate(11),
+    status: "active",
+    transactions: 8,
+    entityId: ENTITIES[0].id,
+    owners: [{ name: "عبد القادر الشيباني", percent: 80 }],
+    companies: [{ name: "الشيباني لتجارة قطع الغيار", sector: "قطع غيار" }],
+  },
+  {
+    id: "m3",
+    name: "شركة ثابت إخوان",
+    tax: "4101000",
+    cr: "CR-50026",
+    taxCardExpiry: futureDate(18),
+    crExpiry: futureDate(22),
+    status: "active",
+    transactions: 15,
+    entityId: ENTITIES[0].id,
+    owners: [
+      { name: "علي ثابت", percent: 50 },
+      { name: "محمد ثابت", percent: 50 },
+    ],
+    companies: [
+      { name: "ثابت إخوان للأدوية", sector: "أدوية ومستلزمات طبية" },
+      { name: "ثابت لوجستيك", sector: "خدمات" },
+    ],
+  },
+  {
+    id: "m4",
+    name: "شركة الكميم للأدوية",
+    tax: "4102234",
+    cr: "CR-50039",
+    taxCardExpiry: futureDate(6),
+    crExpiry: futureDate(9),
+    status: "active",
+    transactions: 6,
+    entityId: ENTITIES[0].id,
+    owners: [{ name: "أحمد الكميم", percent: 100 }],
+    companies: [{ name: "الكميم للأدوية والمستلزمات الطبية", sector: "أدوية ومستلزمات طبية" }],
+  },
+  {
+    id: "m5",
+    name: "مجموعة الأهدل",
+    tax: "4103456",
+    cr: "CR-50052",
+    taxCardExpiry: futureDate(3),
+    crExpiry: futureDate(7),
+    status: "suspended",
+    transactions: 4,
+    entityId: ENTITIES[0].id,
+    owners: [
+      { name: "يحيى الأهدل", percent: 40 },
+      { name: "خالد الأهدل", percent: 35 },
+      { name: "ناصر الأهدل", percent: 25 },
+    ],
+    companies: [{ name: "الأهدل للإلكترونيات", sector: "إلكترونيات" }],
+  },
+];
 
 export type AuditLog = {
   id: string;
