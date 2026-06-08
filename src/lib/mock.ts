@@ -203,7 +203,14 @@ export const DEMO_USERS: User[] = [
 // AUTH STORE
 // ============================================================
 
-let currentUser: User | null = null;
+const AUTH_USER_KEY = "cby.v2.authUserId";
+const readStoredUser = () => {
+  if (typeof window === "undefined") return null;
+  const id = window.localStorage.getItem(AUTH_USER_KEY);
+  return DEMO_USERS.find((u) => u.id === id) ?? null;
+};
+
+let currentUser: User | null = readStoredUser();
 let lang: "ar" | "en" = "ar";
 let theme: "light" | "dark" = "light";
 let snapshot: { user: User | null; lang: "ar" | "en"; theme: "light" | "dark" } = {
@@ -230,10 +237,12 @@ export const auth = {
   },
   login(u: User) {
     currentUser = u;
+    if (typeof window !== "undefined") window.localStorage.setItem(AUTH_USER_KEY, u.id);
     emit();
   },
   logout() {
     currentUser = null;
+    if (typeof window !== "undefined") window.localStorage.removeItem(AUTH_USER_KEY);
     emit();
   },
   setLang(l: "ar" | "en") {
