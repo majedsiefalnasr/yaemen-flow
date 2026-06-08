@@ -11,7 +11,6 @@ import {
   Download,
   ShieldCheck,
   AlertTriangle,
-  MessageSquare,
   CheckCircle2,
   XCircle,
   Eye,
@@ -901,25 +900,3 @@ function RequestDetail() {
   );
 }
 
-function ActorRow({ label, userId, extra }: { label: string; userId?: string; extra?: string }) {
-  const u = userId ? DEMO_USERS.find((x) => x.id === userId) : undefined;
-  return (
-    <div className="flex items-center justify-between border-b pb-2 last:border-0">
-      <div className="flex items-center gap-3">
-        <div className="h-8 w-8 rounded-full bg-primary text-primary-foreground grid place-items-center text-[10px] font-bold">
-          {u?.avatar ?? "—"}
-        </div>
-        <div>
-          <div className="text-xs text-muted-foreground">{label}</div>
-          <div className="text-sm font-medium">{u?.name ?? "بانتظار التنفيذ"}</div>
-          {extra && <div className="text-[11px] text-muted-foreground">{extra}</div>}
-        </div>
-      </div>
-      {u && (
-        <Badge variant="secondary" className="text-[10px]">
-          {u.org}
-        </Badge>
-      )}
-    </div>
-  );
-}
