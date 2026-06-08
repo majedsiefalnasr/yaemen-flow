@@ -468,9 +468,10 @@ function RequestDetail() {
             )}
 
           <Tabs defaultValue="info">
-            <TabsList className="grid grid-cols-3 w-full">
+            <TabsList className="grid grid-cols-4 w-full">
               <TabsTrigger value="info">المعلومات</TabsTrigger>
               <TabsTrigger value="docs">الوثائق</TabsTrigger>
+              <TabsTrigger value="workflow">سير العملية</TabsTrigger>
               <TabsTrigger value="actors">الأطراف</TabsTrigger>
             </TabsList>
 
