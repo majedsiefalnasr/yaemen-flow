@@ -259,7 +259,7 @@ function Step1({ form, update }: StepProps) {
       importer: name,
       taxNo: m?.tax ?? "",
       crNo: m?.cr ?? "",
-      activity: m?.category ?? form.activity,
+      activity: m?.companies?.[0]?.sector ?? form.activity,
     });
   }
   return (
