@@ -43,6 +43,9 @@ type FormState = {
   activity: string; taxNo: string; crNo: string;
   // — بيانات الفاتورة والشحنة —
   invoiceAmount: string; shipmentDate: string;
+  // — شرط الدفع المبدئي ونسبة الطلب —
+  paymentTerm: "كلي" | "جزئي";
+  requestPercent: string;
   // — الملاك ومصادر الأموال والتغطية —
   shareholders: { name: string; percent: string }[];
   yerSources: string; fxSources: string; coverageMethod: string;
@@ -58,6 +61,8 @@ const INITIAL: FormState = {
   taxNo: "", crNo: "",
   invoiceAmount: "850000",
   shipmentDate: "2025-11-05",
+  paymentTerm: "كلي",
+  requestPercent: "100",
   shareholders: [{ name: "", percent: "" }],
   yerSources: "إيرادات نشاط الشركة بالعملة المحلية",
   fxSources: "تحصيلات تصدير + شراء من السوق المحلي عبر صرّافين معتمدين",
