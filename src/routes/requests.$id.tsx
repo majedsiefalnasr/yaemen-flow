@@ -19,7 +19,6 @@ import {
   Building2,
   User,
   Calendar,
-  TrendingUp,
   Upload,
   FileSignature,
   Lock,
@@ -559,10 +558,6 @@ function RequestDetail() {
                     ["مصادر توريدات الريال اليمني", req.yerSources ?? "—"],
                     ["مصادر العملة الأجنبية", req.fxSources ?? "—"],
                     ["تاريخ التقديم", new Date(req.createdAt).toLocaleDateString("ar-EG")],
-                    [
-                      "مستوى المخاطر",
-                      req.risk === "high" ? "عالية" : req.risk === "medium" ? "متوسطة" : "منخفضة",
-                    ],
                   ] as [string, string][]).map(([k, v]) => (
                     <div
                       key={k}
@@ -846,12 +841,6 @@ function RequestDetail() {
                   icon: Calendar,
                   label: "التقديم",
                   value: new Date(req.createdAt).toLocaleDateString("ar-EG"),
-                },
-                {
-                  icon: TrendingUp,
-                  label: "المخاطر",
-                  value:
-                    req.risk === "high" ? "عالية" : req.risk === "medium" ? "متوسطة" : "منخفضة",
                 },
               ].map((r) => (
                 <div key={r.label} className="flex items-center gap-3">

@@ -79,7 +79,7 @@ export const DEMO_USERS: User[] = [
     email: "admin@cby.gov.ye",
     role: "platform_admin",
     entityId: null,
-    org: "البنك المركزي – إدارة الأنظمة",
+    org: "اللجنة الوطنية لتنظيم وتمويل الواردات – إدارة الأنظمة",
     avatar: "يح",
   },
   // 2) مسؤول البنك التجاري
@@ -119,7 +119,7 @@ export const DEMO_USERS: User[] = [
     email: "m.shami@cby.gov.ye",
     role: "support_member",
     entityId: null,
-    org: "البنك المركزي – لجنة مساندة",
+    org: "اللجنة الوطنية لتنظيم وتمويل الواردات – لجنة مساندة",
     avatar: "مش",
   },
   {
@@ -128,7 +128,7 @@ export const DEMO_USERS: User[] = [
     email: "e.sabri@cby.gov.ye",
     role: "support_member",
     entityId: null,
-    org: "البنك المركزي – لجنة مساندة",
+    org: "اللجنة الوطنية لتنظيم وتمويل الواردات – لجنة مساندة",
     avatar: "إص",
   },
   // 6) موظف السويفت بالبنك التجاري
@@ -148,7 +148,7 @@ export const DEMO_USERS: User[] = [
     email: "huda@cby.gov.ye",
     role: "committee_manager",
     entityId: null,
-    org: "البنك المركزي – مدير اللجنة التنفيذية",
+    org: "اللجنة الوطنية لتنظيم وتمويل الواردات – مدير اللجنة التنفيذية",
     avatar: "هإ",
   },
   // 8-12) أعضاء اللجنة التنفيذية 1..5
@@ -158,7 +158,7 @@ export const DEMO_USERS: User[] = [
     email: "sami@cby.gov.ye",
     role: "executive_member",
     entityId: null,
-    org: "البنك المركزي – عضو اللجنة التنفيذية 1",
+    org: "اللجنة الوطنية لتنظيم وتمويل الواردات – عضو اللجنة التنفيذية 1",
     avatar: "سذ",
   },
   {
@@ -167,7 +167,7 @@ export const DEMO_USERS: User[] = [
     email: "nada@cby.gov.ye",
     role: "executive_member",
     entityId: null,
-    org: "البنك المركزي – عضو اللجنة التنفيذية 2",
+    org: "اللجنة الوطنية لتنظيم وتمويل الواردات – عضو اللجنة التنفيذية 2",
     avatar: "نك",
   },
   {
@@ -176,7 +176,7 @@ export const DEMO_USERS: User[] = [
     email: "fahd@cby.gov.ye",
     role: "executive_member",
     entityId: null,
-    org: "البنك المركزي – عضو اللجنة التنفيذية 3",
+    org: "اللجنة الوطنية لتنظيم وتمويل الواردات – عضو اللجنة التنفيذية 3",
     avatar: "فش",
   },
   {
@@ -185,7 +185,7 @@ export const DEMO_USERS: User[] = [
     email: "amina@cby.gov.ye",
     role: "executive_member",
     entityId: null,
-    org: "البنك المركزي – عضو اللجنة التنفيذية 4",
+    org: "اللجنة الوطنية لتنظيم وتمويل الواردات – عضو اللجنة التنفيذية 4",
     avatar: "أع",
   },
   {
@@ -194,7 +194,7 @@ export const DEMO_USERS: User[] = [
     email: "khaled@cby.gov.ye",
     role: "executive_member",
     entityId: null,
-    org: "البنك المركزي – عضو اللجنة التنفيذية 5",
+    org: "اللجنة الوطنية لتنظيم وتمويل الواردات – عضو اللجنة التنفيذية 5",
     avatar: "خأ",
   },
 ];
@@ -1445,7 +1445,7 @@ export function canViewRequest(user: User | null, req: ImportRequest): boolean {
 // ROLE-SPECIFIC DISPLAY STATUSES (business-friendly buckets)
 // Internal workflow stages are mapped into a smaller, role-relevant set
 // of statuses. A data-entry user must NOT see raw CBY operational stages
-// (e.g. "executive_voting"); they see "قيد معالجة البنك المركزي" instead.
+// (e.g. "executive_voting"); they see "قيد معالجة اللجنة الوطنية لتنظيم وتمويل الواردات" instead.
 // ============================================================
 
 export type DisplayBucket = {
@@ -1476,7 +1476,7 @@ const DATA_ENTRY_BUCKETS: DisplayBucket[] = [
   },
   {
     key: "cby_processing",
-    label: "قيد معالجة البنك المركزي",
+    label: "قيد معالجة اللجنة الوطنية لتنظيم وتمويل الواردات",
     color: C.accent,
     stages: [
       "bank_approved",
@@ -1511,7 +1511,7 @@ const BANK_REVIEWER_BUCKETS: DisplayBucket[] = [
   },
   {
     key: "cby_review",
-    label: "قيد مراجعة البنك المركزي",
+    label: "قيد مراجعة اللجنة الوطنية لتنظيم وتمويل الواردات",
     color: C.warning,
     stages: ["bank_approved", "support_review", "support_approved"],
   },
