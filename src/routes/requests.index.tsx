@@ -154,7 +154,7 @@ function RequestsList() {
                 <th className="px-4 py-3 font-medium">المستورد / البنك</th>
                 <th className="px-4 py-3 font-medium">النوع</th>
                 <th className="px-4 py-3 font-medium">المبلغ</th>
-                <th className="px-4 py-3 font-medium">الحالة</th>
+                <th className="px-4 py-3 font-medium">المرحلة</th>
                 <th className="px-4 py-3 font-medium">التقدم</th>
                 <th className="px-4 py-3 font-medium sticky left-0 bg-muted/50 z-10 shadow-[6px_0_8px_-6px_rgba(0,0,0,0.12)]">إجراء</th>
               </tr>
