@@ -649,6 +649,14 @@ type SeedRow = {
   supportReviewerId?: SupportSeedUserId;
   swiftUploadedBy?: SwiftSeedUserId;
   votes?: SeedVote[];
+  /** override الفاتورة الافتراضية المبنية من الفهرس */
+  invoice?: string;
+  /** override الرقم الضريبي */
+  taxNo?: string;
+  /** شرط الدفع المبدئي */
+  paymentTerm?: "كلي" | "جزئي";
+  /** نسبة المبلغ المطلوب */
+  requestPercent?: number;
 };
 
 const SEED_ROWS: SeedRow[] = [
