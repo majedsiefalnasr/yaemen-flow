@@ -77,7 +77,11 @@ function AuthGate() {
   const nav = useNavigate();
 
   useEffect(() => {
-    if (!user && path !== "/login") nav({ to: "/login" });
+    if (!user && path !== "/login") {
+      const redirect = encodeURIComponent(path);
+      window.history.replaceState(null, "", `/login?redirect=${redirect}`);
+      nav({ to: "/login" });
+    }
     if (user && path === "/login") nav({ to: "/" });
   }, [user, path, nav]);
 
