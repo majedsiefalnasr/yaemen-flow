@@ -22,8 +22,8 @@ type Step = { key: string; label: string; stages: RequestStage[] };
 // خطوات البنك التجاري (مدخل/مراجع/سويفت/مسؤول)
 const BANK_STEPS: Step[] = [
   { key: "draft", label: "مسودة", stages: ["draft", "bank_returned", "support_returned"] },
-  { key: "internal_review", label: "مراجعة داخلية", stages: ["bank_submitted", "bank_internal_review", "bank_rejected"] },
-  { key: "cby_review", label: "مراجعة اللجنة الوطنية", stages: ["bank_approved", "support_review", "support_approved", "executive_voting", "support_rejected", "executive_rejected"] },
+  { key: "internal_review", label: "مراجعة داخلية", stages: ["bank_submitted", "bank_internal_review"] },
+  { key: "cby_review", label: "مراجعة اللجنة الوطنية", stages: ["bank_approved", "support_review", "support_approved", "executive_voting", "executive_rejected"] },
   { key: "swift", label: "سويفت", stages: ["executive_approved"] },
   { key: "customs", label: "تأكيد مصارفة", stages: ["swift_attached"] },
   { key: "completed", label: "مكتمل", stages: ["customs_released", "completed"] },
@@ -31,7 +31,7 @@ const BANK_STEPS: Step[] = [
 
 // خطوات اللجنة الوطنية (المركزي): المساندة → التنفيذية → الإصدار → مكتمل
 const CBY_STEPS: Step[] = [
-  { key: "support", label: "مراجعة اللجنة المساندة", stages: ["bank_approved", "support_review", "support_approved", "support_rejected"] },
+  { key: "support", label: "مراجعة اللجنة المساندة", stages: ["bank_approved", "support_review", "support_approved"] },
   { key: "executive", label: "تصويت اللجنة التنفيذية", stages: ["executive_voting", "executive_rejected"] },
   { key: "issue", label: "إصدار تأكيد المصارفة", stages: ["executive_approved", "swift_attached"] },
   { key: "completed", label: "مكتمل", stages: ["customs_released", "completed"] },
@@ -40,7 +40,7 @@ const CBY_STEPS: Step[] = [
 const BANK_ROLES: Role[] = ["bank_intake", "bank_reviewer", "bank_admin", "bank_swift"];
 const CBY_ROLES: Role[] = ["support_member", "executive_member", "committee_manager"];
 
-const REJECT_STAGES: RequestStage[] = ["executive_rejected", "support_rejected", "bank_rejected"];
+const REJECT_STAGES: RequestStage[] = ["executive_rejected"];
 const TERMINAL_DONE: RequestStage[] = ["completed", "customs_released"];
 
 function stepsForRole(role: Role | null): Step[] {
