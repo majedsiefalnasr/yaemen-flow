@@ -199,8 +199,6 @@ function RequestDetail() {
   };
   const returnedReason =
     req.stage === "support_returned" ? reasonFor("support_returned") : undefined;
-  const supportRejectedReason =
-    req.stage === "support_rejected" ? reasonFor("support_rejected") : undefined;
   const execRejectedReason =
     req.stage === "executive_rejected" ? reasonFor("executive_rejected") : undefined;
   const bankRejectedReason = req.stage === "bank_rejected" ? reasonFor("bank_rejected") : undefined;
