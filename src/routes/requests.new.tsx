@@ -362,6 +362,34 @@ function Step1({ form, update }: StepProps) {
             </SelectContent>
           </Select>
         </Field>
+        <Field label="شرط الدفع المبدئي" required>
+          <Select
+            value={form.paymentTerm}
+            onValueChange={(v) =>
+              update({
+                paymentTerm: v as FormState["paymentTerm"],
+                requestPercent: v === "كلي" ? "100" : form.requestPercent === "100" ? "" : form.requestPercent,
+              })
+            }
+          >
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="كلي">كلي (100%)</SelectItem>
+              <SelectItem value="جزئي">جزئي</SelectItem>
+            </SelectContent>
+          </Select>
+        </Field>
+        <Field label="نسبة المبلغ المطلوب من الفاتورة %" required>
+          <Input
+            type="number"
+            min={form.paymentTerm === "كلي" ? 100 : 5}
+            max={form.paymentTerm === "كلي" ? 100 : 99}
+            disabled={form.paymentTerm === "كلي"}
+            value={form.requestPercent}
+            onChange={(e) => update({ requestPercent: e.target.value })}
+            placeholder={form.paymentTerm === "كلي" ? "100" : "5 إلى 99"}
+          />
+        </Field>
         <Field label="طريقة التغطية خارجياً" required>
           <Input value={form.coverageMethod} onChange={(e) => update({ coverageMethod: e.target.value })} placeholder="مثل: تحويل بنكي عبر بنك مراسل" />
         </Field>
