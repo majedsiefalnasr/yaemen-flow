@@ -114,14 +114,16 @@ export function MerchantForm({ initial, mode }: { initial?: Merchant; mode: "cre
           <Field label="تاريخ انتهاء السجل التجاري *">
             <Input type="date" value={crExpiry} onChange={(e) => setCrExpiry(e.target.value)} />
           </Field>
-          <Field label="البنك التابع له *">
-            <Select value={entityId} onValueChange={setEntityId}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {ENTITIES.map((e) => <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </Field>
+          {user?.role === "platform_admin" && (
+            <Field label="البنك التابع له *">
+              <Select value={entityId} onValueChange={setEntityId}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {ENTITIES.map((e) => <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </Field>
+          )}
           <Field label="الحالة">
             <Select value={status} onValueChange={(v) => setStatus(v as "active" | "suspended")}>
               <SelectTrigger><SelectValue /></SelectTrigger>

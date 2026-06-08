@@ -616,12 +616,11 @@ function Step2({ form, update }: StepProps) {
         </Field>
 
         <Field label="عملة الفاتورة" required>
-          <Select value={form.invoiceCurrency} onValueChange={(v) => update({ invoiceCurrency: v })}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              {REQUEST_CURRENCIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-            </SelectContent>
-          </Select>
+          <Input
+            value={form.invoiceCurrency}
+            onChange={(e) => update({ invoiceCurrency: e.target.value })}
+            placeholder="مثال: USD / SAR / EUR"
+          />
         </Field>
 
         <Field label="تاريخ الفاتورة" required>
@@ -873,15 +872,6 @@ function Step5({ form }: { form: FormState }) {
           ["شروط التسليم", form.incoterm || "—"],
           ["الوجهة النهائية", form.finalDestination || "—"],
         ]} />
-      </div>
-      <div className="flex items-start gap-3 p-4 rounded-lg bg-info/5 border border-info/20">
-        <ShieldCheck className="h-5 w-5 text-info mt-0.5 shrink-0" />
-        <div className="text-sm">
-          <div className="font-medium">إقرار وتعهد</div>
-          <p className="text-muted-foreground text-xs mt-1 leading-relaxed">
-            أُقر بأن جميع البيانات والمستندات المقدمة صحيحة وكاملة، وأتحمل المسؤولية القانونية عن أي بيانات غير دقيقة.
-          </p>
-        </div>
       </div>
     </div>
   );
