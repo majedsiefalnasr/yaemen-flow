@@ -118,6 +118,7 @@ function NewRequest() {
       stage,
       createdAt: new Date().toISOString(),
       progress: progressByStage[stage],
+      risk: "low",
       duplicate: false,
       intakeUserId: user?.id ?? "u5",
       createdBy: user?.id ?? "u5",
