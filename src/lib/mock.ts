@@ -1657,20 +1657,14 @@ const DATA_ENTRY_BUCKETS: DisplayBucket[] = [
       "support_review",
       "executive_voting",
       "executive_approved",
-      "swift_attached",
     ],
   },
+  { key: "swift_done", label: "تم رفع السويفت — بانتظار تأكيد المصارفة", color: C.info, stages: ["swift_attached"] },
   {
     key: "returned",
     label: "بحاجة لتعديل",
     color: C.warning,
     stages: ["support_returned", "bank_returned"],
-  },
-  {
-    key: "rejected_internal",
-    label: "مرفوض من المراجعة الداخلية",
-    color: C.destructive,
-    stages: ["bank_rejected"],
   },
   {
     key: "completed",
@@ -1708,12 +1702,6 @@ const BANK_REVIEWER_BUCKETS: DisplayBucket[] = [
   },
   { key: "waiting_swift", label: "بانتظار رفع السويفت", color: C.accent, stages: ["executive_approved"] },
   { key: "swift_done", label: "تم رفع السويفت — بانتظار تأكيد المصارفة", color: C.info, stages: ["swift_attached"] },
-  {
-    key: "rejected_internal",
-    label: "مرفوض من المراجعة الداخلية",
-    color: C.destructive,
-    stages: ["bank_rejected"],
-  },
   {
     key: "completed",
     label: "مكتمل",
