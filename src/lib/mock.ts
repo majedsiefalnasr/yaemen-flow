@@ -1199,6 +1199,9 @@ export const REQUESTS: ImportRequest[] = REQUEST_SEED_META.map(
     const swiftAttached = SWIFT_ATTACHED_STAGES.has(row.stage);
     const executiveDecided = EXECUTIVE_DECISION_STAGES.has(row.stage);
     const customsDone = CUSTOMS_DONE_STAGES.has(row.stage);
+    const profile = importerProfiles[Math.max(0, importers.indexOf(row.importer))] ?? importerProfiles[0];
+    const invoiceDate = new Date(baseDate.getTime() - 12 * 24 * 3600_000).toISOString().slice(0, 10);
+    const shipmentDate = new Date(baseDate.getTime() + 18 * 24 * 3600_000).toISOString().slice(0, 10);
     const supportReviewerId =
       row.supportReviewerId ?? (supportHandled ? (row.supportClaimedBy ?? "u2") : undefined);
     const supportClaimedBy =
@@ -1230,9 +1233,20 @@ export const REQUESTS: ImportRequest[] = REQUEST_SEED_META.map(
       progress: progressFor(row.stage),
       risk: row.risk,
       duplicate: row.duplicate,
-      taxNo: row.taxNo,
+      taxNo: row.taxNo ?? profile.taxNo,
+      crNo: profile.crNo,
+      activity: profile.activity,
+      shareholders: profile.shareholders,
+      originCountry: originCountries[index % originCountries.length],
+      invoiceAmount: Math.round(row.amount / ((row.requestPercent ?? 100) / 100)),
+      invoiceDate,
       paymentTerm: row.paymentTerm ?? "كلي",
       requestPercent: row.requestPercent ?? 100,
+      shipmentDate,
+      shipPort: shipPorts[index % shipPorts.length],
+      fxSources: index % 2 === 0 ? "التاجر" : "تمويل من البنك",
+      yerSources: "إيرادات النشاط التجاري داخل الجمهورية اليمنية",
+      coverageMethod: "تحويل بنكي خارجي",
       intakeUserId: row.intake,
       createdBy: row.intake,
       lastUpdatedBy,
@@ -1254,6 +1268,30 @@ export const REQUESTS: ImportRequest[] = REQUEST_SEED_META.map(
             mime: "application/pdf",
           }
         : undefined,
+      remittanceRequestFile: swiftAttached
+        ? {
+            name: `طلب-تأكيد-مصارفة-${2000 + index}.pdf`,
+            size: 256000,
+            uploadedAt: new Date(baseDate.getTime() + 4 * 3600_000).toISOString(),
+            uploadedBy: swiftUploadedBy ?? "u7",
+            mime: "application/pdf",
+          }
+        : undefined,
+      customsStampedFile: customsDone
+        ? {
+            name: `تأكيد-المصارفة-الخارجية-${2000 + index}.pdf`,
+            size: 312000,
+            uploadedAt: new Date(baseDate.getTime() + 8 * 3600_000).toISOString(),
+            uploadedBy: "u9",
+            mime: "application/pdf",
+          }
+        : undefined,
+      documents: [
+        { name: "طلب وثيقة تأكيد (مختوم)", fileName: "confirmation_request_stamped.pdf", mime: "application/pdf", dataUrl: "", size: 1_500_000 },
+        { name: "الفاتورة الأولية (Proforma Invoice)", fileName: "proforma_invoice.pdf", mime: "application/pdf", dataUrl: "", size: 2_400_000 },
+        { name: "السجل التجاري", fileName: "commercial_register.pdf", mime: "application/pdf", dataUrl: "", size: 1_800_000 },
+        { name: "البطاقة الضريبية", fileName: "tax_card.pdf", mime: "application/pdf", dataUrl: "", size: 1_200_000 },
+      ],
       customsNo: customsDone ? `CD-2026-${String(7000 + index)}` : undefined,
       customsAt: customsDone
         ? new Date(baseDate.getTime() + 8 * 3600_000).toISOString()
