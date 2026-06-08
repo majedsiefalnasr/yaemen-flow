@@ -7,6 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { auth, DEMO_USERS, ROLE_LABELS } from "@/lib/mock";
 import { cn } from "@/lib/utils";
+import ncrfiLogoText from "@/assets/ncrfi-logo-text.png.asset.json";
+import ncrfiLogoMark from "@/assets/ncrfi-logo-mark.png.asset.json";
 
 export const Route = createFileRoute("/login")({ component: Login });
 
@@ -42,23 +44,17 @@ function Login() {
           backgroundSize: "40px 40px",
         }} />
         <div className="relative">
-          <div className="flex items-center gap-3">
-            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-white/10 backdrop-blur border border-white/20 text-2xl font-bold">
-              ب.م
+          <div className="flex items-center gap-4">
+            <div className="grid h-16 w-16 place-items-center rounded-2xl bg-white p-1.5">
+              <img src={ncrfiLogoMark.url} alt="شعار اللجنة الوطنية" className="h-full w-full object-contain" />
             </div>
-            <div>
-              <div className="font-bold text-lg">اللجنة الوطنية لتنظيم وتمويل الواردات</div>
-              <div className="text-sm text-white/70">Central Bank of Yemen</div>
-            </div>
+            <div className="font-bold text-lg leading-tight">اللجنة الوطنية لتنظيم وتمويل الواردات</div>
           </div>
         </div>
         <div className="relative space-y-6">
-          <h1 className="text-4xl font-bold leading-tight text-balance">
-            منصة إدارة ومراجعة طلبات تمويل الواردات
-          </h1>
-          <p className="text-white/80 text-lg leading-relaxed">
-            دورة عمل تنظيمية محكمة: إدخال بنكي → مراجعة داخلية → اعتماد المساندة → إرفاق سويفت → تصويت تنفيذي → إصدار تأكيد المصارفة الخارجية.
-          </p>
+          <div className="rounded-2xl bg-white/95 p-8 shadow-2xl">
+            <img src={ncrfiLogoText.url} alt="اللجنة الوطنية لتنظيم وتمويل الواردات" className="w-full h-auto object-contain" />
+          </div>
         </div>
         <div className="relative text-xs text-white/50">
           محمي بأعلى معايير الأمن السيبراني · ISO 27001
