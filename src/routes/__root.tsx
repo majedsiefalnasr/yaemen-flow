@@ -80,7 +80,14 @@ function AuthGate() {
     if (!user && path !== "/login") {
       window.location.replace(`/login?redirect=${encodeURIComponent(path)}`);
     }
-    if (user && path === "/login") nav({ to: "/" });
+    if (user && path === "/login") {
+      const redirect = new URLSearchParams(window.location.search).get("redirect");
+      if (redirect?.startsWith("/") && !redirect.startsWith("//")) {
+        window.location.replace(redirect);
+        return;
+      }
+      nav({ to: "/" });
+    }
   }, [user, path, nav]);
 
   if (!user || path === "/login") return <Outlet />;

@@ -24,6 +24,11 @@ function Login() {
     e.preventDefault();
     const u = DEMO_USERS.find((u) => u.id === selectedUserId)!;
     auth.login(u);
+    const redirect = new URLSearchParams(window.location.search).get("redirect");
+    if (redirect?.startsWith("/") && !redirect.startsWith("//")) {
+      window.location.replace(redirect);
+      return;
+    }
     nav({ to: "/" });
   };
 
