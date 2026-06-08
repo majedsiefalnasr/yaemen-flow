@@ -143,6 +143,8 @@ function NewRequest() {
       invoiceAmount: Number(form.invoiceAmount) || undefined,
       invoiceDate: form.invoiceDate || undefined,
       paymentTerms: form.payment.toUpperCase(),
+      paymentTerm: form.paymentTerm,
+      requestPercent: Number(form.requestPercent) || (form.paymentTerm === "كلي" ? 100 : 0),
       shipmentDate: form.shipmentDate || undefined,
       shipPort: form.shipPort || undefined,
       shareholders: form.shareholders
