@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Check, X, Minus, Lock, Crown, Gavel, AlertTriangle, StopCircle } from "lucide-react";
+import { Check, X, Lock, Crown, Gavel, AlertTriangle, StopCircle } from "lucide-react";
 import {
   votesCell, voteHistoryCell, finalizationsCell, execConfigCell,
   castVote, tally, isFinalized, finalizeVoting,
@@ -105,10 +105,9 @@ export function VotingPanel({ req }: { req: ImportRequest }) {
       </div>
 
       {/* Tally */}
-      <div className="p-4 grid sm:grid-cols-3 gap-3">
-        <Tally label="موافقة" count={counts.approve} pct={approveProgress} cls="bg-success" />
-        <Tally label="رفض" count={counts.reject} pct={rejectProgress} cls="bg-destructive" />
-        <Tally label="امتناع" count={counts.abstain} pct={(counts.abstain / Math.max(1, totalMembers)) * 100} cls="bg-muted-foreground" />
+      <div className="p-4 grid sm:grid-cols-2 gap-3">
+        <Tally label="موافق" count={counts.approve} pct={approveProgress} cls="bg-success" />
+        <Tally label="غير مستوفي للشروط" count={counts.reject} pct={rejectProgress} cls="bg-destructive" />
       </div>
 
       {/* Member list */}
@@ -137,7 +136,7 @@ export function VotingPanel({ req }: { req: ImportRequest }) {
                     v.vote === "reject" && "bg-destructive/15 text-destructive",
                     v.vote === "abstain" && "bg-muted text-muted-foreground",
                   )}>
-                    {v.vote === "approve" ? "موافق" : v.vote === "reject" ? "رافض" : "ممتنع"}
+                    {v.vote === "approve" ? "موافق" : v.vote === "reject" ? "غير مستوفي" : "ممتنع"}
                   </span>
                 ) : (
                   <span className="text-[11px] text-muted-foreground">لم يصوّت</span>
@@ -152,7 +151,7 @@ export function VotingPanel({ req }: { req: ImportRequest }) {
       {isMember && !locked && sessionOpen && (
         <div className="p-4 bg-muted/30">
           <div className="text-xs font-semibold mb-2">
-            {myVote ? `تصويتك الحالي: ${myVote.vote === "approve" ? "موافق" : myVote.vote === "reject" ? "رافض" : "ممتنع"} — يمكنك تغييره طالما الجلسة مفتوحة` : "صوّت الآن"}
+            {myVote ? `تصويتك الحالي: ${myVote.vote === "approve" ? "موافق" : "غير مستوفي للشروط"} — يمكنك تغييره طالما الجلسة مفتوحة` : "صوّت الآن"}
           </div>
           <Textarea
             value={justif}
@@ -166,10 +165,7 @@ export function VotingPanel({ req }: { req: ImportRequest }) {
               <Check className="h-4 w-4 ml-1" /> موافق
             </Button>
             <Button onClick={() => vote("reject")} size="sm" variant="destructive">
-              <X className="h-4 w-4 ml-1" /> رافض
-            </Button>
-            <Button onClick={() => vote("abstain")} size="sm" variant="outline">
-              <Minus className="h-4 w-4 ml-1" /> ممتنع
+              <X className="h-4 w-4 ml-1" /> غير مستوفي للشروط
             </Button>
           </div>
         </div>

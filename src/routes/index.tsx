@@ -544,7 +544,6 @@ function PlatformAdminDashboard({ scoped }: { scoped: ImportRequest[] }) {
           <div className="space-y-3">
             {[
               { icon: AlertTriangle, tone: "text-destructive bg-destructive/10", title: "فاتورة مكررة", body: "INV-2024028 على طلبين", time: "منذ 12 د" },
-              { icon: ShieldCheck, tone: "text-warning bg-warning/10", title: "طلب عالي المخاطر", body: "IMP-2025-1031 يستلزم مراجعة", time: "منذ 45 د" },
               { icon: CheckCircle2, tone: "text-success bg-success/10", title: "اعتماد دفعة طلبات", body: "12 طلب اعتُمدت اليوم", time: "اليوم 10:15" },
             ].map((a, i) => (
               <div key={i} className="flex gap-3 p-3 rounded-lg border hover:border-accent/40 transition-colors">

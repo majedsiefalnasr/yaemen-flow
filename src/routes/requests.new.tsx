@@ -156,6 +156,22 @@ function NewRequest() {
       setStep(0);
       return;
     }
+    // منع التكرار: نفس الرقم الضريبي + رقم الفاتورة لا يُسمح به
+    // (مرحلة لاحقة: السماح بالفواتير الجزئية إذا لم يصل المجموع إلى 100%).
+    const merchant = allMerchants.find((m) => m.name === form.importer);
+    const taxId = (form.taxNo || merchant?.tax || "").trim();
+    if (taxId && form.invoice.trim()) {
+      const dup = requestsCell.get().some(
+        (r) =>
+          (r.taxNo ?? "").trim() === taxId &&
+          r.invoice.trim() === form.invoice.trim(),
+      );
+      if (dup) {
+        toast.error("يوجد طلب سابق بنفس الرقم الضريبي ورقم الفاتورة — لا يُسمح بالتكرار");
+        setStep(0);
+        return;
+      }
+    }
     const req = buildRequest(stage);
     requestsCell.set((prev) => [req, ...prev]);
     logAudit({
