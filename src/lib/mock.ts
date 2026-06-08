@@ -573,6 +573,10 @@ export type ImportRequest = {
   invoiceDate?: string;
   /** شروط الدفع (LC / DP / TT ...) */
   paymentTerms?: string;
+  /** نوع شرط الدفع المبدئي: كلي أم جزئي */
+  paymentTerm?: "كلي" | "جزئي";
+  /** نسبة المبلغ المطلوب من قيمة الفاتورة (5..100). الكلي = 100 ومقفل. */
+  requestPercent?: number;
   /** تاريخ الشحن */
   shipmentDate?: string;
   /** ميناء الشحن */
