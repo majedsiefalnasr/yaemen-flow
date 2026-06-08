@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Search, AlertTriangle, ShieldCheck, FileWarning, Activity } from "lucide-react";
+import { Search, AlertTriangle, FileWarning, Activity } from "lucide-react";
 import { PageHeader } from "@/components/layout/AppShell";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -28,16 +28,15 @@ function Audit() {
     <div>
       <PageHeader
         title="التدقيق والامتثال"
-        subtitle="سجل النشاط، كشف الفواتير المكررة، وتنبيهات المخاطر الأمنية"
+        subtitle="سجل النشاط وكشف الفواتير المكررة"
         breadcrumbs={[{ label: "الرئيسية", to: "/" }, { label: "التدقيق والامتثال" }]}
       />
 
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4 mb-6">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-3 mb-6">
         {[
           { l: "نشاطات اليوم", v: AUDIT.length.toString(), icon: Activity, tone: "text-info bg-info/10" },
           { l: "تنبيهات مفتوحة", v: "9", icon: AlertTriangle, tone: "text-warning bg-warning/10" },
           { l: "فواتير مكررة", v: duplicates.length.toString(), icon: FileWarning, tone: "text-destructive bg-destructive/10" },
-          { l: "حالات احتيال محتملة", v: "2", icon: ShieldCheck, tone: "text-destructive bg-destructive/10" },
         ].map((k) => (
           <Card key={k.l} className="p-4 shadow-card border-0 flex items-center gap-3">
             <div className={`h-11 w-11 rounded-xl grid place-items-center ${k.tone}`}><k.icon className="h-5 w-5" /></div>
@@ -53,7 +52,6 @@ function Audit() {
         <TabsList>
           <TabsTrigger value="logs">سجل النشاط</TabsTrigger>
           <TabsTrigger value="dup">الفواتير المكررة</TabsTrigger>
-          <TabsTrigger value="risk">مؤشرات المخاطر</TabsTrigger>
         </TabsList>
 
         <TabsContent value="logs" className="mt-4">
@@ -117,29 +115,6 @@ function Audit() {
                       مرتبط بـ <span className="font-mono text-accent">IMP-2025-{1000 + Math.floor(Math.random() * 50)}</span>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="risk" className="mt-4">
-          <Card className="p-5 shadow-card border-0">
-            <h3 className="font-semibold mb-4">مؤشرات المخاطر النشطة</h3>
-            <div className="space-y-3">
-              {[
-                { t: "نمط طلبات غير عادي", b: "مستخدم u00432 قدّم 14 طلب في 30 دقيقة", l: "عالية" },
-                { t: "محاولة تسجيل دخول مشبوهة", b: "5 محاولات فاشلة من IP 196.4.112.18", l: "عالية" },
-                { t: "تعديل فاتورة بعد الاعتماد", b: "تعديل على IMP-2025-1011", l: "متوسطة" },
-                { t: "وثيقة بصلاحية منتهية", b: "شهادة منشأ على IMP-2025-1027", l: "منخفضة" },
-              ].map((r, i) => (
-                <div key={i} className="flex items-start gap-3 p-3 border rounded-lg">
-                  <ShieldCheck className={`h-5 w-5 mt-0.5 ${r.l === "عالية" ? "text-destructive" : r.l === "متوسطة" ? "text-warning" : "text-info"}`} />
-                  <div className="flex-1">
-                    <div className="font-medium text-sm">{r.t}</div>
-                    <div className="text-xs text-muted-foreground">{r.b}</div>
-                  </div>
-                  <Badge variant={r.l === "عالية" ? "destructive" : "secondary"}>{r.l}</Badge>
                 </div>
               ))}
             </div>
