@@ -775,14 +775,14 @@ function RequestDetail() {
                 <div className="mt-4 pt-4 border-t space-y-2">
                   {transitions.some((t) => t.requiresComment) && (
                     <p className="text-xs text-destructive">
-                      * التعليق إلزامي في حالة الإعادة للتعديل أو رفض الطلب
+                      * التعليق إلزامي في حالة الإعادة للتعديل
                     </p>
                   )}
                   <Textarea
                     rows={2}
                     placeholder={
                       transitions.some((t) => t.requiresComment)
-                        ? "اكتب سبب الإعادة أو الرفض..."
+                        ? "اكتب سبب الإعادة..."
                         : "تعليق (اختياري)..."
                     }
                     value={comment}
