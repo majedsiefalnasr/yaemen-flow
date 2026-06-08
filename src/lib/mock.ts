@@ -608,6 +608,50 @@ const importers = [
   "مجموعة الأهدل",
 ];
 const suppliers = ["Cargill Inc.", "Pfizer Ltd.", "Saudi Aramco Trading", "Siemens AG", "Bayer AG"];
+const importerProfiles = [
+  {
+    taxNo: "4100007",
+    crNo: "CR-50000",
+    activity: "مصانع هائل سعيد للمواد الغذائية",
+    shareholders: [
+      { name: "هائل سعيد أنعم", percent: 60 },
+      { name: "محمد هائل سعيد", percent: 30 },
+    ],
+  },
+  {
+    taxNo: "4100123",
+    crNo: "CR-50013",
+    activity: "الشيباني لتجارة قطع الغيار",
+    shareholders: [{ name: "عبد القادر الشيباني", percent: 80 }],
+  },
+  {
+    taxNo: "4101000",
+    crNo: "CR-50026",
+    activity: "ثابت إخوان للأدوية",
+    shareholders: [
+      { name: "علي ثابت", percent: 50 },
+      { name: "محمد ثابت", percent: 50 },
+    ],
+  },
+  {
+    taxNo: "4102234",
+    crNo: "CR-50039",
+    activity: "الكميم للأدوية والمستلزمات الطبية",
+    shareholders: [{ name: "أحمد الكميم", percent: 100 }],
+  },
+  {
+    taxNo: "4103456",
+    crNo: "CR-50052",
+    activity: "الأهدل للإلكترونيات",
+    shareholders: [
+      { name: "يحيى الأهدل", percent: 40 },
+      { name: "خالد الأهدل", percent: 35 },
+      { name: "ناصر الأهدل", percent: 25 },
+    ],
+  },
+];
+const originCountries = ["الولايات المتحدة", "ألمانيا", "السعودية", "الهند", "الصين"];
+const shipPorts = ["ميناء جدة الإسلامي", "ميناء جبل علي", "ميناء هامبورغ", "ميناء مومباي", "ميناء شنغهاي"];
 
 /**
  * Curated, organized seed data — at least 2 examples per workflow stage,
