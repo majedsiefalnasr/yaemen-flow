@@ -18,6 +18,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuditRouteImport } from './routes/audit'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as RequestsIndexRouteImport } from './routes/requests.index'
+import { Route as MerchantsIndexRouteImport } from './routes/merchants.index'
 import { Route as RequestsNewRouteImport } from './routes/requests.new'
 import { Route as RequestsIdRouteImport } from './routes/requests.$id'
 import { Route as MerchantsNewRouteImport } from './routes/merchants.new'
@@ -73,6 +74,11 @@ const RequestsIndexRoute = RequestsIndexRouteImport.update({
   id: '/requests/',
   path: '/requests/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const MerchantsIndexRoute = MerchantsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => MerchantsRoute,
 } as any)
 const RequestsNewRoute = RequestsNewRouteImport.update({
   id: '/requests/new',
@@ -142,6 +148,7 @@ export interface FileRoutesByFullPath {
   '/merchants/new': typeof MerchantsNewRoute
   '/requests/$id': typeof RequestsIdRouteWithChildren
   '/requests/new': typeof RequestsNewRoute
+  '/merchants/': typeof MerchantsIndexRoute
   '/requests/': typeof RequestsIndexRoute
   '/merchants/$id/edit': typeof MerchantsIdEditRoute
   '/requests/$id/swift': typeof RequestsIdSwiftRoute
@@ -150,7 +157,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/audit': typeof AuditRoute
   '/login': typeof LoginRoute
-  '/merchants': typeof MerchantsRouteWithChildren
   '/notifications': typeof NotificationsRoute
   '/profile': typeof ProfileRoute
   '/reports': typeof ReportsRoute
@@ -163,6 +169,7 @@ export interface FileRoutesByTo {
   '/merchants/new': typeof MerchantsNewRoute
   '/requests/$id': typeof RequestsIdRouteWithChildren
   '/requests/new': typeof RequestsNewRoute
+  '/merchants': typeof MerchantsIndexRoute
   '/requests': typeof RequestsIndexRoute
   '/merchants/$id/edit': typeof MerchantsIdEditRoute
   '/requests/$id/swift': typeof RequestsIdSwiftRoute
@@ -185,6 +192,7 @@ export interface FileRoutesById {
   '/merchants/new': typeof MerchantsNewRoute
   '/requests/$id': typeof RequestsIdRouteWithChildren
   '/requests/new': typeof RequestsNewRoute
+  '/merchants/': typeof MerchantsIndexRoute
   '/requests/': typeof RequestsIndexRoute
   '/merchants/$id/edit': typeof MerchantsIdEditRoute
   '/requests/$id/swift': typeof RequestsIdSwiftRoute
@@ -208,6 +216,7 @@ export interface FileRouteTypes {
     | '/merchants/new'
     | '/requests/$id'
     | '/requests/new'
+    | '/merchants/'
     | '/requests/'
     | '/merchants/$id/edit'
     | '/requests/$id/swift'
@@ -216,7 +225,6 @@ export interface FileRouteTypes {
     | '/'
     | '/audit'
     | '/login'
-    | '/merchants'
     | '/notifications'
     | '/profile'
     | '/reports'
@@ -229,6 +237,7 @@ export interface FileRouteTypes {
     | '/merchants/new'
     | '/requests/$id'
     | '/requests/new'
+    | '/merchants'
     | '/requests'
     | '/merchants/$id/edit'
     | '/requests/$id/swift'
@@ -250,6 +259,7 @@ export interface FileRouteTypes {
     | '/merchants/new'
     | '/requests/$id'
     | '/requests/new'
+    | '/merchants/'
     | '/requests/'
     | '/merchants/$id/edit'
     | '/requests/$id/swift'
@@ -339,6 +349,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RequestsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/merchants/': {
+      id: '/merchants/'
+      path: '/'
+      fullPath: '/merchants/'
+      preLoaderRoute: typeof MerchantsIndexRouteImport
+      parentRoute: typeof MerchantsRoute
+    }
     '/requests/new': {
       id: '/requests/new'
       path: '/requests/new'
@@ -414,11 +431,13 @@ declare module '@tanstack/react-router' {
 
 interface MerchantsRouteChildren {
   MerchantsNewRoute: typeof MerchantsNewRoute
+  MerchantsIndexRoute: typeof MerchantsIndexRoute
   MerchantsIdEditRoute: typeof MerchantsIdEditRoute
 }
 
 const MerchantsRouteChildren: MerchantsRouteChildren = {
   MerchantsNewRoute: MerchantsNewRoute,
+  MerchantsIndexRoute: MerchantsIndexRoute,
   MerchantsIdEditRoute: MerchantsIdEditRoute,
 }
 
@@ -459,3 +478,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
