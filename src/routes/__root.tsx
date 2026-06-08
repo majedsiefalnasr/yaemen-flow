@@ -77,8 +77,15 @@ function AuthGate() {
   const nav = useNavigate();
 
   useEffect(() => {
-    if (!user && path !== "/login") {
+    // Avoid redirect loop during hydration: if localStorage still has a
+    // session, wait for the client snapshot to populate before redirecting.
+    const storedId =
+      typeof window !== "undefined"
+        ? window.localStorage.getItem("cby.v2.authUserId")
+        : null;
+    if (!user && !storedId && path !== "/login") {
       window.location.replace(`/login?redirect=${encodeURIComponent(path)}`);
+      return;
     }
     if (user && path === "/login") {
       const redirect = new URLSearchParams(window.location.search).get("redirect");
