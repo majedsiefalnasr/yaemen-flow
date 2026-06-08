@@ -30,7 +30,7 @@ function WorkflowDocs() {
   const [draft, setDraft] = useState<Partial<DocRule>>({ stage: "draft", required: true, fileTypes: ["pdf"], minCount: 1 });
 
   if (!user || user.role !== "platform_admin") {
-    return <div className="p-8 text-sm text-muted-foreground">هذه الصفحة متاحة لمسؤول البنك المركزي فقط.</div>;
+    return <div className="p-8 text-sm text-muted-foreground">هذه الصفحة متاحة لمسؤول اللجنة الوطنية لتنظيم وتمويل الواردات فقط.</div>;
   }
 
   function add() {

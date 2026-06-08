@@ -191,7 +191,7 @@ export const BANK_ONLY_PERMS: Permission[] = [
   "swift.upload",
 ];
 
-// الصلاحيات المتاحة لأدوار البنك المركزي (CBY) — تستثني صلاحيات تشغيل البنوك التجارية.
+// الصلاحيات المتاحة لأدوار اللجنة الوطنية لتنظيم وتمويل الواردات (CBY) — تستثني صلاحيات تشغيل البنوك التجارية.
 export const CBY_PERMS: Permission[] = (Object.keys(PERMISSION_LABELS) as Permission[]).filter(
   (p) => !BANK_ONLY_PERMS.includes(p),
 );

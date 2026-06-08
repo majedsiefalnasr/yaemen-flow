@@ -27,10 +27,10 @@ export const Route = createFileRoute("/admin/cby-staff")({
 const STAFF_ROLES: Role[] = ["support_member", "executive_member", "committee_manager", "platform_admin"];
 
 const ORG_BY_ROLE: Record<Role, string> = {
-  support_member: "البنك المركزي – لجنة مساندة",
-  executive_member: "البنك المركزي – لجنة تنفيذية",
-  committee_manager: "البنك المركزي – مدير اللجنة التنفيذية",
-  platform_admin: "البنك المركزي – إدارة الأنظمة",
+  support_member: "اللجنة الوطنية لتنظيم وتمويل الواردات – لجنة مساندة",
+  executive_member: "اللجنة الوطنية لتنظيم وتمويل الواردات – لجنة تنفيذية",
+  committee_manager: "اللجنة الوطنية لتنظيم وتمويل الواردات – مدير اللجنة التنفيذية",
+  platform_admin: "اللجنة الوطنية لتنظيم وتمويل الواردات – إدارة الأنظمة",
   bank_admin: "", bank_intake: "", bank_reviewer: "", bank_swift: "",
 };
 
@@ -111,7 +111,7 @@ function SystemUsers() {
     <div>
       <PageHeader
         title="مستخدمي النظام"
-        subtitle="إدارة موظفي البنك المركزي — اللجان المساندة والتنفيذية ومسؤولي النظام"
+        subtitle="إدارة موظفي اللجنة الوطنية لتنظيم وتمويل الواردات — اللجان المساندة والتنفيذية ومسؤولي النظام"
         breadcrumbs={[{ label: "الرئيسية", to: "/" }, { label: "مستخدمي النظام" }]}
         actions={
           <Dialog open={openAdd} onOpenChange={setOpenAdd}>
@@ -259,7 +259,7 @@ function UserDialog({ title, initial, onSave }: { title: string; initial?: User;
     <DialogContent dir="rtl" className="sm:max-w-md">
       <DialogHeader>
         <DialogTitle>{title}</DialogTitle>
-        <DialogDescription>مستخدمو البنك المركزي فقط (لجان وإدارة النظام).</DialogDescription>
+        <DialogDescription>مستخدمو اللجنة الوطنية لتنظيم وتمويل الواردات فقط (لجان وإدارة النظام).</DialogDescription>
       </DialogHeader>
       <div className="space-y-3 py-2">
         <div className="space-y-1.5"><Label>الاسم *</Label><Input value={name} onChange={(e) => setName(e.target.value)} /></div>
