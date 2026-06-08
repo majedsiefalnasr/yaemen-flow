@@ -43,6 +43,9 @@ type FormState = {
   activity: string; taxNo: string; crNo: string;
   // — بيانات الفاتورة والشحنة —
   invoiceAmount: string; shipmentDate: string;
+  // — شرط الدفع المبدئي ونسبة الطلب —
+  paymentTerm: "كلي" | "جزئي";
+  requestPercent: string;
   // — الملاك ومصادر الأموال والتغطية —
   shareholders: { name: string; percent: string }[];
   yerSources: string; fxSources: string; coverageMethod: string;
@@ -58,6 +61,8 @@ const INITIAL: FormState = {
   taxNo: "", crNo: "",
   invoiceAmount: "850000",
   shipmentDate: "2025-11-05",
+  paymentTerm: "كلي",
+  requestPercent: "100",
   shareholders: [{ name: "", percent: "" }],
   yerSources: "إيرادات نشاط الشركة بالعملة المحلية",
   fxSources: "تحصيلات تصدير + شراء من السوق المحلي عبر صرّافين معتمدين",
@@ -138,6 +143,8 @@ function NewRequest() {
       invoiceAmount: Number(form.invoiceAmount) || undefined,
       invoiceDate: form.invoiceDate || undefined,
       paymentTerms: form.payment.toUpperCase(),
+      paymentTerm: form.paymentTerm,
+      requestPercent: Number(form.requestPercent) || (form.paymentTerm === "كلي" ? 100 : 0),
       shipmentDate: form.shipmentDate || undefined,
       shipPort: form.shipPort || undefined,
       shareholders: form.shareholders
@@ -156,18 +163,40 @@ function NewRequest() {
       setStep(0);
       return;
     }
+    // التحقق من نسبة الطلب بحسب شرط الدفع المبدئي
+    const pct = Number(form.requestPercent) || 0;
+    if (form.paymentTerm === "كلي" && pct !== 100) {
+      toast.error("في حالة الدفع الكلي يجب أن تكون النسبة 100%");
+      setStep(0);
+      return;
+    }
+    if (form.paymentTerm === "جزئي" && (pct < 5 || pct >= 100)) {
+      toast.error("في حالة الدفع الجزئي يجب أن تكون النسبة بين 5% و 99%");
+      setStep(0);
+      return;
+    }
     // منع التكرار: نفس الرقم الضريبي + رقم الفاتورة لا يُسمح به
-    // (مرحلة لاحقة: السماح بالفواتير الجزئية إذا لم يصل المجموع إلى 100%).
+    // مع السماح بالفواتير الجزئية إذا لم يصل مجموع النسب إلى 100%.
     const merchant = allMerchants.find((m) => m.name === form.importer);
     const taxId = (form.taxNo || merchant?.tax || "").trim();
     if (taxId && form.invoice.trim()) {
-      const dup = requestsCell.get().some(
+      const siblings = requestsCell.get().filter(
         (r) =>
           (r.taxNo ?? "").trim() === taxId &&
-          r.invoice.trim() === form.invoice.trim(),
+          r.invoice.trim() === form.invoice.trim() &&
+          r.stage !== "executive_rejected" &&
+          r.stage !== "support_rejected" &&
+          r.stage !== "bank_rejected",
       );
-      if (dup) {
-        toast.error("يوجد طلب سابق بنفس الرقم الضريبي ورقم الفاتورة — لا يُسمح بالتكرار");
+      const fullExists = siblings.some(
+        (r) => (r.paymentTerm ?? (r.requestPercent === 100 ? "كلي" : undefined)) === "كلي",
+      );
+      const sumExisting = siblings.reduce((acc, r) => acc + (r.requestPercent ?? 0), 0);
+      if (fullExists || sumExisting + pct > 100) {
+        toast.error(
+          `لا يمكن الحفظ: مجموع نسب الطلبات الحالية لهذه الفاتورة ${sumExisting}% ` +
+            `وإضافة ${pct}% يتجاوز 100% أو يوجد طلب كلي مسبق.`,
+        );
         setStep(0);
         return;
       }
@@ -332,6 +361,34 @@ function Step1({ form, update }: StepProps) {
               <SelectItem value="tt">حوالة برقية T/T</SelectItem>
             </SelectContent>
           </Select>
+        </Field>
+        <Field label="شرط الدفع المبدئي" required>
+          <Select
+            value={form.paymentTerm}
+            onValueChange={(v) =>
+              update({
+                paymentTerm: v as FormState["paymentTerm"],
+                requestPercent: v === "كلي" ? "100" : form.requestPercent === "100" ? "" : form.requestPercent,
+              })
+            }
+          >
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="كلي">كلي (100%)</SelectItem>
+              <SelectItem value="جزئي">جزئي</SelectItem>
+            </SelectContent>
+          </Select>
+        </Field>
+        <Field label="نسبة المبلغ المطلوب من الفاتورة %" required>
+          <Input
+            type="number"
+            min={form.paymentTerm === "كلي" ? 100 : 5}
+            max={form.paymentTerm === "كلي" ? 100 : 99}
+            disabled={form.paymentTerm === "كلي"}
+            value={form.requestPercent}
+            onChange={(e) => update({ requestPercent: e.target.value })}
+            placeholder={form.paymentTerm === "كلي" ? "100" : "5 إلى 99"}
+          />
         </Field>
         <Field label="طريقة التغطية خارجياً" required>
           <Input value={form.coverageMethod} onChange={(e) => update({ coverageMethod: e.target.value })} placeholder="مثل: تحويل بنكي عبر بنك مراسل" />
