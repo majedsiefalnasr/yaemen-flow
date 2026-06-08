@@ -484,57 +484,81 @@ function RequestDetail() {
               <VotingPanel req={req} />
             )}
 
-          <Tabs defaultValue="info">
-            <TabsList className="grid grid-cols-4 w-full">
-              <TabsTrigger value="info">المعلومات</TabsTrigger>
-              <TabsTrigger value="docs">الوثائق</TabsTrigger>
-              <TabsTrigger value="workflow">سير العملية</TabsTrigger>
-              <TabsTrigger value="actors">الأطراف</TabsTrigger>
+          <Tabs defaultValue="basic">
+            <TabsList className="grid grid-cols-5 w-full">
+              <TabsTrigger value="basic">المعلومات الأساسية</TabsTrigger>
+              <TabsTrigger value="invoice">بيانات الفاتورة</TabsTrigger>
+              <TabsTrigger value="shipping">بيانات الشحن</TabsTrigger>
+              <TabsTrigger value="docs">الوثائق المطلوبة</TabsTrigger>
+              <TabsTrigger value="workflow">سير العملية التنظيمية</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="info" className="mt-4">
+            <TabsContent value="basic" className="mt-4">
               <Card className="p-6 shadow-card border-0">
                 <div className="grid md:grid-cols-2 gap-x-8 gap-y-4 text-sm">
                   {([
-                    ["اسم التاجر المستورد", req.importer],
-                    ["نوع النشاط التجاري", req.activity ?? "—"],
                     ["الرقم الضريبي", req.taxNo ?? "—"],
-                    ["السجل التجاري", req.crNo ?? "—"],
+                    ["اسم التاجر", req.importer],
+                    ["الشركة المرتبطة", req.activity ?? "—"],
+                    ["رقم السجل التجاري", req.crNo ?? "—"],
                     ["البنك / الجهة", req.bank],
-                    ["نوع السلعة", req.type],
-                    ["بلد المنشأ", req.originCountry ?? "—"],
-                    ["المورد", req.supplier],
-                    ["مرجع الفاتورة", req.invoice],
-                    ["تاريخ الفاتورة", req.invoiceDate ?? "—"],
                     [
-                      "مبلغ الفاتورة",
-                      req.invoiceAmount != null
-                        ? `${req.invoiceAmount.toLocaleString("en-US")} ${req.currency}`
-                        : "—",
-                    ],
-                    [
-                      "مبلغ العملة الأجنبية المطلوبة",
-                      `${req.amount.toLocaleString("en-US")} ${req.currency}`,
-                    ],
-                    ["شروط الدفع", req.paymentTerms ?? "—"],
-                    ["تاريخ الشحن", req.shipmentDate ?? "—"],
-                    ["ميناء الشحن", req.shipPort ?? "—"],
-                    ["ميناء الوصول", req.port],
-                    ["طريقة التغطية خارجياً", req.coverageMethod ?? "—"],
-                    [
-                      "المساهمون (≥25%)",
+                      "الملاك والمساهمون (25% فأكثر)",
                       req.shareholders && req.shareholders.length > 0
                         ? req.shareholders.map((s) => `${s.name} (${s.percent}%)`).join("، ")
                         : "—",
                     ],
-                    ["مصادر توريدات الريال اليمني", req.yerSources ?? "—"],
-                    ["مصادر العملة الأجنبية", req.fxSources ?? "—"],
-                    ["تاريخ التقديم", new Date(req.createdAt).toLocaleDateString("ar-EG")],
                   ] as [string, string][]).map(([k, v]) => (
-                    <div
-                      key={k}
-                      className="flex justify-between items-center gap-3 border-b pb-2.5"
-                    >
+                    <div key={k} className="flex justify-between items-center gap-3 border-b pb-2.5">
+                      <span className="text-muted-foreground text-start">{k}</span>
+                      <span className="font-medium text-end">{v}</span>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="invoice" className="mt-4">
+              <Card className="p-6 shadow-card border-0">
+                <div className="grid md:grid-cols-2 gap-x-8 gap-y-4 text-sm">
+                  {([
+                    ["نوع الطلب", req.type],
+                    ["نوع التغطية", req.coverageMethod ?? "—"],
+                    ["مصادر العملة الأجنبية", req.fxSources ?? "—"],
+                    ["شروط الدفع", req.paymentTerm ?? req.paymentTerms ?? "—"],
+                    ["نسبة الطلب", req.requestPercent != null ? `${req.requestPercent}%` : "—"],
+                    ["عملة الطلب", req.currency],
+                    ["إجمالي الطلب", `${req.amount.toLocaleString("en-US")} ${req.currency}`],
+                    ["رقم الفاتورة", req.invoice],
+                    ["تاريخ الفاتورة", req.invoiceDate ?? "—"],
+                    [
+                      "إجمالي الفاتورة",
+                      req.invoiceAmount != null
+                        ? `${req.invoiceAmount.toLocaleString("en-US")} ${req.currency}`
+                        : "—",
+                    ],
+                    ["السلعة", req.type],
+                    ["اسم الشركة المصدرة", req.supplier],
+                    ["بلد المنشأ", req.originCountry ?? "—"],
+                  ] as [string, string][]).map(([k, v]) => (
+                    <div key={k} className="flex justify-between items-center gap-3 border-b pb-2.5">
+                      <span className="text-muted-foreground text-start">{k}</span>
+                      <span className="font-medium text-end">{v}</span>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="shipping" className="mt-4">
+              <Card className="p-6 shadow-card border-0">
+                <div className="grid md:grid-cols-2 gap-x-8 gap-y-4 text-sm">
+                  {([
+                    ["تاريخ الشحن", req.shipmentDate ?? "—"],
+                    ["ميناء الشحن", req.shipPort ?? "—"],
+                    ["ميناء الوصول", req.port],
+                  ] as [string, string][]).map(([k, v]) => (
+                    <div key={k} className="flex justify-between items-center gap-3 border-b pb-2.5">
                       <span className="text-muted-foreground text-start">{k}</span>
                       <span className="font-medium text-end">{v}</span>
                     </div>
@@ -735,49 +759,6 @@ function RequestDetail() {
                   </div>
                 </Card>
               )}
-            </TabsContent>
-
-            <TabsContent value="actors" className="mt-4">
-              <Card className="p-5 shadow-card border-0 space-y-3 text-sm">
-                <ActorRow label="أنشأ الطلب" userId={req.createdBy ?? req.intakeUserId} />
-                <ActorRow
-                  label="آخر من حدّث الطلب"
-                  userId={req.lastUpdatedBy ?? req.intakeUserId}
-                />
-                <ActorRow label="قدّم الطلب للمراجعة" userId={req.submittedBy} />
-                <ActorRow label="المراجع الداخلي بالبنك" userId={req.internalReviewUserId} />
-                <ActorRow
-                  label="مراجع اللجنة المساندة"
-                  userId={req.supportReviewerId ?? req.supportClaimedBy}
-                />
-                {req.swiftFile && (
-                  <ActorRow
-                    label="موظف السويفت"
-                    userId={req.swiftFile.uploadedBy}
-                    extra={`رفع ${req.swiftFile.name}`}
-                  />
-                )}
-                <ActorRow
-                  label="قرار اللجنة التنفيذية"
-                  userId={req.executiveDecisionBy}
-                  extra={
-                    req.stage === "executive_approved"
-                      ? "اعتماد"
-                      : req.stage === "executive_rejected"
-                        ? "رفض"
-                        : req.stage === "executive_voting"
-                          ? "قيد التصويت"
-                          : undefined
-                  }
-                />
-                {req.customsBy && (
-                  <ActorRow
-                    label="مُصدِر تأكيد المصارفة الخارجية"
-                    userId={req.customsBy}
-                    extra={`رقم البيان ${req.customsNo}`}
-                  />
-                )}
-              </Card>
             </TabsContent>
           </Tabs>
         </div>
