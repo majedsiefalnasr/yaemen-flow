@@ -20,7 +20,13 @@ import { requestsCell, merchantsCell, logAudit, notify } from "@/lib/governance"
 
 export const Route = createFileRoute("/requests/new")({ component: NewRequest });
 
-const STEPS = ["بيانات الطلب", "بيانات المورد والشحنة", "الوثائق المطلوبة", "المراجعة والإرسال"];
+const STEPS = [
+  "المعلومات الأساسية",
+  "بيانات الفاتورة",
+  "بيانات الشحن",
+  "الوثائق المطلوبة",
+  "المراجعة والإرسال",
+];
 
 const CONFIRMATION_TEMPLATE_URL = "/templates/نموذج-طلب-وثيقة-تأكيد.pdf";
 
@@ -253,8 +259,9 @@ function NewRequest() {
       <Card className="p-6 shadow-card border-0">
         {step === 0 && <Step1 form={form} update={update} />}
         {step === 1 && <Step2 form={form} update={update} />}
-        {step === 2 && <Step3 form={form} uploads={uploads} setUploads={setUploads} />}
-        {step === 3 && <Step4 form={form} />}
+        {step === 2 && <Step3 form={form} update={update} />}
+        {step === 3 && <Step4 form={form} uploads={uploads} setUploads={setUploads} />}
+        {step === 4 && <Step5 form={form} />}
 
         <div className="flex justify-between mt-8 pt-6 border-t">
           <Button variant="outline" onClick={() => setStep(Math.max(0, step - 1))} disabled={step === 0}>
