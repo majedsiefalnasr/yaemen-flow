@@ -3,7 +3,7 @@
 
 const NS = "cby.v2";
 const VERSION_KEY = `${NS}.version`;
-const CURRENT_VERSION = "2026-05-20-seed-scenarios";
+const CURRENT_VERSION = "2026-06-08-merchant-v2";
 
 const isBrowser = typeof window !== "undefined";
 
