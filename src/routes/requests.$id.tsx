@@ -445,24 +445,16 @@ function RequestDetail() {
                         </div>
                       </div>
                       <div className="flex gap-2">
-                        {customsDocDataUrl ? (
-                          <>
-                            <Button asChild variant="default" size="sm" className="flex-1">
-                              <a href={customsDocDataUrl} download="تأكيد المصارفة الخارجية.pdf">
-                                <Download className="h-4 w-4 ml-1.5" /> تحميل التأكيد
-                              </a>
-                            </Button>
-                            <Button asChild variant="outline" size="sm" className="flex-1">
-                              <a href={customsDocDataUrl} target="_blank" rel="noreferrer">
-                                <Eye className="h-4 w-4 ml-1.5" /> معاينة
-                              </a>
-                            </Button>
-                          </>
-                        ) : (
-                          <p className="text-xs text-muted-foreground text-center flex-1 py-2">
-                            النسخة المحلية للملف غير متاحة في هذا المتصفح.
-                          </p>
-                        )}
+                        <Button asChild variant="default" size="sm" className="flex-1">
+                          <a href={customsConfirmationHref ?? "#"} download={customsConfirmationFileName}>
+                            <Download className="h-4 w-4 ml-1.5" /> تحميل التأكيد
+                          </a>
+                        </Button>
+                        <Button asChild variant="outline" size="sm" className="flex-1">
+                          <a href={customsConfirmationHref ?? "#"} target="_blank" rel="noreferrer">
+                            <Eye className="h-4 w-4 ml-1.5" /> معاينة
+                          </a>
+                        </Button>
                       </div>
                     </div>
                   )}
@@ -509,12 +501,11 @@ function RequestDetail() {
             )}
 
           <Tabs defaultValue="basic">
-            <TabsList className="grid grid-cols-5 w-full">
+            <TabsList className="grid grid-cols-4 w-full">
               <TabsTrigger value="basic">المعلومات الأساسية</TabsTrigger>
               <TabsTrigger value="invoice">بيانات الفاتورة</TabsTrigger>
               <TabsTrigger value="shipping">بيانات الشحن</TabsTrigger>
               <TabsTrigger value="docs">الوثائق المطلوبة</TabsTrigger>
-              <TabsTrigger value="workflow">سير العملية التنظيمية</TabsTrigger>
             </TabsList>
 
             <TabsContent value="basic" className="mt-4">
