@@ -11,7 +11,6 @@ import {
   Download,
   ShieldCheck,
   AlertTriangle,
-  MessageSquare,
   CheckCircle2,
   XCircle,
   Eye,
@@ -382,42 +381,83 @@ function RequestDetail() {
         </Card>
       )}
 
-      {/* بانر الرفض النهائي من اللجنة التنفيذية — لا يمكن إعادة إرسال نفس الطلب */}
-      {req.stage === "executive_rejected" && (
-        <Card className="p-4 mb-4 border-rose-300 bg-rose-50/70 shadow-card border-r-4 border-r-rose-600">
-          <div className="flex items-start gap-3">
-            <XCircle className="h-5 w-5 text-rose-600 shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <div className="font-semibold text-rose-700">رفض نهائي من اللجنة التنفيذية</div>
-              <div className="text-xs text-muted-foreground mt-1">
-                هذا قرار نهائي ولا يمكن إعادة إرسال الطلب نفسه مرة أخرى. لتقديم طلب جديد، يلزم إنشاء
-                طلب مستقل ببيانات مختلفة.
-              </div>
-              {execRejectedReason && (
-                <div className="mt-2 text-sm bg-card border border-rose-200 rounded-md px-3 py-2">
-                  <span className="font-semibold text-rose-700">سبب الرفض: </span>
-                  <span>{execRejectedReason}</span>
-                </div>
-              )}
-            </div>
-          </div>
-        </Card>
-      )}
-
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          <Card className="p-5 shadow-card border-0">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold">تقدم الطلب في الدورة التنظيمية</h3>
-              <span className="text-2xl font-bold tabular-nums">
-                {progressForRole(req.stage, user!.role)}%
-              </span>
-            </div>
-            <Progress value={progressForRole(req.stage, user!.role)} className="h-2 mb-2" />
-            <div className="text-xs text-muted-foreground">
-              المرحلة الحالية: {displayStatusFor(req.stage, user!.role).label}
-            </div>
-          </Card>
+          {(req.stage === "executive_rejected" ||
+            req.stage === "completed" ||
+            req.stage === "customs_released") ? (
+            (() => {
+              const isRejected = req.stage === "executive_rejected";
+              return (
+                <Card
+                  className={cn(
+                    "p-5 shadow-card border",
+                    isRejected ? "bg-rose-50/60 border-rose-200" : "bg-emerald-50/60 border-emerald-200",
+                  )}
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-semibold">تقدم الطلب في الدورة التنظيمية</h3>
+                    <Badge
+                      className={cn(
+                        "rounded-full text-[11px] px-2.5 py-1",
+                        isRejected
+                          ? "bg-rose-100 text-rose-700 border-rose-200"
+                          : "bg-emerald-100 text-emerald-700 border-emerald-200",
+                      )}
+                    >
+                      100% — مكتمل
+                    </Badge>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div
+                      className={cn(
+                        "h-9 w-9 rounded-full grid place-items-center shrink-0",
+                        isRejected
+                          ? "bg-rose-100 text-rose-600"
+                          : "bg-emerald-100 text-emerald-600",
+                      )}
+                    >
+                      {isRejected ? <XCircle className="h-5 w-5" /> : <CheckCircle2 className="h-5 w-5" />}
+                    </div>
+                    <div className="flex-1">
+                      <div
+                        className={cn(
+                          "font-semibold",
+                          isRejected ? "text-rose-700" : "text-emerald-700",
+                        )}
+                      >
+                        {isRejected ? "الطلب غير مستوفٍ للشروط" : "الطلب مستوفٍ للشروط"}
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                        {isRejected
+                          ? "تم إغلاق الطلب لعدم استيفاء أحد الشروط المطلوبة. لا يمكن متابعة هذا الطلب ضمن مساره."
+                          : "اكتملت دورة الطلب باعتماد جميع الأطراف وصدر تأكيد المصارفة الخارجية."}
+                      </div>
+                      {isRejected && execRejectedReason && (
+                        <div className="mt-2 text-sm bg-card border border-rose-200 rounded-md px-3 py-2">
+                          <span className="font-semibold text-rose-700">سبب الرفض: </span>
+                          <span>{execRejectedReason}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </Card>
+              );
+            })()
+          ) : (
+            <Card className="p-5 shadow-card border-0">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-semibold">تقدم الطلب في الدورة التنظيمية</h3>
+                <span className="text-2xl font-bold tabular-nums">
+                  {progressForRole(req.stage, user!.role)}%
+                </span>
+              </div>
+              <Progress value={progressForRole(req.stage, user!.role)} className="h-2 mb-2" />
+              <div className="text-xs text-muted-foreground">
+                المرحلة الحالية: {displayStatusFor(req.stage, user!.role).label}
+              </div>
+            </Card>
+          )}
 
           {/* Lock notice when another support reviewer has the request */}
           {(req.stage === "bank_approved" || req.stage === "support_review") &&
@@ -443,57 +483,81 @@ function RequestDetail() {
               <VotingPanel req={req} />
             )}
 
-          <Tabs defaultValue="info">
-            <TabsList className="grid grid-cols-4 w-full">
-              <TabsTrigger value="info">المعلومات</TabsTrigger>
-              <TabsTrigger value="docs">الوثائق</TabsTrigger>
-              <TabsTrigger value="workflow">سير العملية</TabsTrigger>
-              <TabsTrigger value="actors">الأطراف</TabsTrigger>
+          <Tabs defaultValue="basic">
+            <TabsList className="grid grid-cols-5 w-full">
+              <TabsTrigger value="basic">المعلومات الأساسية</TabsTrigger>
+              <TabsTrigger value="invoice">بيانات الفاتورة</TabsTrigger>
+              <TabsTrigger value="shipping">بيانات الشحن</TabsTrigger>
+              <TabsTrigger value="docs">الوثائق المطلوبة</TabsTrigger>
+              <TabsTrigger value="workflow">سير العملية التنظيمية</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="info" className="mt-4">
+            <TabsContent value="basic" className="mt-4">
               <Card className="p-6 shadow-card border-0">
                 <div className="grid md:grid-cols-2 gap-x-8 gap-y-4 text-sm">
                   {([
-                    ["اسم التاجر المستورد", req.importer],
-                    ["نوع النشاط التجاري", req.activity ?? "—"],
                     ["الرقم الضريبي", req.taxNo ?? "—"],
-                    ["السجل التجاري", req.crNo ?? "—"],
+                    ["اسم التاجر", req.importer],
+                    ["الشركة المرتبطة", req.activity ?? "—"],
+                    ["رقم السجل التجاري", req.crNo ?? "—"],
                     ["البنك / الجهة", req.bank],
-                    ["نوع السلعة", req.type],
-                    ["بلد المنشأ", req.originCountry ?? "—"],
-                    ["المورد", req.supplier],
-                    ["مرجع الفاتورة", req.invoice],
-                    ["تاريخ الفاتورة", req.invoiceDate ?? "—"],
                     [
-                      "مبلغ الفاتورة",
-                      req.invoiceAmount != null
-                        ? `${req.invoiceAmount.toLocaleString("en-US")} ${req.currency}`
-                        : "—",
-                    ],
-                    [
-                      "مبلغ العملة الأجنبية المطلوبة",
-                      `${req.amount.toLocaleString("en-US")} ${req.currency}`,
-                    ],
-                    ["شروط الدفع", req.paymentTerms ?? "—"],
-                    ["تاريخ الشحن", req.shipmentDate ?? "—"],
-                    ["ميناء الشحن", req.shipPort ?? "—"],
-                    ["ميناء الوصول", req.port],
-                    ["طريقة التغطية خارجياً", req.coverageMethod ?? "—"],
-                    [
-                      "المساهمون (≥25%)",
+                      "الملاك والمساهمون (25% فأكثر)",
                       req.shareholders && req.shareholders.length > 0
                         ? req.shareholders.map((s) => `${s.name} (${s.percent}%)`).join("، ")
                         : "—",
                     ],
-                    ["مصادر توريدات الريال اليمني", req.yerSources ?? "—"],
-                    ["مصادر العملة الأجنبية", req.fxSources ?? "—"],
-                    ["تاريخ التقديم", new Date(req.createdAt).toLocaleDateString("ar-EG")],
                   ] as [string, string][]).map(([k, v]) => (
-                    <div
-                      key={k}
-                      className="flex justify-between items-center gap-3 border-b pb-2.5"
-                    >
+                    <div key={k} className="flex justify-between items-center gap-3 border-b pb-2.5">
+                      <span className="text-muted-foreground text-start">{k}</span>
+                      <span className="font-medium text-end">{v}</span>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="invoice" className="mt-4">
+              <Card className="p-6 shadow-card border-0">
+                <div className="grid md:grid-cols-2 gap-x-8 gap-y-4 text-sm">
+                  {([
+                    ["نوع الطلب", req.type],
+                    ["نوع التغطية", req.coverageMethod ?? "—"],
+                    ["مصادر العملة الأجنبية", req.fxSources ?? "—"],
+                    ["شروط الدفع", req.paymentTerm ?? req.paymentTerms ?? "—"],
+                    ["نسبة الطلب", req.requestPercent != null ? `${req.requestPercent}%` : "—"],
+                    ["عملة الطلب", req.currency],
+                    ["إجمالي الطلب", `${req.amount.toLocaleString("en-US")} ${req.currency}`],
+                    ["رقم الفاتورة", req.invoice],
+                    ["تاريخ الفاتورة", req.invoiceDate ?? "—"],
+                    [
+                      "إجمالي الفاتورة",
+                      req.invoiceAmount != null
+                        ? `${req.invoiceAmount.toLocaleString("en-US")} ${req.currency}`
+                        : "—",
+                    ],
+                    ["السلعة", req.type],
+                    ["اسم الشركة المصدرة", req.supplier],
+                    ["بلد المنشأ", req.originCountry ?? "—"],
+                  ] as [string, string][]).map(([k, v]) => (
+                    <div key={k} className="flex justify-between items-center gap-3 border-b pb-2.5">
+                      <span className="text-muted-foreground text-start">{k}</span>
+                      <span className="font-medium text-end">{v}</span>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="shipping" className="mt-4">
+              <Card className="p-6 shadow-card border-0">
+                <div className="grid md:grid-cols-2 gap-x-8 gap-y-4 text-sm">
+                  {([
+                    ["تاريخ الشحن", req.shipmentDate ?? "—"],
+                    ["ميناء الشحن", req.shipPort ?? "—"],
+                    ["ميناء الوصول", req.port],
+                  ] as [string, string][]).map(([k, v]) => (
+                    <div key={k} className="flex justify-between items-center gap-3 border-b pb-2.5">
                       <span className="text-muted-foreground text-start">{k}</span>
                       <span className="font-medium text-end">{v}</span>
                     </div>
@@ -695,49 +759,6 @@ function RequestDetail() {
                 </Card>
               )}
             </TabsContent>
-
-            <TabsContent value="actors" className="mt-4">
-              <Card className="p-5 shadow-card border-0 space-y-3 text-sm">
-                <ActorRow label="أنشأ الطلب" userId={req.createdBy ?? req.intakeUserId} />
-                <ActorRow
-                  label="آخر من حدّث الطلب"
-                  userId={req.lastUpdatedBy ?? req.intakeUserId}
-                />
-                <ActorRow label="قدّم الطلب للمراجعة" userId={req.submittedBy} />
-                <ActorRow label="المراجع الداخلي بالبنك" userId={req.internalReviewUserId} />
-                <ActorRow
-                  label="مراجع اللجنة المساندة"
-                  userId={req.supportReviewerId ?? req.supportClaimedBy}
-                />
-                {req.swiftFile && (
-                  <ActorRow
-                    label="موظف السويفت"
-                    userId={req.swiftFile.uploadedBy}
-                    extra={`رفع ${req.swiftFile.name}`}
-                  />
-                )}
-                <ActorRow
-                  label="قرار اللجنة التنفيذية"
-                  userId={req.executiveDecisionBy}
-                  extra={
-                    req.stage === "executive_approved"
-                      ? "اعتماد"
-                      : req.stage === "executive_rejected"
-                        ? "رفض"
-                        : req.stage === "executive_voting"
-                          ? "قيد التصويت"
-                          : undefined
-                  }
-                />
-                {req.customsBy && (
-                  <ActorRow
-                    label="مُصدِر تأكيد المصارفة الخارجية"
-                    userId={req.customsBy}
-                    extra={`رقم البيان ${req.customsNo}`}
-                  />
-                )}
-              </Card>
-            </TabsContent>
           </Tabs>
         </div>
 
@@ -879,25 +900,3 @@ function RequestDetail() {
   );
 }
 
-function ActorRow({ label, userId, extra }: { label: string; userId?: string; extra?: string }) {
-  const u = userId ? DEMO_USERS.find((x) => x.id === userId) : undefined;
-  return (
-    <div className="flex items-center justify-between border-b pb-2 last:border-0">
-      <div className="flex items-center gap-3">
-        <div className="h-8 w-8 rounded-full bg-primary text-primary-foreground grid place-items-center text-[10px] font-bold">
-          {u?.avatar ?? "—"}
-        </div>
-        <div>
-          <div className="text-xs text-muted-foreground">{label}</div>
-          <div className="text-sm font-medium">{u?.name ?? "بانتظار التنفيذ"}</div>
-          {extra && <div className="text-[11px] text-muted-foreground">{extra}</div>}
-        </div>
-      </div>
-      {u && (
-        <Badge variant="secondary" className="text-[10px]">
-          {u.org}
-        </Badge>
-      )}
-    </div>
-  );
-}

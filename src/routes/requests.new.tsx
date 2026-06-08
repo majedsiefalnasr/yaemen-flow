@@ -20,7 +20,13 @@ import { requestsCell, merchantsCell, logAudit, notify } from "@/lib/governance"
 
 export const Route = createFileRoute("/requests/new")({ component: NewRequest });
 
-const STEPS = ["بيانات الطلب", "بيانات المورد والشحنة", "الوثائق المطلوبة", "المراجعة والإرسال"];
+const STEPS = [
+  "المعلومات الأساسية",
+  "بيانات الفاتورة",
+  "بيانات الشحن",
+  "الوثائق المطلوبة",
+  "المراجعة والإرسال",
+];
 
 const CONFIRMATION_TEMPLATE_URL = "/templates/نموذج-طلب-وثيقة-تأكيد.pdf";
 
@@ -253,8 +259,9 @@ function NewRequest() {
       <Card className="p-6 shadow-card border-0">
         {step === 0 && <Step1 form={form} update={update} />}
         {step === 1 && <Step2 form={form} update={update} />}
-        {step === 2 && <Step3 form={form} uploads={uploads} setUploads={setUploads} />}
-        {step === 3 && <Step4 form={form} />}
+        {step === 2 && <Step3 form={form} update={update} />}
+        {step === 3 && <Step4 form={form} uploads={uploads} setUploads={setUploads} />}
+        {step === 4 && <Step5 form={form} />}
 
         <div className="flex justify-between mt-8 pt-6 border-t">
           <Button variant="outline" onClick={() => setStep(Math.max(0, step - 1))} disabled={step === 0}>
@@ -307,104 +314,6 @@ function Step1({ form, update }: StepProps) {
       activity: m?.companies?.[0]?.sector ?? form.activity,
     });
   }
-  return (
-    <div className="space-y-6">
-      <h3 className="font-semibold">معلومات الطلب الأساسية</h3>
-      <div className="grid md:grid-cols-2 gap-5">
-        <Field label="نوع الواردات" required>
-          <Select value={form.type} onValueChange={(v) => update({ type: v })}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              {Object.entries(TYPE_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
-            </SelectContent>
-          </Select>
-        </Field>
-        <Field label="اسم التاجر المستورد" required>
-          <Select value={form.importer} onValueChange={pickMerchant}>
-            <SelectTrigger><SelectValue placeholder={bankMerchants.length ? "اختر التاجر" : "لا يوجد تجار مسجلون لهذا البنك"} /></SelectTrigger>
-            <SelectContent>
-              {bankMerchants.map((m) => <SelectItem key={m.id} value={m.name}>{m.name}</SelectItem>)}
-            </SelectContent>
-          </Select>
-          {bankMerchants.length === 0 && (
-            <p className="text-xs text-muted-foreground mt-1">يجب إضافة تجار للبنك أولاً من شاشة سجل التجار.</p>
-          )}
-        </Field>
-        <Field label="نوع النشاط التجاري" required>
-          <Input value={form.activity} onChange={(e) => update({ activity: e.target.value })} placeholder="مثل: تجارة جملة مواد غذائية" />
-        </Field>
-        <Field label="الرقم الضريبي" required>
-          <Input value={form.taxNo} onChange={(e) => update({ taxNo: e.target.value })} placeholder="يُعبأ تلقائياً من بيانات التاجر" />
-        </Field>
-        <Field label="رقم السجل التجاري" required>
-          <Input value={form.crNo} onChange={(e) => update({ crNo: e.target.value })} placeholder="يُعبأ تلقائياً من بيانات التاجر" />
-        </Field>
-        <Field label="مبلغ العملة الأجنبية المطلوبة" required>
-          <Input type="number" value={form.amount} onChange={(e) => update({ amount: e.target.value })} />
-        </Field>
-        <Field label="العملة" required>
-          <Select value={form.currency} onValueChange={(v) => update({ currency: v as FormState["currency"] })}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="USD">دولار أمريكي (USD)</SelectItem>
-              <SelectItem value="EUR">يورو (EUR)</SelectItem>
-              <SelectItem value="SAR">ريال سعودي (SAR)</SelectItem>
-            </SelectContent>
-          </Select>
-        </Field>
-        <Field label="شروط الدفع" required>
-          <Select value={form.payment} onValueChange={(v) => update({ payment: v })}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="lc">اعتماد مستندي L/C</SelectItem>
-              <SelectItem value="dp">دفع مقابل مستندات D/P</SelectItem>
-              <SelectItem value="tt">حوالة برقية T/T</SelectItem>
-            </SelectContent>
-          </Select>
-        </Field>
-        <Field label="شرط الدفع المبدئي" required>
-          <Select
-            value={form.paymentTerm}
-            onValueChange={(v) =>
-              update({
-                paymentTerm: v as FormState["paymentTerm"],
-                requestPercent: v === "كلي" ? "100" : form.requestPercent === "100" ? "" : form.requestPercent,
-              })
-            }
-          >
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="كلي">كلي (100%)</SelectItem>
-              <SelectItem value="جزئي">جزئي</SelectItem>
-            </SelectContent>
-          </Select>
-        </Field>
-        <Field label="نسبة المبلغ المطلوب من الفاتورة %" required>
-          <Input
-            type="number"
-            min={form.paymentTerm === "كلي" ? 100 : 5}
-            max={form.paymentTerm === "كلي" ? 100 : 99}
-            disabled={form.paymentTerm === "كلي"}
-            value={form.requestPercent}
-            onChange={(e) => update({ requestPercent: e.target.value })}
-            placeholder={form.paymentTerm === "كلي" ? "100" : "5 إلى 99"}
-          />
-        </Field>
-        <Field label="طريقة التغطية خارجياً" required>
-          <Input value={form.coverageMethod} onChange={(e) => update({ coverageMethod: e.target.value })} placeholder="مثل: تحويل بنكي عبر بنك مراسل" />
-        </Field>
-        <Field label="تاريخ الاستحقاق المتوقع">
-          <Input type="date" value={form.dueDate} onChange={(e) => update({ dueDate: e.target.value })} />
-        </Field>
-      </div>
-      <Field label="ملاحظات إضافية">
-        <Textarea rows={3} value={form.notes} onChange={(e) => update({ notes: e.target.value })} />
-      </Field>
-    </div>
-  );
-}
-
-function Step2({ form, update }: StepProps) {
   function updateShareholder(i: number, patch: Partial<{ name: string; percent: string }>) {
     const next = form.shareholders.map((s, idx) => (idx === i ? { ...s, ...patch } : s));
     update({ shareholders: next });
@@ -417,59 +326,33 @@ function Step2({ form, update }: StepProps) {
   }
   return (
     <div className="space-y-6">
-      <h3 className="font-semibold">بيانات المورد والشحنة</h3>
+      <h3 className="font-semibold">المعلومات الأساسية</h3>
       <div className="grid md:grid-cols-2 gap-5">
-        <Field label="اسم المورد" required>
-          <Input value={form.supplier} onChange={(e) => update({ supplier: e.target.value })} />
+        <Field label="الرقم الضريبي" required>
+          <Input value={form.taxNo} onChange={(e) => update({ taxNo: e.target.value })} placeholder="يُعبأ تلقائياً من بيانات التاجر" />
         </Field>
-        <Field label="بلد المنشأ" required>
-          <Select value={form.country} onValueChange={(v) => update({ country: v })}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
+        <Field label="اسم التاجر" required>
+          <Select value={form.importer} onValueChange={pickMerchant}>
+            <SelectTrigger><SelectValue placeholder={bankMerchants.length ? "اختر التاجر" : "لا يوجد تجار مسجلون لهذا البنك"} /></SelectTrigger>
             <SelectContent>
-              {Object.entries(COUNTRY_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
+              {bankMerchants.map((m) => <SelectItem key={m.id} value={m.name}>{m.name}</SelectItem>)}
             </SelectContent>
           </Select>
+          {bankMerchants.length === 0 && (
+            <p className="text-xs text-muted-foreground mt-1">يجب إضافة تجار للبنك أولاً من شاشة سجل التجار.</p>
+          )}
         </Field>
-        <Field label="مرجع الفاتورة" required>
-          <Input value={form.invoice} onChange={(e) => update({ invoice: e.target.value })} />
+        <Field label="الشركة المرتبطة" required>
+          <Input value={form.activity} onChange={(e) => update({ activity: e.target.value })} placeholder="مثل: تجارة جملة مواد غذائية" />
         </Field>
-        <Field label="تاريخ الفاتورة" required>
-          <Input type="date" value={form.invoiceDate} onChange={(e) => update({ invoiceDate: e.target.value })} />
-        </Field>
-        <Field label="مبلغ الفاتورة" required>
-          <Input type="number" value={form.invoiceAmount} onChange={(e) => update({ invoiceAmount: e.target.value })} />
-        </Field>
-        <Field label="تاريخ الشحن" required>
-          <Input type="date" value={form.shipmentDate} onChange={(e) => update({ shipmentDate: e.target.value })} />
-        </Field>
-        <Field label="ميناء الشحن" required>
-          <Input value={form.shipPort} onChange={(e) => update({ shipPort: e.target.value })} />
-        </Field>
-        <Field label="ميناء الوصول" required>
-          <Select value={form.arrivalPort} onValueChange={(v) => update({ arrivalPort: v })}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              {Object.entries(PORT_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
-            </SelectContent>
-          </Select>
-        </Field>
-        <Field label="رقم بوليصة الشحن">
-          <Input value={form.bl} onChange={(e) => update({ bl: e.target.value })} />
-        </Field>
-        <Field label="الجمارك المختصة">
-          <Select value={form.customs} onValueChange={(v) => update({ customs: v })}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="aden_c">جمارك عدن</SelectItem>
-              <SelectItem value="hod_c">جمارك الحديدة</SelectItem>
-            </SelectContent>
-          </Select>
+        <Field label="رقم السجل التجاري" required>
+          <Input value={form.crNo} onChange={(e) => update({ crNo: e.target.value })} placeholder="يُعبأ تلقائياً من بيانات التاجر" />
         </Field>
       </div>
 
       <div className="space-y-3 pt-4 border-t">
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-sm">المساهمون / الملاك (بنسبة 25% فأكثر)</h3>
+          <h3 className="font-semibold text-sm">الملاك والمساهمون (25% فأكثر)</h3>
           <Button type="button" size="sm" variant="outline" onClick={addShareholder}>
             + إضافة مساهم
           </Button>
@@ -501,13 +384,141 @@ function Step2({ form, update }: StepProps) {
           ))}
         </div>
       </div>
+    </div>
+  );
+}
 
-      <div className="grid md:grid-cols-2 gap-5 pt-4 border-t">
-        <Field label="مصادر توريدات الريال اليمني" required>
-          <Textarea rows={2} value={form.yerSources} onChange={(e) => update({ yerSources: e.target.value })} />
+function Step2({ form, update }: StepProps) {
+  return (
+    <div className="space-y-6">
+      <h3 className="font-semibold">بيانات الفاتورة</h3>
+      <div className="grid md:grid-cols-2 gap-5">
+        <Field label="نوع الطلب" required>
+          <Select value={form.type} onValueChange={(v) => update({ type: v })}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {Object.entries(TYPE_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </Field>
+        <Field label="نوع التغطية" required>
+          <Input value={form.coverageMethod} onChange={(e) => update({ coverageMethod: e.target.value })} placeholder="حوالة / اعتماد / تحصيل مستندي" />
         </Field>
         <Field label="مصادر العملة الأجنبية" required>
           <Textarea rows={2} value={form.fxSources} onChange={(e) => update({ fxSources: e.target.value })} />
+        </Field>
+        <Field label="شروط الدفع" required>
+          <Select
+            value={form.paymentTerm}
+            onValueChange={(v) =>
+              update({
+                paymentTerm: v as FormState["paymentTerm"],
+                requestPercent: v === "كلي" ? "100" : form.requestPercent === "100" ? "" : form.requestPercent,
+              })
+            }
+          >
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="كلي">كلي (100%)</SelectItem>
+              <SelectItem value="جزئي">جزئي</SelectItem>
+            </SelectContent>
+          </Select>
+        </Field>
+        <Field label="نسبة الطلب %" required>
+          <Input
+            type="number"
+            min={form.paymentTerm === "كلي" ? 100 : 5}
+            max={form.paymentTerm === "كلي" ? 100 : 99}
+            disabled={form.paymentTerm === "كلي"}
+            value={form.requestPercent}
+            onChange={(e) => update({ requestPercent: e.target.value })}
+            placeholder={form.paymentTerm === "كلي" ? "100" : "5 إلى 99"}
+          />
+        </Field>
+        <Field label="عملة الطلب" required>
+          <Select value={form.currency} onValueChange={(v) => update({ currency: v as FormState["currency"] })}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="USD">دولار أمريكي (USD)</SelectItem>
+              <SelectItem value="SAR">ريال سعودي (SAR)</SelectItem>
+              <SelectItem value="EUR">يورو (EUR)</SelectItem>
+            </SelectContent>
+          </Select>
+        </Field>
+        <Field label="إجمالي الطلب" required>
+          <Input type="number" value={form.amount} onChange={(e) => update({ amount: e.target.value })} />
+        </Field>
+        <Field label="رقم الفاتورة" required>
+          <Input value={form.invoice} onChange={(e) => update({ invoice: e.target.value })} />
+        </Field>
+        <Field label="تاريخ الفاتورة" required>
+          <Input type="date" value={form.invoiceDate} onChange={(e) => update({ invoiceDate: e.target.value })} />
+        </Field>
+        <Field label="إجمالي الفاتورة" required>
+          <Input type="number" value={form.invoiceAmount} onChange={(e) => update({ invoiceAmount: e.target.value })} />
+        </Field>
+        <Field label="السلعة" required>
+          <Select value={form.type} onValueChange={(v) => update({ type: v })}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {Object.entries(TYPE_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </Field>
+        <Field label="اسم الشركة المصدرة" required>
+          <Input value={form.supplier} onChange={(e) => update({ supplier: e.target.value })} />
+        </Field>
+        <Field label="بلد المنشأ" required>
+          <Select value={form.country} onValueChange={(v) => update({ country: v })}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {Object.entries(COUNTRY_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </Field>
+      </div>
+    </div>
+  );
+}
+
+function Step3({ form, update }: StepProps) {
+  return (
+    <div className="space-y-6">
+      <h3 className="font-semibold">بيانات الشحن</h3>
+      <div className="grid md:grid-cols-2 gap-5">
+        <Field label="تاريخ الشحن">
+          <Input type="date" value={form.shipmentDate} onChange={(e) => update({ shipmentDate: e.target.value })} />
+        </Field>
+        <Field label="ميناء الشحن" required>
+          <Input value={form.shipPort} onChange={(e) => update({ shipPort: e.target.value })} />
+        </Field>
+        <Field label="تاريخ الوصول">
+          <Input type="date" value={form.dueDate} onChange={(e) => update({ dueDate: e.target.value })} />
+        </Field>
+        <Field label="ميناء الوصول" required>
+          <Select value={form.arrivalPort} onValueChange={(v) => update({ arrivalPort: v })}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {Object.entries(PORT_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </Field>
+        <Field label="شروط التسليم" required>
+          <Select value={form.customs} onValueChange={(v) => update({ customs: v })}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="CIF">CIF</SelectItem>
+              <SelectItem value="CNF">CNF</SelectItem>
+              <SelectItem value="FOB">FOB</SelectItem>
+              <SelectItem value="CFR">CFR</SelectItem>
+              <SelectItem value="EXW">EXW</SelectItem>
+              <SelectItem value="DAP">DAP</SelectItem>
+              <SelectItem value="DDP">DDP</SelectItem>
+            </SelectContent>
+          </Select>
+        </Field>
+        <Field label="الوجهة النهائية" required>
+          <Input value={form.bl} onChange={(e) => update({ bl: e.target.value })} placeholder="المدينة / المخزن الوجهة" />
         </Field>
       </div>
     </div>
@@ -516,7 +527,7 @@ function Step2({ form, update }: StepProps) {
 
 type UploadedDoc = { file: File; url: string; dataUrl: string };
 
-function Step3({ form, uploads, setUploads }: {
+function Step4({ form, uploads, setUploads }: {
   form: FormState;
   uploads: Record<string, UploadedDoc>;
   setUploads: React.Dispatch<React.SetStateAction<Record<string, UploadedDoc>>>;
@@ -673,7 +684,7 @@ function Step3({ form, uploads, setUploads }: {
   );
 }
 
-function Step4({ form }: { form: FormState }) {
+function Step5({ form }: { form: FormState }) {
   return (
     <div className="space-y-6">
       <h3 className="font-semibold">مراجعة الطلب قبل الإرسال</h3>
