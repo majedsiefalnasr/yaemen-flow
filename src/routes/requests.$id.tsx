@@ -430,52 +430,6 @@ function RequestDetail() {
 
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          {req.customsStampedFile && (
-            <Card className="p-5 shadow-card border-0 bg-gradient-to-br from-success/10 to-accent/5 border border-success/30">
-              <div className="flex items-center gap-2 mb-3">
-                <CheckCircle2 className="h-5 w-5 text-success" />
-                <h3 className="font-semibold text-sm">تأكيد المصارفة الخارجية</h3>
-              </div>
-              <div className="rounded-lg bg-card/60 p-3 mb-3 border border-success/20">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-success/10 text-success grid place-items-center">
-                    <FileText className="h-5 w-5" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium text-sm">تأكيد المصارفة الخارجية</div>
-                    <div className="text-[11px] text-muted-foreground">
-                      {((req.customsStampedFile.size ?? 0) / 1024).toFixed(1)} KB
-                      {req.customsNo && (
-                        <span> · رقم البيان: <span className="font-mono font-semibold">{req.customsNo}</span></span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="flex gap-2">
-                {customsDocDataUrl && (
-                  <Button asChild variant="default" size="sm" className="flex-1">
-                    <a href={customsDocDataUrl} download="تأكيد المصارفة الخارجية.pdf">
-                      <Download className="h-4 w-4 ml-1.5" /> تحميل التأكيد
-                    </a>
-                  </Button>
-                )}
-                {customsDocDataUrl && (
-                  <Button asChild variant="outline" size="sm" className="flex-1">
-                    <a href={customsDocDataUrl} target="_blank" rel="noreferrer">
-                      <Eye className="h-4 w-4 ml-1.5" /> معاينة
-                    </a>
-                  </Button>
-                )}
-                {!customsDocDataUrl && (
-                  <p className="text-xs text-muted-foreground text-center flex-1 py-2">
-                    النسخة المحلية غير متاحة في هذا المتصفح.
-                  </p>
-                )}
-              </div>
-            </Card>
-          )}
-
           <Card className="p-5 shadow-card border-0">
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-semibold">تقدم الطلب في الدورة التنظيمية</h3>
