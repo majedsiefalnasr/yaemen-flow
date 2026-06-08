@@ -1,68 +1,82 @@
 import { Check } from "lucide-react";
 import {
-  STAGE_LABELS,
-  STAGE_ORDER,
-  bucketsFor,
   useAuth,
   type RequestStage,
   type ImportRequest,
-  type DisplayBucket,
+  type Role,
 } from "@/lib/mock";
 import { cn } from "@/lib/utils";
 
-const RETURN_STAGES: RequestStage[] = ["support_returned"];
-const REJECT_STAGES: RequestStage[] = ["support_rejected", "executive_rejected"];
+/**
+ * مراحل سير العملية التنظيمية — مرئية موحدة بترتيب صارم.
+ * كل خطوة تربط بمجموعة من الـ stages الداخلية التي تعتبر "الخطوة الحالية".
+ * doneness للخطوات التالية يُستنتج من الترتيب.
+ *
+ * عند الرفض من اللجنة التنفيذية:
+ *   - الخطوة التي تم فيها الرفض (التصويت/المراجعة الوطنية) تُعتبر مكتملة (تمت).
+ *   - الخطوات التالية (سويفت، تأكيد مصارفة، مكتمل) تظهر "غير مكتمل" باللون الأحمر.
+ */
+
+type Step = { key: string; label: string; stages: RequestStage[] };
+
+// خطوات البنك التجاري (مدخل/مراجع/سويفت/مسؤول)
+const BANK_STEPS: Step[] = [
+  { key: "draft", label: "مسودة", stages: ["draft", "bank_returned", "support_returned"] },
+  { key: "internal_review", label: "مراجعة داخلية", stages: ["bank_submitted", "bank_internal_review", "bank_rejected"] },
+  { key: "cby_review", label: "مراجعة اللجنة الوطنية", stages: ["bank_approved", "support_review", "support_approved", "executive_voting", "support_rejected", "executive_rejected"] },
+  { key: "swift", label: "سويفت", stages: ["executive_approved"] },
+  { key: "customs", label: "تأكيد مصارفة", stages: ["swift_attached"] },
+  { key: "completed", label: "مكتمل", stages: ["customs_released", "completed"] },
+];
+
+// خطوات اللجنة الوطنية (المركزي): المساندة → التنفيذية → الإصدار → مكتمل
+const CBY_STEPS: Step[] = [
+  { key: "support", label: "مراجعة اللجنة المساندة", stages: ["bank_approved", "support_review", "support_approved", "support_rejected"] },
+  { key: "executive", label: "تصويت اللجنة التنفيذية", stages: ["executive_voting", "executive_rejected"] },
+  { key: "issue", label: "إصدار تأكيد المصارفة", stages: ["executive_approved", "swift_attached"] },
+  { key: "completed", label: "مكتمل", stages: ["customs_released", "completed"] },
+];
+
+const BANK_ROLES: Role[] = ["bank_intake", "bank_reviewer", "bank_admin", "bank_swift"];
+const CBY_ROLES: Role[] = ["support_member", "executive_member", "committee_manager"];
+
+const REJECT_STAGES: RequestStage[] = ["executive_rejected", "support_rejected", "bank_rejected"];
 const TERMINAL_DONE: RequestStage[] = ["completed", "customs_released"];
+
+function stepsForRole(role: Role | null): Step[] {
+  if (role && BANK_ROLES.includes(role)) return BANK_STEPS;
+  if (role && CBY_ROLES.includes(role)) return CBY_STEPS;
+  // platform_admin / null: عرض كامل (البنك ثم اللجنة الوطنية مدمجين بشكل مبسط)
+  return BANK_STEPS;
+}
 
 export function WorkflowProgress({ req, compact = false }: { req: ImportRequest; compact?: boolean }) {
   const { user } = useAuth();
   const role = user?.role ?? null;
+  const steps = stepsForRole(role);
 
-  const isReturn = RETURN_STAGES.includes(req.stage);
   const isReject = REJECT_STAGES.includes(req.stage);
-
-  const useBuckets = role && role !== "platform_admin";
-  const buckets: DisplayBucket[] = useBuckets ? bucketsFor(role!) : [];
-
-  type Step = { key: string; label: string; stages: RequestStage[] };
-  const steps: Step[] = useBuckets
-    ? buckets
-        .filter((b) => !b.stages.every((s) => REJECT_STAGES.includes(s) || RETURN_STAGES.includes(s)))
-        .map((b) => ({ key: b.key, label: b.label, stages: b.stages }))
-    : STAGE_ORDER.filter((s) => !REJECT_STAGES.includes(s) && !RETURN_STAGES.includes(s)).map((s) => ({
-        key: s,
-        label: STAGE_LABELS[s],
-        stages: [s],
-      }));
-
   const currentIdx = steps.findIndex((s) => s.stages.includes(req.stage));
-  const atLastStep = currentIdx >= 0 && currentIdx === steps.length - 1;
-  const completedAll =
-    TERMINAL_DONE.includes(req.stage) || (atLastStep && !isReject && !isReturn);
+  const completedAll = TERMINAL_DONE.includes(req.stage);
 
   return (
     <div className="rounded-2xl border bg-card p-5 shadow-card">
       <div className="flex items-center justify-between mb-4">
         <div className="text-sm font-semibold">سير العملية التنظيمية</div>
-        {(isReturn || isReject) && (
-          <span
-            className={cn(
-              "text-[10px] px-2 py-0.5 rounded-full font-medium",
-              isReturn && "bg-warning/15 text-warning",
-              isReject && "bg-destructive/15 text-destructive",
-            )}
-          >
-            {isReturn ? "مُعاد للتعديل" : "مرفوض"}
-          </span>
-        )}
       </div>
 
       <ol className="relative">
         {steps.map((step, i) => {
-          const done = completedAll || (currentIdx >= 0 && i < currentIdx);
-          const current = !completedAll && i === currentIdx;
+          // في حالة الرفض النهائي: الخطوة الحالية (مكان الرفض) تُعتبر "تمت"،
+          // والخطوات التالية تظهر "غير مكتمل" باللون الأحمر.
+          const done = completedAll
+            ? true
+            : isReject
+              ? currentIdx >= 0 && i <= currentIdx
+              : currentIdx >= 0 && i < currentIdx;
+          const current = !completedAll && !isReject && i === currentIdx;
+          const failedAhead = isReject && currentIdx >= 0 && i > currentIdx;
           const isLast = i === steps.length - 1;
-          const rejectHere = isReject && current;
 
           return (
             <li key={step.key} className={cn("relative flex items-start gap-3", !isLast && "pb-5")}>
@@ -85,20 +99,12 @@ export function WorkflowProgress({ req, compact = false }: { req: ImportRequest;
                   </span>
                 ) : current ? (
                   <span
-                    className={cn(
-                      "w-[22px] h-[22px] rounded-full grid place-items-center",
-                      rejectHere
-                        ? "bg-destructive/15 ring-2 ring-destructive"
-                        : "bg-foreground ring-4 ring-foreground/15",
-                    )}
+                    className="w-[22px] h-[22px] rounded-full grid place-items-center bg-foreground ring-4 ring-foreground/15"
                   >
-                    <span
-                      className={cn(
-                        "w-2 h-2 rounded-full",
-                        rejectHere ? "bg-destructive" : "bg-background",
-                      )}
-                    />
+                    <span className="w-2 h-2 rounded-full bg-background" />
                   </span>
+                ) : failedAhead ? (
+                  <span className="w-[22px] h-[22px] rounded-full border-2 border-destructive bg-destructive/10" />
                 ) : (
                   <span className="w-[22px] h-[22px] rounded-full border-2 border-border bg-muted/40" />
                 )}
@@ -109,7 +115,13 @@ export function WorkflowProgress({ req, compact = false }: { req: ImportRequest;
                 <div
                   className={cn(
                     "text-sm leading-snug",
-                    current ? "font-semibold text-foreground" : done ? "text-foreground" : "text-muted-foreground",
+                    current
+                      ? "font-semibold text-foreground"
+                      : done
+                        ? "text-foreground"
+                        : failedAhead
+                          ? "text-destructive font-medium"
+                          : "text-muted-foreground",
                   )}
                 >
                   {step.label}
@@ -119,21 +131,21 @@ export function WorkflowProgress({ req, compact = false }: { req: ImportRequest;
                     className={cn(
                       "text-[11px] mt-0.5 leading-tight",
                       current
-                        ? rejectHere
-                          ? "text-destructive"
-                          : "text-primary"
+                        ? "text-primary"
                         : done
                           ? "text-success"
-                          : "text-muted-foreground/70",
+                          : failedAhead
+                            ? "text-destructive"
+                            : "text-muted-foreground/70",
                     )}
                   >
                     {current
-                      ? rejectHere
-                        ? "مرفوض في هذه المرحلة"
-                        : "المرحلة الحالية"
+                      ? "المرحلة الحالية"
                       : done
                         ? "مكتملة"
-                        : "بانتظار"}
+                        : failedAhead
+                          ? "غير مكتمل"
+                          : "بانتظار"}
                   </div>
                 )}
               </div>

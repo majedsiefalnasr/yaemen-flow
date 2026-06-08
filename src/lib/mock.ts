@@ -1636,12 +1636,17 @@ const DATA_ENTRY_BUCKETS: DisplayBucket[] = [
     stages: ["support_returned", "bank_returned"],
   },
   {
-    key: "rejected",
-    label: "مرفوض",
+    key: "rejected_internal",
+    label: "مرفوض من المراجعة الداخلية",
     color: C.destructive,
-    stages: ["support_rejected", "executive_rejected", "bank_rejected"],
+    stages: ["bank_rejected"],
   },
-  { key: "completed", label: "مكتمل", color: C.success, stages: ["customs_released", "completed"] },
+  {
+    key: "completed",
+    label: "مكتمل",
+    color: C.success,
+    stages: ["customs_released", "completed", "executive_rejected", "support_rejected"],
+  },
 ];
 
 const BANK_REVIEWER_BUCKETS: DisplayBucket[] = [
@@ -1673,12 +1678,17 @@ const BANK_REVIEWER_BUCKETS: DisplayBucket[] = [
   { key: "waiting_swift", label: "بانتظار رفع السويفت", color: C.accent, stages: ["executive_approved"] },
   { key: "swift_done", label: "تم رفع السويفت — بانتظار تأكيد المصارفة", color: C.info, stages: ["swift_attached"] },
   {
-    key: "rejected",
-    label: "مرفوض",
+    key: "rejected_internal",
+    label: "مرفوض من المراجعة الداخلية",
     color: C.destructive,
-    stages: ["support_rejected", "executive_rejected", "bank_rejected"],
+    stages: ["bank_rejected"],
   },
-  { key: "completed", label: "مكتمل", color: C.success, stages: ["customs_released", "completed"] },
+  {
+    key: "completed",
+    label: "مكتمل",
+    color: C.success,
+    stages: ["customs_released", "completed", "executive_rejected", "support_rejected"],
+  },
 ];
 
 const SWIFT_BUCKETS: DisplayBucket[] = [
@@ -1715,7 +1725,6 @@ const SUPPORT_BUCKETS: DisplayBucket[] = [
   },
   { key: "approved", label: "مُعتمد من المساندة", color: C.success, stages: ["support_approved"] },
   { key: "returned", label: "مُعاد للبنك", color: C.warning, stages: ["support_returned"] },
-  { key: "rejected", label: "مرفوض", color: C.destructive, stages: ["support_rejected"] },
 ];
 
 const EXECUTIVE_BUCKETS: DisplayBucket[] = [
@@ -1736,9 +1745,8 @@ const EXECUTIVE_BUCKETS: DisplayBucket[] = [
     key: "customs_done",
     label: "مكتمل",
     color: C.success,
-    stages: ["customs_released", "completed"],
+    stages: ["customs_released", "completed", "executive_rejected"],
   },
-  { key: "rejected", label: "مرفوض", color: C.destructive, stages: ["executive_rejected"] },
 ];
 
 const BUCKETS_BY_ROLE: Record<Role, DisplayBucket[]> = {
