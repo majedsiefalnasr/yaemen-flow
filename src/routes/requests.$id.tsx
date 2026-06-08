@@ -200,8 +200,11 @@ function RequestDetail() {
     req.stage === "support_returned" ? reasonFor("support_returned") : undefined;
   const execRejectedReason =
     req.stage === "executive_rejected" ? reasonFor("executive_rejected") : undefined;
-  const bankRejectedReason = req.stage === "bank_rejected" ? reasonFor("bank_rejected") : undefined;
   const bankReturnedReason = req.stage === "bank_returned" ? reasonFor("bank_returned") : undefined;
+  const customsConfirmationHref = req.customsStampedFile
+    ? (customsDocDataUrl ?? "/templates/نموذج-تأكيد-مصارفة-خارجية.docx")
+    : null;
+  const customsConfirmationFileName = req.customsStampedFile?.name ?? "تأكيد المصارفة الخارجية.docx";
 
   function performTransition(to: string, label: string) {
     const t = transitions.find((x) => x.to === to);
@@ -356,24 +359,6 @@ function RequestDetail() {
                 <div className="mt-2 text-sm bg-card border border-amber-200 rounded-md px-3 py-2">
                   <span className="font-semibold text-amber-700">سبب الإعادة: </span>
                   <span>{bankReturnedReason}</span>
-                </div>
-              )}
-            </div>
-          </div>
-        </Card>
-      )}
-
-      {/* بانر الرفض من المراجع الداخلي بالبنك */}
-      {req.stage === "bank_rejected" && (
-        <Card className="p-4 mb-4 border-rose-300 bg-rose-50/70 shadow-card border-r-4 border-r-rose-600">
-          <div className="flex items-start gap-3">
-            <XCircle className="h-5 w-5 text-rose-600 shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <div className="font-semibold text-rose-700">مرفوض من المراجعة الداخلية بالبنك</div>
-              {bankRejectedReason && (
-                <div className="mt-2 text-sm bg-card border border-rose-200 rounded-md px-3 py-2">
-                  <span className="font-semibold text-rose-700">سبب الرفض: </span>
-                  <span>{bankRejectedReason}</span>
                 </div>
               )}
             </div>
