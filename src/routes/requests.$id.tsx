@@ -734,24 +734,26 @@ function RequestDetail() {
             <Card className="p-5 shadow-card border-0">
               <h3 className="font-semibold mb-4">إجراءات متاحة لك</h3>
               <div className="space-y-2">
-                {transitions.map((t) => (
-                  <Button
-                    key={t.to}
-                    variant={t.destructive ? "outline" : "default"}
-                    className={cn(
-                      "w-full justify-start",
-                      t.destructive && "text-destructive hover:text-destructive",
-                    )}
-                    onClick={() => performTransition(t.to, t.label)}
-                  >
-                    {t.destructive ? (
-                      <XCircle className="h-4 w-4 ml-2" />
-                    ) : (
-                      <CheckCircle2 className="h-4 w-4 ml-2" />
-                    )}
-                    {t.label}
-                  </Button>
-                ))}
+                {transitions
+                  .filter((t) => t.label !== "إرسال للجنة التنفيذية")
+                  .map((t) => (
+                    <Button
+                      key={t.to}
+                      variant={t.destructive ? "outline" : "default"}
+                      className={cn(
+                        "w-full justify-start",
+                        t.destructive && "text-destructive hover:text-destructive",
+                      )}
+                      onClick={() => performTransition(t.to, t.label)}
+                    >
+                      {t.destructive ? (
+                        <XCircle className="h-4 w-4 ml-2" />
+                      ) : (
+                        <CheckCircle2 className="h-4 w-4 ml-2" />
+                      )}
+                      {t.label}
+                    </Button>
+                  ))}
 
                 {canSwift && (
                   <Button className="w-full justify-start" onClick={() => setSwiftDialogOpen(true)}>
@@ -779,7 +781,7 @@ function RequestDetail() {
                     </p>
                   )}
                   <Textarea
-                    rows={2}
+                    rows={5}
                     placeholder={
                       transitions.some((t) => t.requiresComment)
                         ? "اكتب سبب الإعادة..."
@@ -788,6 +790,26 @@ function RequestDetail() {
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
                   />
+                  {transitions
+                    .filter((t) => t.label === "إرسال للجنة التنفيذية")
+                    .map((t) => (
+                      <Button
+                        key={t.to}
+                        variant={t.destructive ? "outline" : "default"}
+                        className={cn(
+                          "w-full justify-start",
+                          t.destructive && "text-destructive hover:text-destructive",
+                        )}
+                        onClick={() => performTransition(t.to, t.label)}
+                      >
+                        {t.destructive ? (
+                          <XCircle className="h-4 w-4 ml-2" />
+                        ) : (
+                          <CheckCircle2 className="h-4 w-4 ml-2" />
+                        )}
+                        {t.label}
+                      </Button>
+                    ))}
                 </div>
               )}
             </Card>
