@@ -1,6 +1,5 @@
 import { Check } from "lucide-react";
 import {
-  BANK_ROLES,
   STAGE_LABELS,
   STAGE_ORDER,
   bucketsFor,
@@ -11,35 +10,9 @@ import {
 } from "@/lib/mock";
 import { cn } from "@/lib/utils";
 
-const RETURN_STAGES: RequestStage[] = ["support_returned", "bank_returned"];
-const REJECT_STAGES: RequestStage[] = ["support_rejected", "executive_rejected", "bank_rejected"];
+const RETURN_STAGES: RequestStage[] = ["support_returned"];
+const REJECT_STAGES: RequestStage[] = ["support_rejected", "executive_rejected"];
 const TERMINAL_DONE: RequestStage[] = ["completed", "customs_released"];
-
-// Simplified 3-step view used for every bank-side role.
-const SIMPLIFIED_BANK_STEPS: { key: string; label: string; stages: RequestStage[] }[] = [
-  {
-    key: "draft",
-    label: "مسودة",
-    stages: ["draft", "bank_submitted", "bank_internal_review", "bank_returned", "support_returned"],
-  },
-  {
-    key: "cby_processing",
-    label: "قيد معالجة اللجنة الوطنية",
-    stages: [
-      "bank_approved",
-      "support_review",
-      "support_approved",
-      "executive_voting",
-      "executive_approved",
-      "swift_attached",
-    ],
-  },
-  {
-    key: "completed",
-    label: "مكتمل",
-    stages: ["customs_released", "completed", "bank_rejected", "support_rejected", "executive_rejected"],
-  },
-];
 
 export function WorkflowProgress({ req, compact = false }: { req: ImportRequest; compact?: boolean }) {
   const { user } = useAuth();
@@ -47,23 +20,20 @@ export function WorkflowProgress({ req, compact = false }: { req: ImportRequest;
 
   const isReturn = RETURN_STAGES.includes(req.stage);
   const isReject = REJECT_STAGES.includes(req.stage);
-  const isBankRole = !!role && BANK_ROLES.includes(role);
 
-  const useBuckets = role && role !== "platform_admin" && !isBankRole;
+  const useBuckets = role && role !== "platform_admin";
   const buckets: DisplayBucket[] = useBuckets ? bucketsFor(role!) : [];
 
   type Step = { key: string; label: string; stages: RequestStage[] };
-  const steps: Step[] = isBankRole
-    ? SIMPLIFIED_BANK_STEPS
-    : useBuckets
-      ? buckets
-          .filter((b) => !b.stages.every((s) => REJECT_STAGES.includes(s) || RETURN_STAGES.includes(s)))
-          .map((b) => ({ key: b.key, label: b.label, stages: b.stages }))
-      : STAGE_ORDER.filter((s) => !REJECT_STAGES.includes(s) && !RETURN_STAGES.includes(s)).map((s) => ({
-          key: s,
-          label: STAGE_LABELS[s],
-          stages: [s],
-        }));
+  const steps: Step[] = useBuckets
+    ? buckets
+        .filter((b) => !b.stages.every((s) => REJECT_STAGES.includes(s) || RETURN_STAGES.includes(s)))
+        .map((b) => ({ key: b.key, label: b.label, stages: b.stages }))
+    : STAGE_ORDER.filter((s) => !REJECT_STAGES.includes(s) && !RETURN_STAGES.includes(s)).map((s) => ({
+        key: s,
+        label: STAGE_LABELS[s],
+        stages: [s],
+      }));
 
   const currentIdx = steps.findIndex((s) => s.stages.includes(req.stage));
   const atLastStep = currentIdx >= 0 && currentIdx === steps.length - 1;
@@ -82,7 +52,7 @@ export function WorkflowProgress({ req, compact = false }: { req: ImportRequest;
               isReject && "bg-destructive/15 text-destructive",
             )}
           >
-            {isReturn ? "مُعاد للتعديل" : "غير مستوفٍ للشروط"}
+            {isReturn ? "مُعاد للتعديل" : "مرفوض"}
           </span>
         )}
       </div>
@@ -159,7 +129,7 @@ export function WorkflowProgress({ req, compact = false }: { req: ImportRequest;
                   >
                     {current
                       ? rejectHere
-                      ? "غير مستوفٍ للشروط في هذه المرحلة"
+                        ? "مرفوض في هذه المرحلة"
                         : "المرحلة الحالية"
                       : done
                         ? "مكتملة"
@@ -174,4 +144,3 @@ export function WorkflowProgress({ req, compact = false }: { req: ImportRequest;
     </div>
   );
 }
-

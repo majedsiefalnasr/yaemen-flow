@@ -16,10 +16,10 @@ export type Role =
 
 export const ROLE_LABELS: Record<Role, string> = {
   platform_admin: "مسؤول النظام (CBY)",
-  bank_admin: "مدير البنك",
-  bank_intake: "مدخل البيانات",
-  bank_reviewer: "المراجع الداخلي",
-  bank_swift: "موظف السويفت بالبنك",
+  bank_admin: "مسؤول البنك التجاري",
+  bank_intake: "موظف إدخال البنك التجاري",
+  bank_reviewer: "مراجع داخلي بالبنك التجاري",
+  bank_swift: "موظف السويفت بالبنك التجاري",
   support_member: "عضو اللجنة المساندة",
   executive_member: "عضو اللجنة التنفيذية",
   committee_manager: "مدير اللجنة التنفيذية",
@@ -79,7 +79,7 @@ export const DEMO_USERS: User[] = [
     email: "admin@cby.gov.ye",
     role: "platform_admin",
     entityId: null,
-    org: "اللجنة الوطنية لتنظيم وتمويل الواردات – إدارة الأنظمة",
+    org: "البنك المركزي – إدارة الأنظمة",
     avatar: "يح",
   },
   // 2) مسؤول البنك التجاري
@@ -119,7 +119,7 @@ export const DEMO_USERS: User[] = [
     email: "m.shami@cby.gov.ye",
     role: "support_member",
     entityId: null,
-    org: "اللجنة الوطنية لتنظيم وتمويل الواردات – لجنة مساندة",
+    org: "البنك المركزي – لجنة مساندة",
     avatar: "مش",
   },
   {
@@ -128,7 +128,7 @@ export const DEMO_USERS: User[] = [
     email: "e.sabri@cby.gov.ye",
     role: "support_member",
     entityId: null,
-    org: "اللجنة الوطنية لتنظيم وتمويل الواردات – لجنة مساندة",
+    org: "البنك المركزي – لجنة مساندة",
     avatar: "إص",
   },
   // 6) موظف السويفت بالبنك التجاري
@@ -148,7 +148,7 @@ export const DEMO_USERS: User[] = [
     email: "huda@cby.gov.ye",
     role: "committee_manager",
     entityId: null,
-    org: "اللجنة الوطنية لتنظيم وتمويل الواردات – مدير اللجنة التنفيذية",
+    org: "البنك المركزي – مدير اللجنة التنفيذية",
     avatar: "هإ",
   },
   // 8-12) أعضاء اللجنة التنفيذية 1..5
@@ -158,7 +158,7 @@ export const DEMO_USERS: User[] = [
     email: "sami@cby.gov.ye",
     role: "executive_member",
     entityId: null,
-    org: "اللجنة الوطنية لتنظيم وتمويل الواردات – عضو اللجنة التنفيذية 1",
+    org: "البنك المركزي – عضو اللجنة التنفيذية 1",
     avatar: "سذ",
   },
   {
@@ -167,7 +167,7 @@ export const DEMO_USERS: User[] = [
     email: "nada@cby.gov.ye",
     role: "executive_member",
     entityId: null,
-    org: "اللجنة الوطنية لتنظيم وتمويل الواردات – عضو اللجنة التنفيذية 2",
+    org: "البنك المركزي – عضو اللجنة التنفيذية 2",
     avatar: "نك",
   },
   {
@@ -176,7 +176,7 @@ export const DEMO_USERS: User[] = [
     email: "fahd@cby.gov.ye",
     role: "executive_member",
     entityId: null,
-    org: "اللجنة الوطنية لتنظيم وتمويل الواردات – عضو اللجنة التنفيذية 3",
+    org: "البنك المركزي – عضو اللجنة التنفيذية 3",
     avatar: "فش",
   },
   {
@@ -185,7 +185,7 @@ export const DEMO_USERS: User[] = [
     email: "amina@cby.gov.ye",
     role: "executive_member",
     entityId: null,
-    org: "اللجنة الوطنية لتنظيم وتمويل الواردات – عضو اللجنة التنفيذية 4",
+    org: "البنك المركزي – عضو اللجنة التنفيذية 4",
     avatar: "أع",
   },
   {
@@ -194,7 +194,7 @@ export const DEMO_USERS: User[] = [
     email: "khaled@cby.gov.ye",
     role: "executive_member",
     entityId: null,
-    org: "اللجنة الوطنية لتنظيم وتمويل الواردات – عضو اللجنة التنفيذية 5",
+    org: "البنك المركزي – عضو اللجنة التنفيذية 5",
     avatar: "خأ",
   },
 ];
@@ -203,23 +203,7 @@ export const DEMO_USERS: User[] = [
 // AUTH STORE
 // ============================================================
 
-const AUTH_STORAGE_KEY = "ncrfi.auth.user";
-
-function loadStoredUser(): User | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = window.localStorage.getItem(AUTH_STORAGE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as { id?: string };
-    if (!parsed?.id) return null;
-    const match = DEMO_USERS.find((u) => u.id === parsed.id);
-    return match ?? null;
-  } catch {
-    return null;
-  }
-}
-
-let currentUser: User | null = loadStoredUser();
+let currentUser: User | null = null;
 let lang: "ar" | "en" = "ar";
 let theme: "light" | "dark" = "light";
 let snapshot: { user: User | null; lang: "ar" | "en"; theme: "light" | "dark" } = {
@@ -246,20 +230,10 @@ export const auth = {
   },
   login(u: User) {
     currentUser = u;
-    if (typeof window !== "undefined") {
-      try {
-        window.localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify({ id: u.id }));
-      } catch {}
-    }
     emit();
   },
   logout() {
     currentUser = null;
-    if (typeof window !== "undefined") {
-      try {
-        window.localStorage.removeItem(AUTH_STORAGE_KEY);
-      } catch {}
-    }
     emit();
   },
   setLang(l: "ar" | "en") {
@@ -316,13 +290,13 @@ export const STAGE_LABELS: Record<RequestStage, string> = {
   bank_approved: "اعتماد البنك الداخلي",
   support_review: "قيد مراجعة اللجنة المساندة",
   support_returned: "معاد من المساندة",
-  support_rejected: "غير مستوفي للشروط (المساندة)",
-  bank_returned: "بانتظار تعديل مدخل البيانات",
-  bank_rejected: "غير مستوفي للشروط (المراجعة الداخلية)",
-  support_approved: "إحالة للجنة التنفيذية — بانتظار التصويت",
-  swift_attached: "رفع السويفت — بانتظار تأكيد المصارفة",
+  support_rejected: "مرفوض من المساندة",
+  bank_returned: "معاد من المراجعة",
+  bank_rejected: "مرفوض من المراجعة",
+  support_approved: "اعتماد المساندة — بانتظار التصويت",
+  swift_attached: "تم إرفاق السويفت — بانتظار تأكيد المصارفة",
   executive_voting: "تصويت اللجنة التنفيذية",
-  executive_rejected: "غير مستوفي للشروط (التنفيذية)",
+  executive_rejected: "مرفوض من التنفيذية",
   executive_approved: "اعتماد التنفيذية — بانتظار رفع السويفت",
   customs_released: "صدر تأكيد المصارفة الخارجية",
   completed: "مكتمل",
@@ -433,10 +407,19 @@ export const TRANSITIONS: Record<RequestStage, Transition[]> = {
     },
     {
       to: "bank_returned",
-      label: "إعادة لمدخل البيانات للتعديل",
+      label: "إعادة لإعادة الإدخال",
       roles: ["bank_reviewer", "bank_admin"],
       requiresEntityMatch: true,
       forbidIntakeUser: true,
+      requiresComment: true,
+    },
+    {
+      to: "bank_rejected",
+      label: "رفض الطلب",
+      roles: ["bank_reviewer", "bank_admin"],
+      requiresEntityMatch: true,
+      forbidIntakeUser: true,
+      destructive: true,
       requiresComment: true,
     },
   ],
@@ -446,8 +429,21 @@ export const TRANSITIONS: Record<RequestStage, Transition[]> = {
   support_review: [
     {
       to: "executive_voting",
-      label: "إرسال إلى اللجنة التنفيذية",
+      label: "اعتماد المساندة وفتح باب التصويت",
       roles: ["support_member"],
+    },
+    {
+      to: "support_returned",
+      label: "إعادة للبنك للتعديل",
+      roles: ["support_member"],
+      requiresComment: true,
+    },
+    {
+      to: "support_rejected",
+      label: "رفض الطلب",
+      roles: ["support_member"],
+      destructive: true,
+      requiresComment: true,
     },
   ],
   support_returned: [
@@ -569,8 +565,6 @@ export type ImportRequest = {
     uploadedBy: string;
     mime?: string;
     storageKey?: string;
-    /** Public URL to a pre-seeded sample PDF (used when no local upload exists). */
-    publicUrl?: string;
   };
   documents?: { name: string; fileName: string; mime: string; dataUrl: string; size: number }[];
   customsNo?: string;
@@ -801,6 +795,32 @@ const SEED_ROWS: SeedRow[] = [
     supportReviewerId: "u3",
   },
 
+  // ─── support_returned × 2 ──────────────────────────────────────────
+  {
+    stage: "support_returned",
+    importer: importers[0],
+    entity: 0,
+    amount: 67000,
+    currency: "EUR",
+    type: types[5],
+    supplier: suppliers[4],
+    port: ports[3],
+    risk: "low",
+    intake: "u5",
+  },
+  {
+    stage: "support_returned",
+    importer: importers[1],
+    entity: 0,
+    amount: 295000,
+    currency: "USD",
+    type: types[3],
+    supplier: suppliers[3],
+    port: ports[1],
+    risk: "medium",
+    intake: "u4",
+  },
+
   // ─── bank_returned × 2 (returned by bank reviewer to intake) ───────
   {
     stage: "bank_returned",
@@ -822,6 +842,32 @@ const SEED_ROWS: SeedRow[] = [
     currency: "EUR",
     type: types[3],
     supplier: suppliers[3],
+    port: ports[2],
+    risk: "medium",
+    intake: "u4",
+  },
+
+  // ─── support_rejected × 2 ──────────────────────────────────────────
+  {
+    stage: "support_rejected",
+    importer: importers[2],
+    entity: 0,
+    amount: 780000,
+    currency: "USD",
+    type: types[2],
+    supplier: suppliers[2],
+    port: ports[0],
+    risk: "high",
+    intake: "u5",
+  },
+  {
+    stage: "support_rejected",
+    importer: importers[3],
+    entity: 0,
+    amount: 158000,
+    currency: "SAR",
+    type: types[1],
+    supplier: suppliers[1],
     port: ports[2],
     risk: "medium",
     intake: "u4",
@@ -1094,42 +1140,6 @@ const REQUEST_SEED_META = SEED_ROWS.map((row, i) => ({
   baseDate: new Date(2026, 4, (i % 28) + 1),
 }));
 
-// ---- Merchant-aligned seed lookup (mirrors MERCHANTS construction) ----
-const SEED_TRADER_NAMES = [
-  "محمد هائل سعيد",
-  "علي الشيباني",
-  "ثابت ثابت",
-  "د. عبدالله الكميم",
-  "أحمد الأهدل",
-];
-const SEED_ACTIVITIES = [
-  "تجارة عامة — مواد غذائية",
-  "استيراد أدوية ومستلزمات طبية",
-  "تجارة مشتقات نفطية",
-  "قطع غيار وآليات ثقيلة",
-  "مواد بناء وحديد تسليح",
-  "أجهزة إلكترونية ومنزلية",
-];
-const SEED_ORIGINS = ["الإمارات", "السعودية", "ألمانيا", "الصين", "تركيا", "الهند"];
-const SEED_PAYMENT_TERMS = ["TT", "LC", "DP", "CAD"];
-const SEED_COVERAGE = ["تحويل عبر مراسل", "اعتماد مستندي", "حساب جاري بالعملة الأجنبية"];
-const SEED_FX_SOURCES = ["شراء من السوق المحلي", "تحويلات مغتربين", "صادرات"];
-const SEED_YER_SOURCES = ["إيداعات نقدية بالريال", "تحصيلات تجارية محلية"];
-const SEED_SHIP_PORTS = ["جبل علي — الإمارات", "جدة الإسلامي — السعودية", "هامبورغ — ألمانيا", "شنغهاي — الصين", "إسطنبول — تركيا"];
-
-function merchantSeedFor(i: number) {
-  const mIdx = i % 5;
-  return {
-    traderName: SEED_TRADER_NAMES[mIdx],
-    taxNo: `4${String(100000 + mIdx * 7777)}`,
-    crNo: `CR-${String(50000 + mIdx * 13)}`,
-    shareholders: [
-      { name: SEED_TRADER_NAMES[mIdx], percent: 60 },
-      { name: "شريك ثانٍ", percent: 40 },
-    ] as { name: string; percent: number }[],
-  };
-}
-
 export const REQUESTS: ImportRequest[] = REQUEST_SEED_META.map(
   ({ row, index, requestId, ref, baseDate }) => {
     const entity = ENTITIES[row.entity];
@@ -1196,30 +1206,6 @@ export const REQUESTS: ImportRequest[] = REQUEST_SEED_META.map(
         ? new Date(baseDate.getTime() + 8 * 3600_000).toISOString()
         : undefined,
       customsBy,
-      customsStampedFile: customsDone
-        ? {
-            name: `تأكيد-مصارفة-خارجية-CD-2026-${String(7000 + index)}.pdf`,
-            size: 215040,
-            uploadedAt: new Date(baseDate.getTime() + 8 * 3600_000).toISOString(),
-            uploadedBy: customsBy ?? "u9",
-            mime: "application/pdf",
-            publicUrl: "/templates/نموذج-طلب-وثيقة-تأكيد.pdf",
-          }
-        : undefined,
-      // ---- merchant / invoice / shipping enrichment ----
-      activity: SEED_ACTIVITIES[index % SEED_ACTIVITIES.length],
-      taxNo: merchantSeedFor(index).taxNo,
-      crNo: merchantSeedFor(index).crNo,
-      originCountry: SEED_ORIGINS[index % SEED_ORIGINS.length],
-      invoiceAmount: Math.round(row.amount * (1 + ((index % 5) * 0.04))),
-      invoiceDate: new Date(baseDate.getTime() - 14 * 86400_000).toISOString().slice(0, 10),
-      paymentTerms: SEED_PAYMENT_TERMS[index % SEED_PAYMENT_TERMS.length],
-      shipmentDate: new Date(baseDate.getTime() + 21 * 86400_000).toISOString().slice(0, 10),
-      shipPort: SEED_SHIP_PORTS[index % SEED_SHIP_PORTS.length],
-      shareholders: merchantSeedFor(index).shareholders,
-      yerSources: SEED_YER_SOURCES[index % SEED_YER_SOURCES.length],
-      fxSources: SEED_FX_SOURCES[index % SEED_FX_SOURCES.length],
-      coverageMethod: SEED_COVERAGE[index % SEED_COVERAGE.length],
     };
   },
 );
@@ -1241,22 +1227,9 @@ export const SEED_VOTE_HISTORY = SEED_VOTES.map((vote, index) => ({
 
 export type Merchant = {
   id: string;
-  /** اسم الشركة (للعرض الرئيسي). */
   name: string;
-  /** اسم التاجر (الشخص الطبيعي صاحب البطاقة الضريبية). */
-  traderName?: string;
-  /** الرقم الضريبي — المفتاح الرئيسي (Primary Key). */
   tax: string;
-  /** تاريخ انتهاء البطاقة الضريبية (ISO date). */
-  taxExpiry?: string;
-  /** رقم السجل التجاري. */
   cr: string;
-  /** تاريخ انتهاء السجل التجاري (ISO date). */
-  crExpiry?: string;
-  /** الشركات المرتبطة بنفس التاجر (1→N). */
-  companies?: { id: string; name: string }[];
-  /** الملاك والمساهمون بنسبة ≥ 25%. */
-  shareholders?: { id: string; name: string; percent: number }[];
   address: string;
   contact: string;
   category: string;
@@ -1267,16 +1240,8 @@ export type Merchant = {
 export const MERCHANTS: Merchant[] = importers.map((n, i) => ({
   id: `m${i + 1}`,
   name: n,
-  traderName: ["محمد هائل سعيد", "علي الشيباني", "ثابت ثابت", "د. عبدالله الكميم", "أحمد الأهدل"][i % 5],
   tax: `4${String(100000 + i * 7777)}`,
-  taxExpiry: new Date(Date.now() + (180 + i * 30) * 86400000).toISOString().slice(0, 10),
   cr: `CR-${String(50000 + i * 13)}`,
-  crExpiry: new Date(Date.now() + (240 + i * 30) * 86400000).toISOString().slice(0, 10),
-  companies: [{ id: `c_${i}_1`, name: n }],
-  shareholders: [
-    { id: `sh_${i}_1`, name: ["محمد هائل سعيد", "علي الشيباني", "ثابت ثابت", "د. عبدالله الكميم", "أحمد الأهدل"][i % 5], percent: 60 },
-    { id: `sh_${i}_2`, name: "شريك ثانٍ", percent: 40 },
-  ],
   address: ["صنعاء – شارع الزبيري", "عدن – كريتر", "الحديدة – شارع صنعاء", "المكلا", "تعز"][i % 5],
   contact: `+9677${String(11000000 + i * 9999)}`,
   category: types[i % types.length],
@@ -1284,13 +1249,6 @@ export const MERCHANTS: Merchant[] = importers.map((n, i) => ({
   transactions: 3 + i * 4,
   entityId: ENTITIES[i % ENTITIES.length].id,
 }));
-
-/** Look up a merchant by tax number (primary key). Returns undefined if not found. */
-export function findMerchantByTax(list: Merchant[], tax: string): Merchant | undefined {
-  const needle = tax.trim();
-  if (!needle) return undefined;
-  return list.find((m) => m.tax === needle);
-}
 
 export type AuditLog = {
   id: string;
@@ -1487,7 +1445,7 @@ export function canViewRequest(user: User | null, req: ImportRequest): boolean {
 // ROLE-SPECIFIC DISPLAY STATUSES (business-friendly buckets)
 // Internal workflow stages are mapped into a smaller, role-relevant set
 // of statuses. A data-entry user must NOT see raw CBY operational stages
-// (e.g. "executive_voting"); they see "قيد معالجة اللجنة الوطنية" instead.
+// (e.g. "executive_voting"); they see "قيد معالجة البنك المركزي" instead.
 // ============================================================
 
 export type DisplayBucket = {
@@ -1518,7 +1476,7 @@ const DATA_ENTRY_BUCKETS: DisplayBucket[] = [
   },
   {
     key: "cby_processing",
-    label: "قيد معالجة اللجنة الوطنية",
+    label: "قيد معالجة البنك المركزي",
     color: C.accent,
     stages: [
       "bank_approved",
@@ -1553,7 +1511,7 @@ const BANK_REVIEWER_BUCKETS: DisplayBucket[] = [
   },
   {
     key: "cby_review",
-    label: "قيد مراجعة اللجنة الوطنية",
+    label: "قيد مراجعة البنك المركزي",
     color: C.warning,
     stages: ["bank_approved", "support_review", "support_approved"],
   },
@@ -1686,22 +1644,11 @@ export function progressionBucketsFor(role: Role): DisplayBucket[] {
 
 /**
  * Role-aware progress percentage. The last bucket in the role's progression
- * chain represents "done from this role's perspective" → 100%.
- *
- * For bank-side roles, a request is considered fully concluded whenever it
- * reaches a terminal outcome — either approved (customs released / completed)
- * OR not-meeting-requirements (any rejection) — so progress is forced to 100%.
+ * chain represents "done from this role's perspective" → 100%. Off-track
+ * (returned/rejected) stages fall back to the global STAGE_PROGRESS value.
  */
-const TERMINAL_DONE_STAGES = new Set<RequestStage>([
-  "customs_released",
-  "completed",
-  "bank_rejected",
-  "support_rejected",
-  "executive_rejected",
-]);
 export function progressForRole(stage: RequestStage, role: Role | null | undefined): number {
   if (!role) return progressFor(stage);
-  if (BANK_ROLES.includes(role) && TERMINAL_DONE_STAGES.has(stage)) return 100;
   const chain = progressionBucketsFor(role);
   const idx = chain.findIndex((b) => b.stages.includes(stage));
   if (idx >= 0) return Math.round(((idx + 1) / chain.length) * 100);

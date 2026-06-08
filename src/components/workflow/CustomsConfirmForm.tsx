@@ -184,7 +184,7 @@ export function CustomsConfirmForm({ requestId, onIssued }: Props) {
           </div>
         </div>
         <p className="text-xs text-muted-foreground text-center">
-          تم إصدار التأكيد — اكتمل إجراء اللجنة الوطنية لتنظيم وتمويل الواردات على هذا الطلب.
+          تم إصدار التأكيد — اكتمل إجراء البنك المركزي على هذا الطلب.
         </p>
       </div>
     );
@@ -197,7 +197,7 @@ export function CustomsConfirmForm({ requestId, onIssued }: Props) {
           <FileText className="h-3.5 w-3.5" /> وثيقة تأكيد المصارفة الخارجية
         </div>
         <p className="text-muted-foreground leading-relaxed">
-          نزّل النموذج، اطبعه واختمه بختم اللجنة الوطنية لتنظيم وتمويل الواردات ووقّعه، ثم ارفع النسخة الممسوحة ضوئياً
+          نزّل النموذج، اطبعه واختمه بختم البنك المركزي ووقّعه، ثم ارفع النسخة الممسوحة ضوئياً
           أدناه بصيغة PDF.
         </p>
         <Button asChild variant="outline" size="sm" className="h-7 text-xs">

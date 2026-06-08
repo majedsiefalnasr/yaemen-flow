@@ -126,7 +126,7 @@ function SettingsPage() {
             <h3 className="font-semibold">إعدادات عامة</h3>
             <div className="grid md:grid-cols-2 gap-5">
               <div className="space-y-2"><Label>اسم المنصة</Label><Input defaultValue="منصة إدارة وتمويل الواردات" /></div>
-              <div className="space-y-2"><Label>الجهة</Label><Input defaultValue="اللجنة الوطنية لتنظيم وتمويل الواردات" /></div>
+              <div className="space-y-2"><Label>الجهة</Label><Input defaultValue="البنك المركزي اليمني" /></div>
               <div className="space-y-2"><Label>اللغة الافتراضية</Label><Input defaultValue="العربية" /></div>
               <div className="space-y-2"><Label>المنطقة الزمنية</Label><Input defaultValue="GMT+3 (Arabia)" /></div>
             </div>

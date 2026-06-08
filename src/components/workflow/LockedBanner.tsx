@@ -12,7 +12,7 @@ export function LockedBanner({
     locked: {
       icon: Lock,
       title: "هذا الطلب مغلق",
-      defaultMsg: "لا يمكن تعديل البيانات أو حذف المستندات بعد إحالته للجنة الوطنية لتنظيم وتمويل الواردات.",
+      defaultMsg: "لا يمكن تعديل البيانات أو حذف المستندات بعد إحالته للبنك المركزي.",
       cls: "bg-muted/60 border-border text-muted-foreground",
     },
     readonly: {

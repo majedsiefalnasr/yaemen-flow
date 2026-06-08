@@ -3,7 +3,7 @@
 
 const NS = "cby.v2";
 const VERSION_KEY = `${NS}.version`;
-const CURRENT_VERSION = "2026-06-07-customs-public-url";
+const CURRENT_VERSION = "2026-05-20-seed-scenarios";
 
 const isBrowser = typeof window !== "undefined";
 

@@ -30,7 +30,6 @@ import { useAuth, auth, ROLE_LABELS, type Role } from "@/lib/mock";
 import { notificationsCell, markAllRead, can, type Permission } from "@/lib/governance";
 import { RoleSwitcher } from "@/components/workflow/RoleSwitcher";
 import { cn } from "@/lib/utils";
-import ncrfiLogo from "@/assets/ncrfi-logo.png.asset.json";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -107,17 +106,13 @@ export function AppShell() {
   const SidebarBody = ({ inDrawer = false }: { inDrawer?: boolean }) => (
     <div className="flex h-full flex-col">
       <div className="flex h-16 items-center gap-3 px-5 border-b border-sidebar-border">
-        <img
-          src={ncrfiLogo.url}
-          alt="شعار اللجنة الوطنية لتنظيم وتمويل الواردات"
-          className="h-10 w-10 rounded-xl object-contain bg-white/5 p-0.5 shrink-0"
-        />
+        <div className="grid h-10 w-10 place-items-center rounded-xl bg-sidebar-primary text-sidebar-primary-foreground font-bold">
+          ب م
+        </div>
         {(!collapsed || inDrawer) && (
-          <div className="leading-tight min-w-0">
-            <div className="font-bold text-[13px] truncate">اللجنة الوطنية</div>
-            <div className="text-[10px] text-sidebar-foreground/60 truncate">
-              لتنظيم وتمويل الواردات
-            </div>
+          <div className="leading-tight">
+            <div className="font-bold">منصة الواردات</div>
+            <div className="text-[11px] text-sidebar-foreground/60">البنك المركزي اليمني</div>
           </div>
         )}
       </div>
@@ -319,7 +314,7 @@ export function AppShell() {
         </main>
 
         <footer className="px-3 sm:px-6 py-4 text-[10px] sm:text-xs text-muted-foreground border-t flex items-center justify-between gap-2 flex-wrap">
-          <div>© 2025 اللجنة الوطنية لتنظيم وتمويل الواردات</div>
+          <div>© 2025 البنك المركزي اليمني</div>
           <div className="flex items-center gap-2 shrink-0">
             <AlertTriangle className="h-3.5 w-3.5" />
             بيئة عرض توضيحي

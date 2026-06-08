@@ -12,32 +12,28 @@ import appCss from "../styles.css?url";
 import { AppShell } from "@/components/layout/AppShell";
 import { useAuth } from "@/lib/mock";
 import { Toaster } from "@/components/ui/sonner";
-import ncrfiLogo from "@/assets/ncrfi-logo.png.asset.json";
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "منصة إدارة وتمويل الواردات — اللجنة الوطنية لتنظيم وتمويل الواردات" },
-      { name: "description", content: "منصة رقمية لإدارة ومراجعة طلبات تمويل الواردات للجنة الوطنية لتنظيم وتمويل الواردات" },
-      { property: "og:title", content: "منصة إدارة وتمويل الواردات — اللجنة الوطنية لتنظيم وتمويل الواردات" },
-      { name: "twitter:title", content: "منصة إدارة وتمويل الواردات — اللجنة الوطنية لتنظيم وتمويل الواردات" },
-      { property: "og:description", content: "منصة رقمية لإدارة ومراجعة طلبات تمويل الواردات للجنة الوطنية لتنظيم وتمويل الواردات" },
-      { name: "twitter:description", content: "منصة رقمية لإدارة ومراجعة طلبات تمويل الواردات للجنة الوطنية لتنظيم وتمويل الواردات" },
-      { property: "og:image", content: ncrfiLogo.url },
-      { name: "twitter:image", content: ncrfiLogo.url },
+      { title: "منصة إدارة وتمويل الواردات — البنك المركزي اليمني" },
+      { name: "description", content: "منصة رقمية لإدارة ومراجعة طلبات تمويل الواردات للبنك المركزي اليمني" },
+      { property: "og:title", content: "منصة إدارة وتمويل الواردات — البنك المركزي اليمني" },
+      { name: "twitter:title", content: "منصة إدارة وتمويل الواردات — البنك المركزي اليمني" },
+      { property: "og:description", content: "منصة رقمية لإدارة ومراجعة طلبات تمويل الواردات للبنك المركزي اليمني" },
+      { name: "twitter:description", content: "منصة رقمية لإدارة ومراجعة طلبات تمويل الواردات للبنك المركزي اليمني" },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/uCWYibmUVBhcjtCCADDdZqetr0F2/social-images/social-1778277825171-logo.webp" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/uCWYibmUVBhcjtCCADDdZqetr0F2/social-images/social-1778277825171-logo.webp" },
       { name: "twitter:card", content: "summary_large_image" },
       { property: "og:type", content: "website" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
-      { rel: "icon", type: "image/png", href: ncrfiLogo.url },
-      { rel: "apple-touch-icon", href: ncrfiLogo.url },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "" },
       { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Tajawal:wght@500;700;800&display=swap" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" },
     ],
   }),
   shellComponent: RootShell,

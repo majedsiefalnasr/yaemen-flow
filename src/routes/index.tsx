@@ -292,7 +292,7 @@ function ReviewerDashboard({ scoped }: { scoped: ImportRequest[] }) {
 
   const kpis: Kpi[] = [
     { label: "بانتظار مراجعتي", value: pendingReview, icon: Inbox, tone: "text-warning bg-warning/10", href: "/requests" },
-    { label: "قيد اللجنة الوطنية", value: cbyReview, icon: Clock, tone: "text-info bg-info/10" },
+    { label: "قيد البنك المركزي", value: cbyReview, icon: Clock, tone: "text-info bg-info/10" },
     { label: "مُعاد للتعديل", value: returned, icon: RefreshCw, tone: "text-destructive bg-destructive/10" },
     { label: "مُعتمد / مكتمل", value: approved, icon: CheckCircle2, tone: "text-success bg-success/10" },
   ];
@@ -405,7 +405,7 @@ function BankAdminDashboard({ scoped }: { scoped: ImportRequest[] }) {
   const kpis: Kpi[] = [
     { label: "إجمالي طلبات البنك", value: total, icon: FileText, tone: "text-primary bg-primary/10" },
     { label: "مراجعة داخلية معلّقة", value: pendingInternal, icon: Clock, tone: "text-warning bg-warning/10" },
-    { label: "قيد اللجنة الوطنية", value: atCBY, icon: Send, tone: "text-info bg-info/10" },
+    { label: "قيد البنك المركزي", value: atCBY, icon: Send, tone: "text-info bg-info/10" },
     { label: "مُعتمد", value: approved, icon: CheckCircle2, tone: "text-success bg-success/10" },
   ];
 

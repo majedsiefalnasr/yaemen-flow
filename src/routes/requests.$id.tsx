@@ -124,17 +124,16 @@ function RequestDetail() {
 
     async function loadStoredCustomsFile() {
       if (!req?.customsStampedFile?.storageKey) {
-        setCustomsDocDataUrl(req?.customsStampedFile?.publicUrl ?? null);
+        setCustomsDocDataUrl(null);
         return;
       }
 
       try {
         const stored = await getLocalFile(req.customsStampedFile.storageKey);
-        if (!cancelled)
-          setCustomsDocDataUrl(stored?.dataUrl ?? req.customsStampedFile?.publicUrl ?? null);
+        if (!cancelled) setCustomsDocDataUrl(stored?.dataUrl ?? null);
       } catch (error) {
         console.error("Failed to load the stored customs confirmation file.", error);
-        if (!cancelled) setCustomsDocDataUrl(req.customsStampedFile?.publicUrl ?? null);
+        if (!cancelled) setCustomsDocDataUrl(null);
       }
     }
 
@@ -143,7 +142,7 @@ function RequestDetail() {
     return () => {
       cancelled = true;
     };
-  }, [req?.id, req?.customsStampedFile?.storageKey, req?.customsStampedFile?.publicUrl]);
+  }, [req?.id, req?.customsStampedFile?.storageKey]);
 
   if (path !== `/requests/${id}`) {
     return <Outlet />;
@@ -368,6 +367,68 @@ function RequestDetail() {
         </Card>
       )}
 
+      {/* بانر الرفض من المراجع الداخلي بالبنك */}
+      {req.stage === "bank_rejected" && (
+        <Card className="p-4 mb-4 border-rose-300 bg-rose-50/70 shadow-card border-r-4 border-r-rose-600">
+          <div className="flex items-start gap-3">
+            <XCircle className="h-5 w-5 text-rose-600 shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <div className="font-semibold text-rose-700">مرفوض من المراجعة الداخلية بالبنك</div>
+              {bankRejectedReason && (
+                <div className="mt-2 text-sm bg-card border border-rose-200 rounded-md px-3 py-2">
+                  <span className="font-semibold text-rose-700">سبب الرفض: </span>
+                  <span>{bankRejectedReason}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {/* بانر الرفض النهائي من اللجنة التنفيذية — لا يمكن إعادة إرسال نفس الطلب */}
+      {req.stage === "executive_rejected" && (
+        <Card className="p-4 mb-4 border-rose-300 bg-rose-50/70 shadow-card border-r-4 border-r-rose-600">
+          <div className="flex items-start gap-3">
+            <XCircle className="h-5 w-5 text-rose-600 shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <div className="font-semibold text-rose-700">رفض نهائي من اللجنة التنفيذية</div>
+              <div className="text-xs text-muted-foreground mt-1">
+                هذا قرار نهائي ولا يمكن إعادة إرسال الطلب نفسه مرة أخرى. لتقديم طلب جديد، يلزم إنشاء
+                طلب مستقل ببيانات مختلفة.
+              </div>
+              {execRejectedReason && (
+                <div className="mt-2 text-sm bg-card border border-rose-200 rounded-md px-3 py-2">
+                  <span className="font-semibold text-rose-700">سبب الرفض: </span>
+                  <span>{execRejectedReason}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {/* بانر الرفض من المساندة */}
+      {req.stage === "support_rejected" && (
+        <Card className="p-4 mb-4 border-rose-300 bg-rose-50/60 shadow-card border-r-4 border-r-rose-500">
+          <div className="flex items-start gap-3">
+            <XCircle className="h-5 w-5 text-rose-600 shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <div className="font-semibold text-rose-700">مرفوض من اللجنة المساندة</div>
+              <div className="text-xs text-muted-foreground mt-1">
+                لا يمكن متابعة هذا الطلب ضمن مساره الحالي. يمكنك الإبقاء عليه للأرشفة أو إنشاء طلب
+                جديد بعد معالجة سبب الرفض.
+              </div>
+              {supportRejectedReason && (
+                <div className="mt-2 text-sm bg-card border border-rose-200 rounded-md px-3 py-2">
+                  <span className="font-semibold text-rose-700">سبب الرفض: </span>
+                  <span>{supportRejectedReason}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </Card>
+      )}
+
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           {req.customsStampedFile && (
@@ -416,84 +477,18 @@ function RequestDetail() {
             </Card>
           )}
 
-          {(() => {
-            const approvedStages = ["customs_released", "completed"];
-            const rejectedStages = ["executive_rejected", "support_rejected", "bank_rejected"];
-            const isApproved = approvedStages.includes(req.stage);
-            const isRejected = rejectedStages.includes(req.stage);
-
-            if (isApproved || isRejected) {
-              const Icon = isApproved ? CheckCircle2 : XCircle;
-              return (
-                <Card
-                  className={cn(
-                    "p-5 shadow-card border",
-                    isApproved
-                      ? "bg-gradient-to-br from-success/10 to-success/5 border-success/30"
-                      : "bg-gradient-to-br from-destructive/10 to-destructive/5 border-destructive/30",
-                  )}
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-semibold">تقدم الطلب في الدورة التنظيمية</h3>
-                    <span
-                      className={cn(
-                        "text-[10px] px-2 py-0.5 rounded-full font-semibold",
-                        isApproved
-                          ? "bg-success/20 text-success"
-                          : "bg-destructive/20 text-destructive",
-                      )}
-                    >
-                      100% — مكتمل
-                    </span>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <div
-                      className={cn(
-                        "h-11 w-11 rounded-xl grid place-items-center shrink-0",
-                        isApproved
-                          ? "bg-success/15 text-success"
-                          : "bg-destructive/15 text-destructive",
-                      )}
-                    >
-                      <Icon className="h-6 w-6" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div
-                        className={cn(
-                          "font-semibold",
-                          isApproved ? "text-success" : "text-destructive",
-                        )}
-                      >
-                        {isApproved
-                          ? "الطلب مستوفٍ للشروط"
-                          : "الطلب غير مستوفٍ للشروط"}
-                      </div>
-                      <div className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                        {isApproved
-                          ? "اكتملت دورة الطلب باعتماد جميع الأطراف وصدر تأكيد المصارفة الخارجية."
-                          : "تم إغلاق الطلب لعدم استيفاء أحد الشروط المطلوبة. لا يمكن متابعة هذا الطلب ضمن مساره."}
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              );
-            }
-
-            return (
-              <Card className="p-5 shadow-card border-0">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold">تقدم الطلب في الدورة التنظيمية</h3>
-                  <span className="text-2xl font-bold tabular-nums">
-                    {progressForRole(req.stage, user!.role)}%
-                  </span>
-                </div>
-                <Progress value={progressForRole(req.stage, user!.role)} className="h-2 mb-2" />
-                <div className="text-xs text-muted-foreground">
-                  المرحلة الحالية: {displayStatusFor(req.stage, user!.role).label}
-                </div>
-              </Card>
-            );
-          })()}
+          <Card className="p-5 shadow-card border-0">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold">تقدم الطلب في الدورة التنظيمية</h3>
+              <span className="text-2xl font-bold tabular-nums">
+                {progressForRole(req.stage, user!.role)}%
+              </span>
+            </div>
+            <Progress value={progressForRole(req.stage, user!.role)} className="h-2 mb-2" />
+            <div className="text-xs text-muted-foreground">
+              المرحلة الحالية: {displayStatusFor(req.stage, user!.role).label}
+            </div>
+          </Card>
 
           {/* Lock notice when another support reviewer has the request */}
           {(req.stage === "bank_approved" || req.stage === "support_review") &&

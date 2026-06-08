@@ -168,7 +168,7 @@ export const PERMISSION_LABELS: Record<Permission, string> = {
   "request.create": "إنشاء طلب تمويل",
   "request.review": "مراجعة الطلبات",
   "request.approve": "اعتماد الطلبات",
-  "request.reject": "تحديد الطلبات غير المستوفية للشروط",
+  "request.reject": "رفض الطلبات",
   "swift.upload": "رفع وثيقة السويفت",
   "voting.cast": "التصويت على الطلبات",
   "voting.finalize": "إغلاق التصويت ونشر القرار",
@@ -182,7 +182,7 @@ export const PERMISSION_LABELS: Record<Permission, string> = {
   "roles.manage": "إدارة الأدوار والصلاحيات",
 };
 
-// الصلاحيات التي تخص عمليات البنوك التجارية فقط — ولا تظهر للأدوار التابعة للجنة الوطنية لتنظيم وتمويل الواردات.
+// الصلاحيات التي تخص عمليات البنوك التجارية فقط — ولا تظهر للأدوار التابعة للبنك المركزي.
 export const BANK_ONLY_PERMS: Permission[] = [
   "request.create",
   "request.review",
@@ -191,7 +191,7 @@ export const BANK_ONLY_PERMS: Permission[] = [
   "swift.upload",
 ];
 
-// الصلاحيات المتاحة لأدوار اللجنة الوطنية لتنظيم وتمويل الواردات (CBY) — تستثني صلاحيات تشغيل البنوك التجارية.
+// الصلاحيات المتاحة لأدوار البنك المركزي (CBY) — تستثني صلاحيات تشغيل البنوك التجارية.
 export const CBY_PERMS: Permission[] = (Object.keys(PERMISSION_LABELS) as Permission[]).filter(
   (p) => !BANK_ONLY_PERMS.includes(p),
 );
@@ -224,8 +224,8 @@ const DEFAULT_ROLE_PERMS: Record<Role, Permission[]> = {
   bank_reviewer: ["request.review"],
   // موظف السويفت بالبنك
   bank_swift: ["swift.upload"],
-  // عضو اللجنة المساندة — يضيف ملاحظات ويُحيل إلى اللجنة التنفيذية (بدون اعتماد/رفض/إرجاع)
-  support_member: ["request.review", "audit.view"],
+  // عضو اللجنة المساندة
+  support_member: ["request.approve", "request.reject", "audit.view"],
   // عضو اللجنة التنفيذية
   executive_member: ["voting.cast", "reports.view", "audit.view"],
   // مدير اللجنة التنفيذية — يرث صلاحيات العضو + إغلاق التصويت + إصدار تأكيد المصارفة الخارجية
