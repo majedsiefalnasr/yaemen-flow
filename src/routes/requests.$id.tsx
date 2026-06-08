@@ -200,8 +200,11 @@ function RequestDetail() {
     req.stage === "support_returned" ? reasonFor("support_returned") : undefined;
   const execRejectedReason =
     req.stage === "executive_rejected" ? reasonFor("executive_rejected") : undefined;
-  const bankRejectedReason = req.stage === "bank_rejected" ? reasonFor("bank_rejected") : undefined;
   const bankReturnedReason = req.stage === "bank_returned" ? reasonFor("bank_returned") : undefined;
+  const customsConfirmationHref = req.customsStampedFile
+    ? (customsDocDataUrl ?? "/templates/نموذج-تأكيد-مصارفة-خارجية.docx")
+    : null;
+  const customsConfirmationFileName = req.customsStampedFile?.name ?? "تأكيد المصارفة الخارجية.docx";
 
   function performTransition(to: string, label: string) {
     const t = transitions.find((x) => x.to === to);
@@ -363,24 +366,6 @@ function RequestDetail() {
         </Card>
       )}
 
-      {/* بانر الرفض من المراجع الداخلي بالبنك */}
-      {req.stage === "bank_rejected" && (
-        <Card className="p-4 mb-4 border-rose-300 bg-rose-50/70 shadow-card border-r-4 border-r-rose-600">
-          <div className="flex items-start gap-3">
-            <XCircle className="h-5 w-5 text-rose-600 shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <div className="font-semibold text-rose-700">مرفوض من المراجعة الداخلية بالبنك</div>
-              {bankRejectedReason && (
-                <div className="mt-2 text-sm bg-card border border-rose-200 rounded-md px-3 py-2">
-                  <span className="font-semibold text-rose-700">سبب الرفض: </span>
-                  <span>{bankRejectedReason}</span>
-                </div>
-              )}
-            </div>
-          </div>
-        </Card>
-      )}
-
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           {(req.stage === "executive_rejected" ||
@@ -460,24 +445,16 @@ function RequestDetail() {
                         </div>
                       </div>
                       <div className="flex gap-2">
-                        {customsDocDataUrl ? (
-                          <>
-                            <Button asChild variant="default" size="sm" className="flex-1">
-                              <a href={customsDocDataUrl} download="تأكيد المصارفة الخارجية.pdf">
-                                <Download className="h-4 w-4 ml-1.5" /> تحميل التأكيد
-                              </a>
-                            </Button>
-                            <Button asChild variant="outline" size="sm" className="flex-1">
-                              <a href={customsDocDataUrl} target="_blank" rel="noreferrer">
-                                <Eye className="h-4 w-4 ml-1.5" /> معاينة
-                              </a>
-                            </Button>
-                          </>
-                        ) : (
-                          <p className="text-xs text-muted-foreground text-center flex-1 py-2">
-                            النسخة المحلية للملف غير متاحة في هذا المتصفح.
-                          </p>
-                        )}
+                        <Button asChild variant="default" size="sm" className="flex-1">
+                          <a href={customsConfirmationHref ?? "#"} download={customsConfirmationFileName}>
+                            <Download className="h-4 w-4 ml-1.5" /> تحميل التأكيد
+                          </a>
+                        </Button>
+                        <Button asChild variant="outline" size="sm" className="flex-1">
+                          <a href={customsConfirmationHref ?? "#"} target="_blank" rel="noreferrer">
+                            <Eye className="h-4 w-4 ml-1.5" /> معاينة
+                          </a>
+                        </Button>
                       </div>
                     </div>
                   )}
@@ -524,12 +501,11 @@ function RequestDetail() {
             )}
 
           <Tabs defaultValue="basic">
-            <TabsList className="grid grid-cols-5 w-full">
+            <TabsList className="grid grid-cols-4 w-full">
               <TabsTrigger value="basic">المعلومات الأساسية</TabsTrigger>
               <TabsTrigger value="invoice">بيانات الفاتورة</TabsTrigger>
               <TabsTrigger value="shipping">بيانات الشحن</TabsTrigger>
               <TabsTrigger value="docs">الوثائق المطلوبة</TabsTrigger>
-              <TabsTrigger value="workflow">سير العملية التنظيمية</TabsTrigger>
             </TabsList>
 
             <TabsContent value="basic" className="mt-4">
@@ -748,57 +724,6 @@ function RequestDetail() {
               </Dialog>
             </TabsContent>
 
-            <TabsContent value="workflow" className="mt-4 space-y-4">
-              <Card className="p-5 shadow-card border-0">
-                <h3 className="font-semibold mb-3 text-sm">سير العملية التنظيمية</h3>
-                <WorkflowProgress req={req} />
-              </Card>
-              {req.customsStampedFile && (
-                <Card className="p-5 shadow-card border-0 bg-gradient-to-br from-success/10 to-accent/5 border border-success/30">
-                  <div className="flex items-center gap-2 mb-3">
-                    <CheckCircle2 className="h-5 w-5 text-success" />
-                    <h3 className="font-semibold text-sm">تأكيد المصارفة الخارجية</h3>
-                  </div>
-                  <div className="rounded-lg bg-card/60 p-3 mb-3 border border-success/20">
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-lg bg-success/10 text-success grid place-items-center">
-                        <FileText className="h-5 w-5" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium text-sm">تأكيد المصارفة الخارجية</div>
-                        <div className="text-[11px] text-muted-foreground">
-                          {((req.customsStampedFile.size ?? 0) / 1024).toFixed(1)} KB
-                          {req.customsNo && (
-                            <span> · رقم البيان: <span className="font-mono font-semibold">{req.customsNo}</span></span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    {customsDocDataUrl && (
-                      <Button asChild variant="default" size="sm" className="flex-1">
-                        <a href={customsDocDataUrl} download="تأكيد المصارفة الخارجية.pdf">
-                          <Download className="h-4 w-4 ml-1.5" /> تحميل التأكيد
-                        </a>
-                      </Button>
-                    )}
-                    {customsDocDataUrl && (
-                      <Button asChild variant="outline" size="sm" className="flex-1">
-                        <a href={customsDocDataUrl} target="_blank" rel="noreferrer">
-                          <Eye className="h-4 w-4 ml-1.5" /> معاينة
-                        </a>
-                      </Button>
-                    )}
-                    {!customsDocDataUrl && (
-                      <p className="text-xs text-muted-foreground text-center flex-1 py-2">
-                        النسخة المحلية غير متاحة في هذا المتصفح.
-                      </p>
-                    )}
-                  </div>
-                </Card>
-              )}
-            </TabsContent>
           </Tabs>
         </div>
 

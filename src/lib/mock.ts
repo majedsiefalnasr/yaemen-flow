@@ -299,13 +299,13 @@ export const STAGE_LABELS: Record<RequestStage, string> = {
   bank_approved: "اعتماد البنك الداخلي",
   support_review: "قيد مراجعة اللجنة المساندة",
   support_returned: "معاد من المساندة",
-  support_rejected: "مرفوض من المساندة",
+  support_rejected: "مكتمل — غير مستوفي الشروط",
   bank_returned: "معاد من المراجعة",
-  bank_rejected: "مرفوض من المراجعة",
+  bank_rejected: "مكتمل — غير مستوفي الشروط",
   support_approved: "اعتماد المساندة — بانتظار التصويت",
   swift_attached: "تم إرفاق السويفت — بانتظار تأكيد المصارفة",
   executive_voting: "تصويت اللجنة التنفيذية",
-  executive_rejected: "مرفوض من التنفيذية",
+  executive_rejected: "مكتمل — غير مستوفي الشروط",
   executive_approved: "اعتماد التنفيذية — بانتظار رفع السويفت",
   customs_released: "صدر تأكيد المصارفة الخارجية",
   completed: "مكتمل",
@@ -608,6 +608,50 @@ const importers = [
   "مجموعة الأهدل",
 ];
 const suppliers = ["Cargill Inc.", "Pfizer Ltd.", "Saudi Aramco Trading", "Siemens AG", "Bayer AG"];
+const importerProfiles = [
+  {
+    taxNo: "4100007",
+    crNo: "CR-50000",
+    activity: "مصانع هائل سعيد للمواد الغذائية",
+    shareholders: [
+      { name: "هائل سعيد أنعم", percent: 60 },
+      { name: "محمد هائل سعيد", percent: 30 },
+    ],
+  },
+  {
+    taxNo: "4100123",
+    crNo: "CR-50013",
+    activity: "الشيباني لتجارة قطع الغيار",
+    shareholders: [{ name: "عبد القادر الشيباني", percent: 80 }],
+  },
+  {
+    taxNo: "4101000",
+    crNo: "CR-50026",
+    activity: "ثابت إخوان للأدوية",
+    shareholders: [
+      { name: "علي ثابت", percent: 50 },
+      { name: "محمد ثابت", percent: 50 },
+    ],
+  },
+  {
+    taxNo: "4102234",
+    crNo: "CR-50039",
+    activity: "الكميم للأدوية والمستلزمات الطبية",
+    shareholders: [{ name: "أحمد الكميم", percent: 100 }],
+  },
+  {
+    taxNo: "4103456",
+    crNo: "CR-50052",
+    activity: "الأهدل للإلكترونيات",
+    shareholders: [
+      { name: "يحيى الأهدل", percent: 40 },
+      { name: "خالد الأهدل", percent: 35 },
+      { name: "ناصر الأهدل", percent: 25 },
+    ],
+  },
+];
+const originCountries = ["الولايات المتحدة", "ألمانيا", "السعودية", "الهند", "الصين"];
+const shipPorts = ["ميناء جدة الإسلامي", "ميناء جبل علي", "ميناء هامبورغ", "ميناء مومباي", "ميناء شنغهاي"];
 
 /**
  * Curated, organized seed data — at least 2 examples per workflow stage,
@@ -1155,6 +1199,9 @@ export const REQUESTS: ImportRequest[] = REQUEST_SEED_META.map(
     const swiftAttached = SWIFT_ATTACHED_STAGES.has(row.stage);
     const executiveDecided = EXECUTIVE_DECISION_STAGES.has(row.stage);
     const customsDone = CUSTOMS_DONE_STAGES.has(row.stage);
+    const profile = importerProfiles[Math.max(0, importers.indexOf(row.importer))] ?? importerProfiles[0];
+    const invoiceDate = new Date(baseDate.getTime() - 12 * 24 * 3600_000).toISOString().slice(0, 10);
+    const shipmentDate = new Date(baseDate.getTime() + 18 * 24 * 3600_000).toISOString().slice(0, 10);
     const supportReviewerId =
       row.supportReviewerId ?? (supportHandled ? (row.supportClaimedBy ?? "u2") : undefined);
     const supportClaimedBy =
@@ -1186,9 +1233,20 @@ export const REQUESTS: ImportRequest[] = REQUEST_SEED_META.map(
       progress: progressFor(row.stage),
       risk: row.risk,
       duplicate: row.duplicate,
-      taxNo: row.taxNo,
+      taxNo: row.taxNo ?? profile.taxNo,
+      crNo: profile.crNo,
+      activity: profile.activity,
+      shareholders: profile.shareholders,
+      originCountry: originCountries[index % originCountries.length],
+      invoiceAmount: Math.round(row.amount / ((row.requestPercent ?? 100) / 100)),
+      invoiceDate,
       paymentTerm: row.paymentTerm ?? "كلي",
       requestPercent: row.requestPercent ?? 100,
+      shipmentDate,
+      shipPort: shipPorts[index % shipPorts.length],
+      fxSources: index % 2 === 0 ? "التاجر" : "تمويل من البنك",
+      yerSources: "إيرادات النشاط التجاري داخل الجمهورية اليمنية",
+      coverageMethod: "تحويل بنكي خارجي",
       intakeUserId: row.intake,
       createdBy: row.intake,
       lastUpdatedBy,
@@ -1210,6 +1268,30 @@ export const REQUESTS: ImportRequest[] = REQUEST_SEED_META.map(
             mime: "application/pdf",
           }
         : undefined,
+      remittanceRequestFile: swiftAttached
+        ? {
+            name: `طلب-تأكيد-مصارفة-${2000 + index}.pdf`,
+            size: 256000,
+            uploadedAt: new Date(baseDate.getTime() + 4 * 3600_000).toISOString(),
+            uploadedBy: swiftUploadedBy ?? "u7",
+            mime: "application/pdf",
+          }
+        : undefined,
+      customsStampedFile: customsDone
+        ? {
+            name: `تأكيد-المصارفة-الخارجية-${2000 + index}.pdf`,
+            size: 312000,
+            uploadedAt: new Date(baseDate.getTime() + 8 * 3600_000).toISOString(),
+            uploadedBy: "u9",
+            mime: "application/pdf",
+          }
+        : undefined,
+      documents: [
+        { name: "طلب وثيقة تأكيد (مختوم)", fileName: "confirmation_request_stamped.pdf", mime: "application/pdf", dataUrl: "", size: 1_500_000 },
+        { name: "الفاتورة الأولية (Proforma Invoice)", fileName: "proforma_invoice.pdf", mime: "application/pdf", dataUrl: "", size: 2_400_000 },
+        { name: "السجل التجاري", fileName: "commercial_register.pdf", mime: "application/pdf", dataUrl: "", size: 1_800_000 },
+        { name: "البطاقة الضريبية", fileName: "tax_card.pdf", mime: "application/pdf", dataUrl: "", size: 1_200_000 },
+      ],
       customsNo: customsDone ? `CD-2026-${String(7000 + index)}` : undefined,
       customsAt: customsDone
         ? new Date(baseDate.getTime() + 8 * 3600_000).toISOString()
@@ -1575,20 +1657,14 @@ const DATA_ENTRY_BUCKETS: DisplayBucket[] = [
       "support_review",
       "executive_voting",
       "executive_approved",
-      "swift_attached",
     ],
   },
+  { key: "swift_done", label: "تم رفع السويفت — بانتظار تأكيد المصارفة", color: C.info, stages: ["swift_attached"] },
   {
     key: "returned",
     label: "بحاجة لتعديل",
     color: C.warning,
     stages: ["support_returned", "bank_returned"],
-  },
-  {
-    key: "rejected_internal",
-    label: "مرفوض من المراجعة الداخلية",
-    color: C.destructive,
-    stages: ["bank_rejected"],
   },
   {
     key: "completed",
@@ -1626,12 +1702,6 @@ const BANK_REVIEWER_BUCKETS: DisplayBucket[] = [
   },
   { key: "waiting_swift", label: "بانتظار رفع السويفت", color: C.accent, stages: ["executive_approved"] },
   { key: "swift_done", label: "تم رفع السويفت — بانتظار تأكيد المصارفة", color: C.info, stages: ["swift_attached"] },
-  {
-    key: "rejected_internal",
-    label: "مرفوض من المراجعة الداخلية",
-    color: C.destructive,
-    stages: ["bank_rejected"],
-  },
   {
     key: "completed",
     label: "مكتمل",
