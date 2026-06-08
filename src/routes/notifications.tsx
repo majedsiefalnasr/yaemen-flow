@@ -25,7 +25,7 @@ type Severity = "critical" | "warning" | "success" | "voting" | "info";
 
 function severityFor(n: Notif): Severity {
   const t = (n.title + " " + n.body).toLowerCase();
-  if (t.includes("رفض") || t.includes("reject") || t.includes("مكرر") || t.includes("تنبيه")) return "critical";
+  if (t.includes("غير مستوفي") || t.includes("reject") || t.includes("مكرر") || t.includes("تنبيه")) return "critical";
   if (t.includes("إعادة") || t.includes("مُعاد") || t.includes("معاد") || t.includes("نقص")) return "warning";
   if (t.includes("اعتماد") || t.includes("approve") || t.includes("صدر") || t.includes("مكتمل")) return "success";
   if (t.includes("تصويت") || t.includes("اللجنة")) return "voting";

@@ -12,8 +12,8 @@ import { cn } from "@/lib/utils";
  * كل خطوة تربط بمجموعة من الـ stages الداخلية التي تعتبر "الخطوة الحالية".
  * doneness للخطوات التالية يُستنتج من الترتيب.
  *
- * عند الرفض من اللجنة التنفيذية:
- *   - الخطوة التي تم فيها الرفض (التصويت/المراجعة الوطنية) تُعتبر مكتملة (تمت).
+ * عند عدم استيفاء الشروط من اللجنة التنفيذية:
+ *   - الخطوة التي صدر فيها القرار (التصويت/المراجعة الوطنية) تُعتبر مكتملة (تمت).
  *   - الخطوات التالية (سويفت، تأكيد مصارفة، مكتمل) تظهر "غير مكتمل" باللون الأحمر.
  */
 
@@ -23,14 +23,14 @@ type Step = { key: string; label: string; stages: RequestStage[] };
 const BANK_STEPS: Step[] = [
   { key: "draft", label: "مسودة", stages: ["draft", "bank_returned", "support_returned"] },
   { key: "internal_review", label: "مراجعة داخلية", stages: ["bank_submitted", "bank_internal_review"] },
-  { key: "cby_review", label: "مراجعة اللجنة الوطنية", stages: ["bank_approved", "support_review", "support_approved", "executive_voting", "executive_rejected"] },
+  { key: "committee_review", label: "مراجعة اللجنة الوطنية", stages: ["bank_approved", "support_review", "support_approved", "executive_voting", "executive_rejected"] },
   { key: "swift", label: "سويفت", stages: ["executive_approved"] },
   { key: "customs", label: "تأكيد مصارفة", stages: ["swift_attached"] },
   { key: "completed", label: "مكتمل", stages: ["customs_released", "completed"] },
 ];
 
-// خطوات اللجنة الوطنية (المركزي): المساندة → التنفيذية → الإصدار → مكتمل
-const CBY_STEPS: Step[] = [
+// خطوات اللجنة الوطنية: المساندة → التنفيذية → الإصدار → مكتمل
+const COMMITTEE_STEPS: Step[] = [
   { key: "support", label: "مراجعة اللجنة المساندة", stages: ["bank_approved", "support_review", "support_approved"] },
   { key: "executive", label: "تصويت اللجنة التنفيذية", stages: ["executive_voting", "executive_rejected"] },
   { key: "issue", label: "إصدار تأكيد المصارفة", stages: ["executive_approved", "swift_attached"] },
@@ -38,14 +38,14 @@ const CBY_STEPS: Step[] = [
 ];
 
 const BANK_ROLES: Role[] = ["bank_intake", "bank_reviewer", "bank_admin", "bank_swift"];
-const CBY_ROLES: Role[] = ["support_member", "executive_member", "committee_manager"];
+const COMMITTEE_ROLES: Role[] = ["support_member", "executive_member", "committee_manager"];
 
 const REJECT_STAGES: RequestStage[] = ["executive_rejected"];
 const TERMINAL_DONE: RequestStage[] = ["completed", "customs_released"];
 
 function stepsForRole(role: Role | null): Step[] {
   if (role && BANK_ROLES.includes(role)) return BANK_STEPS;
-  if (role && CBY_ROLES.includes(role)) return CBY_STEPS;
+  if (role && COMMITTEE_ROLES.includes(role)) return COMMITTEE_STEPS;
   // platform_admin / null: عرض كامل (البنك ثم اللجنة الوطنية مدمجين بشكل مبسط)
   return BANK_STEPS;
 }
@@ -67,7 +67,7 @@ export function WorkflowProgress({ req, compact = false }: { req: ImportRequest;
 
       <ol className="relative">
         {steps.map((step, i) => {
-          // في حالة الرفض النهائي: الخطوة الحالية (مكان الرفض) تُعتبر "تمت"،
+          // في حالة عدم استيفاء الشروط: الخطوة الحالية تُعتبر "تمت"،
           // والخطوات التالية تظهر "غير مكتمل" باللون الأحمر.
           const done = completedAll
             ? true

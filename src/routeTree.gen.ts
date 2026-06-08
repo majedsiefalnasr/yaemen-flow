@@ -28,6 +28,7 @@ import { Route as AdminRolesRouteImport } from './routes/admin.roles'
 import { Route as AdminEntitiesRouteImport } from './routes/admin.entities'
 import { Route as AdminCbyStaffRouteImport } from './routes/admin.cby-staff'
 import { Route as RequestsIdSwiftRouteImport } from './routes/requests.$id.swift'
+import { Route as RequestsIdEditRouteImport } from './routes/requests.$id.edit'
 import { Route as MerchantsIdEditRouteImport } from './routes/merchants.$id.edit'
 
 const SettingsRoute = SettingsRouteImport.update({
@@ -125,6 +126,11 @@ const RequestsIdSwiftRoute = RequestsIdSwiftRouteImport.update({
   path: '/swift',
   getParentRoute: () => RequestsIdRoute,
 } as any)
+const RequestsIdEditRoute = RequestsIdEditRouteImport.update({
+  id: '/edit',
+  path: '/edit',
+  getParentRoute: () => RequestsIdRoute,
+} as any)
 const MerchantsIdEditRoute = MerchantsIdEditRouteImport.update({
   id: '/$id/edit',
   path: '/$id/edit',
@@ -151,6 +157,7 @@ export interface FileRoutesByFullPath {
   '/merchants/': typeof MerchantsIndexRoute
   '/requests/': typeof RequestsIndexRoute
   '/merchants/$id/edit': typeof MerchantsIdEditRoute
+  '/requests/$id/edit': typeof RequestsIdEditRoute
   '/requests/$id/swift': typeof RequestsIdSwiftRoute
 }
 export interface FileRoutesByTo {
@@ -172,6 +179,7 @@ export interface FileRoutesByTo {
   '/merchants': typeof MerchantsIndexRoute
   '/requests': typeof RequestsIndexRoute
   '/merchants/$id/edit': typeof MerchantsIdEditRoute
+  '/requests/$id/edit': typeof RequestsIdEditRoute
   '/requests/$id/swift': typeof RequestsIdSwiftRoute
 }
 export interface FileRoutesById {
@@ -195,6 +203,7 @@ export interface FileRoutesById {
   '/merchants/': typeof MerchantsIndexRoute
   '/requests/': typeof RequestsIndexRoute
   '/merchants/$id/edit': typeof MerchantsIdEditRoute
+  '/requests/$id/edit': typeof RequestsIdEditRoute
   '/requests/$id/swift': typeof RequestsIdSwiftRoute
 }
 export interface FileRouteTypes {
@@ -219,6 +228,7 @@ export interface FileRouteTypes {
     | '/merchants/'
     | '/requests/'
     | '/merchants/$id/edit'
+    | '/requests/$id/edit'
     | '/requests/$id/swift'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -240,6 +250,7 @@ export interface FileRouteTypes {
     | '/merchants'
     | '/requests'
     | '/merchants/$id/edit'
+    | '/requests/$id/edit'
     | '/requests/$id/swift'
   id:
     | '__root__'
@@ -262,6 +273,7 @@ export interface FileRouteTypes {
     | '/merchants/'
     | '/requests/'
     | '/merchants/$id/edit'
+    | '/requests/$id/edit'
     | '/requests/$id/swift'
   fileRoutesById: FileRoutesById
 }
@@ -419,6 +431,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RequestsIdSwiftRouteImport
       parentRoute: typeof RequestsIdRoute
     }
+    '/requests/$id/edit': {
+      id: '/requests/$id/edit'
+      path: '/edit'
+      fullPath: '/requests/$id/edit'
+      preLoaderRoute: typeof RequestsIdEditRouteImport
+      parentRoute: typeof RequestsIdRoute
+    }
     '/merchants/$id/edit': {
       id: '/merchants/$id/edit'
       path: '/$id/edit'
@@ -446,10 +465,12 @@ const MerchantsRouteWithChildren = MerchantsRoute._addFileChildren(
 )
 
 interface RequestsIdRouteChildren {
+  RequestsIdEditRoute: typeof RequestsIdEditRoute
   RequestsIdSwiftRoute: typeof RequestsIdSwiftRoute
 }
 
 const RequestsIdRouteChildren: RequestsIdRouteChildren = {
+  RequestsIdEditRoute: RequestsIdEditRoute,
   RequestsIdSwiftRoute: RequestsIdSwiftRoute,
 }
 
@@ -478,3 +499,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

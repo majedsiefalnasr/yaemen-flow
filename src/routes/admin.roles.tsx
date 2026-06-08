@@ -29,7 +29,7 @@ const ALL_ROLES: Role[] = [
 ];
 
 const ALL_PERMS: Permission[] = [
-  "request.create", "request.review", "request.approve", "request.reject",
+  "request.create", "request.review",
   "swift.upload", "voting.cast", "voting.finalize", "customs.issue",
   "reports.view", "audit.view", "merchants.manage", "users.manage",
   "entities.manage", "docrules.manage",

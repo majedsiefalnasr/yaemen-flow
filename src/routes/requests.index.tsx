@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { Search, Filter, Download, FilePlus2, AlertTriangle, Lock, Vote, Copy } from "lucide-react";
+import { Search, Filter, Download, FilePlus2, AlertTriangle, Lock, Vote, Copy, Edit } from "lucide-react";
 import { DEMO_USERS } from "@/lib/mock";
 import { PageHeader } from "@/components/layout/AppShell";
 import { Card } from "@/components/ui/card";
@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ENTITIES, useAuth, queueRequestsFor, bucketsFor, displayStatusFor, progressForRole } from "@/lib/mock";
-import { requestsCell } from "@/lib/governance";
+import { isEditable, requestsCell } from "@/lib/governance";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/requests/")({ component: RequestsList });
@@ -18,8 +18,8 @@ export const Route = createFileRoute("/requests/")({ component: RequestsList });
 // Roles that are scoped to a single bank — they must only ever
 // see requests from their own entity, with no bank-filter UI.
 const ENTITY_SCOPED_ROLES = ["bank_admin", "bank_intake", "bank_reviewer", "bank_swift"] as const;
-// CBY-side roles that cannot create new financing requests.
-const CBY_ROLES = ["platform_admin", "support_member", "executive_member", "committee_manager"] as const;
+// Committee-side roles that cannot create new financing requests.
+const COMMITTEE_ROLES = ["platform_admin", "support_member", "executive_member", "committee_manager"] as const;
 // الأدوار التي يحق لها إنشاء طلب تمويل (مدخل البنك ومسؤول البنك فقط).
 const CAN_CREATE_ROLES = ["bank_intake", "bank_admin"] as const;
 
@@ -27,7 +27,7 @@ function RequestsList() {
   const { user } = useAuth();
   const nav = useNavigate();
   const isEntityScoped = !!user && (ENTITY_SCOPED_ROLES as readonly string[]).includes(user.role);
-  const isCby = !!user && (CBY_ROLES as readonly string[]).includes(user.role);
+  const isCby = !!user && (COMMITTEE_ROLES as readonly string[]).includes(user.role);
   const canCreate = !!user && (CAN_CREATE_ROLES as readonly string[]).includes(user.role);
   void isCby;
 
@@ -70,12 +70,11 @@ function RequestsList() {
         currency: src.currency,
         type: src.type,
         supplier: src.supplier,
-        invoice: "",
+        invoice: src.invoice,
         port: src.port,
         stage: "draft",
         createdAt: new Date().toISOString(),
         progress: 5,
-        risk: "low",
         duplicate: false,
         intakeUserId: user.id,
         createdBy: user.id,
@@ -83,11 +82,27 @@ function RequestsList() {
         documents: src.documents,
         activity: src.activity,
         taxNo: src.taxNo,
+        taxCardExpiry: src.taxCardExpiry,
         crNo: src.crNo,
+        crExpiry: src.crExpiry,
+        requestType: src.requestType,
+        requestCurrency: src.requestCurrency,
+        invoiceType: src.invoiceType,
+        invoiceCurrency: src.invoiceCurrency,
         originCountry: src.originCountry,
+        quantity: src.quantity,
+        unit: src.unit,
         invoiceAmount: src.invoiceAmount,
+        invoiceDate: src.invoiceDate,
+        supplierLocation: src.supplierLocation,
         paymentTerms: src.paymentTerms,
+        paymentTerm: src.paymentTerm,
+        requestPercent: src.requestPercent,
+        shipmentDate: src.shipmentDate,
         shipPort: src.shipPort,
+        arrivalDate: src.arrivalDate,
+        incoterm: src.incoterm,
+        finalDestination: src.finalDestination,
         shareholders: src.shareholders,
         yerSources: src.yerSources,
         fxSources: src.fxSources,
@@ -290,10 +305,17 @@ function RequestsList() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          title="تكرار الطلب (نسخ المعلومات الأساسية فقط)"
+                          title="تكرار الطلب (نسخ البيانات والمرفقات)"
                           onClick={() => duplicateRequest(r.id)}
                         >
                           <Copy className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
+                      {canCreate && isEditable(r) && (
+                        <Button asChild variant="ghost" size="sm" title="تعديل الطلب">
+                          <Link to="/requests/$id/edit" params={{ id: r.id }}>
+                            <Edit className="h-3.5 w-3.5" />
+                          </Link>
                         </Button>
                       )}
                     </div>

@@ -21,6 +21,7 @@ import {
   Upload,
   FileSignature,
   Lock,
+  Edit,
 } from "lucide-react";
 import { PageHeader } from "@/components/layout/AppShell";
 import { Card } from "@/components/ui/card";
@@ -272,6 +273,13 @@ function RequestDetail() {
         ]}
         actions={
           <>
+            {editable && (
+              <Button variant="outline" asChild>
+                <Link to="/requests/$id/edit" params={{ id: req.id }}>
+                  <Edit className="h-4 w-4 ml-1" /> تعديل البيانات
+                </Link>
+              </Button>
+            )}
             <Button variant="outline" asChild>
               <a href="/templates/نموذج-طلب-وثيقة-تأكيد.pdf" download>
                 <Download className="h-4 w-4 ml-1" /> تنزيل الطلب
@@ -420,7 +428,7 @@ function RequestDetail() {
                       </div>
                       {isRejected && execRejectedReason && (
                         <div className="mt-2 text-sm bg-card border border-rose-200 rounded-md px-3 py-2">
-                          <span className="font-semibold text-rose-700">سبب الرفض: </span>
+                          <span className="font-semibold text-rose-700">سبب عدم الاستيفاء: </span>
                           <span>{execRejectedReason}</span>
                         </div>
                       )}
@@ -515,7 +523,9 @@ function RequestDetail() {
                     ["الرقم الضريبي", req.taxNo ?? "—"],
                     ["اسم التاجر", req.importer],
                     ["الشركة المرتبطة", req.activity ?? "—"],
+                    ["انتهاء البطاقة الضريبية", req.taxCardExpiry ?? "—"],
                     ["رقم السجل التجاري", req.crNo ?? "—"],
+                    ["انتهاء السجل التجاري", req.crExpiry ?? "—"],
                     ["البنك / الجهة", req.bank],
                     [
                       "الملاك والمساهمون (25% فأكثر)",
@@ -537,23 +547,30 @@ function RequestDetail() {
               <Card className="p-6 shadow-card border-0">
                 <div className="grid md:grid-cols-2 gap-x-8 gap-y-4 text-sm">
                   {([
-                    ["نوع الطلب", req.type],
+                    ["نوع الطلب", req.requestType ?? req.type],
                     ["نوع التغطية", req.coverageMethod ?? "—"],
                     ["مصادر العملة الأجنبية", req.fxSources ?? "—"],
                     ["شروط الدفع", req.paymentTerm ?? req.paymentTerms ?? "—"],
                     ["نسبة الطلب", req.requestPercent != null ? `${req.requestPercent}%` : "—"],
-                    ["عملة الطلب", req.currency],
-                    ["إجمالي الطلب", `${req.amount.toLocaleString("en-US")} ${req.currency}`],
+                    ["عملة الطلب", req.requestCurrency ?? req.currency],
+                    ["إجمالي الطلب", `${req.amount.toLocaleString("en-US")} ${req.requestCurrency ?? req.currency}`],
+                    ["نوع الفاتورة", req.invoiceType ?? "—"],
                     ["رقم الفاتورة", req.invoice],
+                    ["عملة الفاتورة", req.invoiceCurrency ?? req.currency],
                     ["تاريخ الفاتورة", req.invoiceDate ?? "—"],
+                    [
+                      "الكمية / الوحدة",
+                      req.quantity != null ? `${req.quantity.toLocaleString("en-US")} ${req.unit ?? ""}` : "—",
+                    ],
                     [
                       "إجمالي الفاتورة",
                       req.invoiceAmount != null
-                        ? `${req.invoiceAmount.toLocaleString("en-US")} ${req.currency}`
+                        ? `${req.invoiceAmount.toLocaleString("en-US")} ${req.invoiceCurrency ?? req.currency}`
                         : "—",
                     ],
                     ["السلعة", req.type],
                     ["اسم الشركة المصدرة", req.supplier],
+                    ["موقع الشركة المصدرة", req.supplierLocation ?? "—"],
                     ["بلد المنشأ", req.originCountry ?? "—"],
                   ] as [string, string][]).map(([k, v]) => (
                     <div key={k} className="flex justify-between items-center gap-3 border-b pb-2.5">
@@ -571,7 +588,10 @@ function RequestDetail() {
                   {([
                     ["تاريخ الشحن", req.shipmentDate ?? "—"],
                     ["ميناء الشحن", req.shipPort ?? "—"],
+                    ["تاريخ الوصول", req.arrivalDate ?? "—"],
                     ["ميناء الوصول", req.port],
+                    ["شروط التسليم", req.incoterm ?? "—"],
+                    ["الوجهة النهائية", req.finalDestination ?? "—"],
                   ] as [string, string][]).map(([k, v]) => (
                     <div key={k} className="flex justify-between items-center gap-3 border-b pb-2.5">
                       <span className="text-muted-foreground text-start">{k}</span>
@@ -886,4 +906,3 @@ function RequestDetail() {
     </div>
   );
 }
-

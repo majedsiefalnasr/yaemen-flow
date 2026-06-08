@@ -24,14 +24,14 @@ export function VotingPanel({ req }: { req: ImportRequest }) {
   const myVote = user ? votes.find((v) => v.voterId === user.id) : undefined;
   const locked = !!final;
 
-  const totalVoted = counts.approve + counts.reject + counts.abstain;
+  const totalVoted = counts.approve + counts.reject;
   const totalMembers = members.length;
   const pendingVoters = members.filter((m) => !votes.some((v) => v.voterId === m.id));
   const allVoted = pendingVoters.length === 0 && totalMembers > 0;
   const approveProgress = totalMembers ? (counts.approve / totalMembers) * 100 : 0;
   const rejectProgress = totalMembers ? (counts.reject / totalMembers) * 100 : 0;
 
-  function vote(v: "approve" | "reject" | "abstain") {
+  function vote(v: "approve" | "reject") {
     if (!user) return;
     const ok = castVote(req, user.id, v, justif || undefined);
     if (!ok) return toast.error("التصويت مغلق");
@@ -52,7 +52,7 @@ export function VotingPanel({ req }: { req: ImportRequest }) {
     if (!confirm("سيتم احتساب نتيجة التصويت ونشر القرار النهائي. متابعة؟")) return;
     const r = finalizeVoting(req, user.id);
     if ("error" in r) toast.error(r.error);
-    else toast.success(`تم إغلاق التصويت — ${r.result === "approved" ? "اعتماد" : "رفض"}`);
+    else toast.success(`تم إغلاق التصويت — ${r.result === "approved" ? "اعتماد" : "غير مستوفي للشروط"}`);
   }
 
   return (
@@ -74,7 +74,7 @@ export function VotingPanel({ req }: { req: ImportRequest }) {
               final.result === "approved" ? "bg-success/15 text-success" : "bg-destructive/15 text-destructive",
             )}>
               <Lock className="h-3.5 w-3.5" />
-              تم إغلاق التصويت — {final.result === "approved" ? "مُعتمد" : "مرفوض"}
+              تم إغلاق التصويت — {final.result === "approved" ? "مُعتمد" : "غير مستوفي للشروط"}
               {final.managerVoteWeighted && " (بصوت المدير المرجّح)"}
             </span>
           ) : sessionOpen ? (
@@ -134,9 +134,8 @@ export function VotingPanel({ req }: { req: ImportRequest }) {
                     "text-[11px] px-2 py-0.5 rounded-full font-medium",
                     v.vote === "approve" && "bg-success/15 text-success",
                     v.vote === "reject" && "bg-destructive/15 text-destructive",
-                    v.vote === "abstain" && "bg-muted text-muted-foreground",
                   )}>
-                    {v.vote === "approve" ? "موافق" : v.vote === "reject" ? "غير مستوفي" : "ممتنع"}
+                    {v.vote === "approve" ? "موافق" : "غير مستوفي"}
                   </span>
                 ) : (
                   <span className="text-[11px] text-muted-foreground">لم يصوّت</span>
@@ -180,7 +179,7 @@ export function VotingPanel({ req }: { req: ImportRequest }) {
               <div className="font-semibold">تعادل في التصويت ({counts.approve} مقابل {counts.reject})</div>
               <div className="text-xs text-muted-foreground mt-1">
                 {isManager
-                  ? "بصفتك مدير اللجنة، صوتك حاسم — اختر موافقة أو رفض أعلاه ليُعتمد القرار النهائي تلقائياً."
+                  ? "بصفتك مدير اللجنة، صوتك حاسم — اختر موافقة أو غير مستوفي للشروط أعلاه ليُعتمد القرار النهائي تلقائياً."
                   : "بانتظار صوت مدير اللجنة الحاسم لإصدار القرار النهائي."}
               </div>
             </div>

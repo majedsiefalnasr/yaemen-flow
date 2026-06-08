@@ -322,7 +322,7 @@ function SwiftDashboard({ scoped }: { scoped: ImportRequest[] }) {
     { label: "بانتظار رفع السويفت", value: pendingSwift, icon: Upload, tone: "text-warning bg-warning/10", href: "/requests" },
     { label: "تم رفع السويفت", value: uploaded, icon: Send, tone: "text-info bg-info/10" },
     { label: "مُعتمد نهائياً", value: finalApproved, icon: CheckCircle2, tone: "text-success bg-success/10" },
-    { label: "مرفوض نهائياً", value: rejected, icon: XCircle, tone: "text-destructive bg-destructive/10" },
+    { label: "غير مستوفي للشروط", value: rejected, icon: XCircle, tone: "text-destructive bg-destructive/10" },
   ];
 
   const actions: Action[] = [
@@ -376,7 +376,7 @@ function ExecutiveDashboard({ scoped }: { scoped: ImportRequest[] }) {
   const kpis: Kpi[] = [
     { label: "طابور التصويت", value: voting, icon: Vote, tone: "text-chart-5 bg-chart-5/10", href: "/requests" },
     { label: "قرارات اعتماد", value: approved, icon: CheckCircle2, tone: "text-success bg-success/10" },
-    { label: "قرارات رفض", value: rejected, icon: XCircle, tone: "text-destructive bg-destructive/10" },
+    { label: "غير مستوفي للشروط", value: rejected, icon: XCircle, tone: "text-destructive bg-destructive/10" },
   ];
 
   const actions: Action[] = [
@@ -397,7 +397,7 @@ function ExecutiveDashboard({ scoped }: { scoped: ImportRequest[] }) {
 function BankAdminDashboard({ scoped }: { scoped: ImportRequest[] }) {
   const total = scoped.length;
   const pendingInternal = countStages(scoped, ["bank_submitted", "bank_internal_review"]);
-  const atCBY = countStages(scoped, ["bank_approved", "support_review", "support_approved", "swift_attached", "executive_voting"]);
+  const atCommittee = countStages(scoped, ["bank_approved", "support_review", "support_approved", "swift_attached", "executive_voting"]);
   const approved = countStages(scoped, ["executive_approved", "customs_released", "completed"]);
   const rejected = countStages(scoped, ["support_rejected", "executive_rejected"]);
   const returned = countStages(scoped, ["support_returned"]);
@@ -405,7 +405,7 @@ function BankAdminDashboard({ scoped }: { scoped: ImportRequest[] }) {
   const kpis: Kpi[] = [
     { label: "إجمالي طلبات البنك", value: total, icon: FileText, tone: "text-primary bg-primary/10" },
     { label: "مراجعة داخلية معلّقة", value: pendingInternal, icon: Clock, tone: "text-warning bg-warning/10" },
-    { label: "قيد اللجنة الوطنية لتنظيم وتمويل الواردات", value: atCBY, icon: Send, tone: "text-info bg-info/10" },
+    { label: "قيد اللجنة الوطنية لتنظيم وتمويل الواردات", value: atCommittee, icon: Send, tone: "text-info bg-info/10" },
     { label: "مُعتمد", value: approved, icon: CheckCircle2, tone: "text-success bg-success/10" },
   ];
 
@@ -464,7 +464,7 @@ function PlatformAdminDashboard({ scoped }: { scoped: ImportRequest[] }) {
     { label: "إجمالي الطلبات", value: scoped.length, icon: FileText, tone: "text-primary bg-primary/10" },
     { label: "طلبات معتمدة", value: countStages(scoped, APPROVED_STAGES), icon: CheckCircle2, tone: "text-success bg-success/10" },
     { label: "قيد المعالجة", value: countStages(scoped, PENDING_STAGES), icon: Clock, tone: "text-warning bg-warning/10" },
-    { label: "طلبات مرفوضة", value: countStages(scoped, REJECTED_STAGES), icon: XCircle, tone: "text-destructive bg-destructive/10" },
+    { label: "غير مستوفية للشروط", value: countStages(scoped, REJECTED_STAGES), icon: XCircle, tone: "text-destructive bg-destructive/10" },
   ];
 
   const actions: Action[] = [

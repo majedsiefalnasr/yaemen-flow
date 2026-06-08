@@ -5,17 +5,17 @@ import { useSyncExternalStore } from "react";
 // ============================================================
 
 export type Role =
-  | "platform_admin" // CBY system admin: manages entities + CBY staff
+  | "platform_admin" // committee system admin: manages entities + committee staff
   | "bank_admin" // entity admin: manages bank internal users
   | "bank_intake" // creates/submits requests on behalf of merchants
   | "bank_reviewer" // performs the bank's internal review (step 2)
-  | "bank_swift" // attaches the SWIFT document after CBY support approval
-  | "support_member" // CBY support committee reviewer
-  | "executive_member" // CBY executive committee voter
-  | "committee_manager"; // CBY executive committee MANAGER (opens/closes voting + issues customs)
+  | "bank_swift" // attaches the SWIFT document after committee approval
+  | "support_member" // support committee reviewer
+  | "executive_member" // executive committee voter
+  | "committee_manager"; // executive committee manager (opens/closes voting + issues customs)
 
 export const ROLE_LABELS: Record<Role, string> = {
-  platform_admin: "مسؤول النظام (CBY)",
+  platform_admin: "مسؤول نظام اللجنة الوطنية",
   bank_admin: "مسؤول البنك التجاري",
   bank_intake: "موظف إدخال البنك التجاري",
   bank_reviewer: "مراجع داخلي بالبنك التجاري",
@@ -64,7 +64,7 @@ export type User = {
   name: string;
   email: string;
   role: Role;
-  entityId: string | null; // null for CBY/platform users
+  entityId: string | null; // null for committee/platform users
   org: string;
   avatar: string;
   active?: boolean; // defaults to true
@@ -278,8 +278,8 @@ export type RequestStage =
   | "draft"
   | "bank_submitted" // step 1 done — awaiting internal review
   | "bank_internal_review" // a different bank user is reviewing
-  | "bank_approved" // internal review approved — sent to CBY support
-  | "support_review" // CBY support_member reviewing
+  | "bank_approved" // internal review approved — sent to committee support
+  | "support_review" // support_member reviewing
   | "support_returned" // sent back to bank for fixes
   | "support_rejected" // terminal — SWIFT step hidden
   | "bank_returned" // returned by bank internal review to intake for fixes
@@ -409,7 +409,7 @@ export const TRANSITIONS: Record<RequestStage, Transition[]> = {
   bank_internal_review: [
     {
       to: "bank_approved",
-      label: "اعتماد المراجعة الداخلية وإحالة للمساندة",
+      label: "اعتماد المراجعة الداخلية",
       roles: ["bank_reviewer", "bank_admin"],
       requiresEntityMatch: true,
       forbidIntakeUser: true,
@@ -514,7 +514,6 @@ export type ImportRequest = {
   stage: RequestStage;
   createdAt: string;
   progress: number;
-  risk: "low" | "medium" | "high";
   duplicate?: boolean;
   /** Original creator of the (possibly draft) request. */
   intakeUserId: string;
@@ -563,14 +562,32 @@ export type ImportRequest = {
   activity?: string;
   /** الرقم الضريبي للتاجر */
   taxNo?: string;
+  /** تاريخ انتهاء البطاقة الضريبية كما أُدخل داخل الطلب */
+  taxCardExpiry?: string;
   /** رقم السجل التجاري للتاجر */
   crNo?: string;
+  /** تاريخ انتهاء السجل التجاري كما أُدخل داخل الطلب */
+  crExpiry?: string;
+  /** نوع الطلب */
+  requestType?: string;
+  /** نوع الفاتورة */
+  invoiceType?: string;
+  /** عملة الطلب كما اختارها المستخدم */
+  requestCurrency?: string;
+  /** عملة الفاتورة كما اختارها المستخدم */
+  invoiceCurrency?: string;
   /** بلد المنشأ */
   originCountry?: string;
+  /** الكمية */
+  quantity?: number;
+  /** وحدة القياس */
+  unit?: string;
   /** مبلغ الفاتورة (قد يختلف عن مبلغ التمويل) */
   invoiceAmount?: number;
   /** تاريخ الفاتورة */
   invoiceDate?: string;
+  /** موقع الشركة المصدرة */
+  supplierLocation?: string;
   /** شروط الدفع (LC / DP / TT ...) */
   paymentTerms?: string;
   /** نوع شرط الدفع المبدئي: كلي أم جزئي */
@@ -581,6 +598,12 @@ export type ImportRequest = {
   shipmentDate?: string;
   /** ميناء الشحن */
   shipPort?: string;
+  /** تاريخ الوصول */
+  arrivalDate?: string;
+  /** شروط التسليم */
+  incoterm?: string;
+  /** الوجهة النهائية */
+  finalDestination?: string;
   /** أسماء المساهمين/الملاك بنسبة 25% فأكثر */
   shareholders?: { name: string; percent: number }[];
   /** مصادر توريدات الريال اليمني */
@@ -655,7 +678,7 @@ const shipPorts = ["ميناء جدة الإسلامي", "ميناء جبل عل
 
 /**
  * Curated, organized seed data — at least 2 examples per workflow stage,
- * spread across multiple banks, importers, currencies, and risk levels.
+ * spread across multiple banks, importers, and currencies.
  * This replaces the previous random generator so every screen has
  * meaningful coverage out of the box.
  *
@@ -671,7 +694,7 @@ type SwiftSeedUserId = "u4" | "u7";
 type ExecutiveSeedUserId = "u9" | "u10" | "u11" | "u12" | "u13" | "u14";
 type SeedVote = {
   voterId: ExecutiveSeedUserId;
-  vote: "approve" | "reject" | "abstain";
+  vote: "approve" | "reject";
   justification?: string;
   offsetHours?: number;
 };
@@ -685,7 +708,6 @@ type SeedRow = {
   type: string;
   supplier: string;
   port: string;
-  risk: "low" | "medium" | "high";
   duplicate?: boolean;
   intake: "u4" | "u5";
   voteOpen?: boolean; // true → stage = executive_voting (session open)
@@ -714,7 +736,6 @@ const SEED_ROWS: SeedRow[] = [
     type: types[0],
     supplier: suppliers[0],
     port: ports[0],
-    risk: "low",
     intake: "u5",
   },
   {
@@ -726,7 +747,6 @@ const SEED_ROWS: SeedRow[] = [
     type: types[3],
     supplier: suppliers[3],
     port: ports[1],
-    risk: "medium",
     intake: "u4",
   },
 
@@ -740,7 +760,6 @@ const SEED_ROWS: SeedRow[] = [
     type: types[1],
     supplier: suppliers[1],
     port: ports[0],
-    risk: "medium",
     intake: "u5",
   },
   {
@@ -752,7 +771,6 @@ const SEED_ROWS: SeedRow[] = [
     type: types[1],
     supplier: suppliers[4],
     port: ports[2],
-    risk: "low",
     intake: "u4",
   },
 
@@ -766,7 +784,6 @@ const SEED_ROWS: SeedRow[] = [
     type: types[2],
     supplier: suppliers[2],
     port: ports[1],
-    risk: "high",
     intake: "u5",
   },
   {
@@ -778,7 +795,6 @@ const SEED_ROWS: SeedRow[] = [
     type: types[5],
     supplier: suppliers[3],
     port: ports[3],
-    risk: "low",
     intake: "u4",
   },
 
@@ -792,7 +808,6 @@ const SEED_ROWS: SeedRow[] = [
     type: types[0],
     supplier: suppliers[0],
     port: ports[0],
-    risk: "medium",
     intake: "u5",
   },
   {
@@ -804,7 +819,6 @@ const SEED_ROWS: SeedRow[] = [
     type: types[4],
     supplier: suppliers[3],
     port: ports[1],
-    risk: "low",
     intake: "u4",
   },
 
@@ -818,7 +832,6 @@ const SEED_ROWS: SeedRow[] = [
     type: types[1],
     supplier: suppliers[1],
     port: ports[2],
-    risk: "medium",
     intake: "u5",
     supportClaimedBy: "u2",
     supportReviewerId: "u2",
@@ -832,7 +845,6 @@ const SEED_ROWS: SeedRow[] = [
     type: types[2],
     supplier: suppliers[2],
     port: ports[0],
-    risk: "high",
     duplicate: true,
     intake: "u4",
     supportClaimedBy: "u3",
@@ -849,7 +861,6 @@ const SEED_ROWS: SeedRow[] = [
     type: types[5],
     supplier: suppliers[4],
     port: ports[3],
-    risk: "low",
     intake: "u5",
   },
   {
@@ -861,7 +872,6 @@ const SEED_ROWS: SeedRow[] = [
     type: types[3],
     supplier: suppliers[3],
     port: ports[1],
-    risk: "medium",
     intake: "u4",
   },
 
@@ -875,7 +885,6 @@ const SEED_ROWS: SeedRow[] = [
     type: types[0],
     supplier: suppliers[0],
     port: ports[0],
-    risk: "low",
     intake: "u5",
   },
   {
@@ -887,7 +896,6 @@ const SEED_ROWS: SeedRow[] = [
     type: types[3],
     supplier: suppliers[3],
     port: ports[2],
-    risk: "medium",
     intake: "u4",
   },
 
@@ -901,7 +909,6 @@ const SEED_ROWS: SeedRow[] = [
     type: types[5],
     supplier: suppliers[4],
     port: ports[3],
-    risk: "low",
     intake: "u5",
     swiftUploadedBy: "u7",
   },
@@ -914,7 +921,6 @@ const SEED_ROWS: SeedRow[] = [
     type: types[3],
     supplier: suppliers[3],
     port: ports[1],
-    risk: "medium",
     intake: "u4",
     swiftUploadedBy: "u4",
   },
@@ -929,15 +935,14 @@ const SEED_ROWS: SeedRow[] = [
     type: types[2],
     supplier: suppliers[2],
     port: ports[0],
-    risk: "high",
     duplicate: true,
     intake: "u5",
     voteOpen: true,
     votes: [
       { voterId: "u10", vote: "approve", justification: "استيفاء الوثائق", offsetHours: 1 },
-      { voterId: "u11", vote: "approve", justification: "المخاطر مقبولة", offsetHours: 2 },
+      { voterId: "u11", vote: "approve", justification: "مطابق للمتطلبات", offsetHours: 2 },
       { voterId: "u12", vote: "reject", justification: "نحتاج تحقق إضافي", offsetHours: 3 },
-      { voterId: "u13", vote: "abstain", justification: "بانتظار رأي فني", offsetHours: 4 },
+      { voterId: "u13", vote: "reject", justification: "الوثائق غير مكتملة", offsetHours: 4 },
     ],
   },
   {
@@ -949,7 +954,6 @@ const SEED_ROWS: SeedRow[] = [
     type: types[1],
     supplier: suppliers[1],
     port: ports[2],
-    risk: "medium",
     intake: "u4",
     voteOpen: true,
     votes: [
@@ -972,7 +976,6 @@ const SEED_ROWS: SeedRow[] = [
     type: types[2],
     supplier: suppliers[2],
     port: ports[1],
-    risk: "high",
     intake: "u5",
   },
   {
@@ -984,7 +987,6 @@ const SEED_ROWS: SeedRow[] = [
     type: types[3],
     supplier: suppliers[3],
     port: ports[3],
-    risk: "medium",
     intake: "u4",
   },
 
@@ -998,7 +1000,6 @@ const SEED_ROWS: SeedRow[] = [
     type: types[0],
     supplier: suppliers[0],
     port: ports[0],
-    risk: "low",
     intake: "u5",
   },
   {
@@ -1010,7 +1011,6 @@ const SEED_ROWS: SeedRow[] = [
     type: types[1],
     supplier: suppliers[1],
     port: ports[1],
-    risk: "medium",
     intake: "u4",
   },
 
@@ -1024,7 +1024,6 @@ const SEED_ROWS: SeedRow[] = [
     type: types[2],
     supplier: suppliers[2],
     port: ports[2],
-    risk: "low",
     intake: "u5",
   },
   {
@@ -1036,7 +1035,6 @@ const SEED_ROWS: SeedRow[] = [
     type: types[5],
     supplier: suppliers[4],
     port: ports[3],
-    risk: "low",
     intake: "u4",
   },
 
@@ -1050,7 +1048,6 @@ const SEED_ROWS: SeedRow[] = [
     type: types[0],
     supplier: suppliers[0],
     port: ports[0],
-    risk: "low",
     intake: "u5",
   },
   {
@@ -1062,7 +1059,6 @@ const SEED_ROWS: SeedRow[] = [
     type: types[3],
     supplier: suppliers[3],
     port: ports[1],
-    risk: "medium",
     intake: "u4",
   },
 
@@ -1076,7 +1072,6 @@ const SEED_ROWS: SeedRow[] = [
     type: types[0],
     supplier: suppliers[0],
     port: ports[0],
-    risk: "low",
     intake: "u5",
     invoice: "INV-2026-PARTIAL-7",
     taxNo: "300-500-700",
@@ -1092,7 +1087,6 @@ const SEED_ROWS: SeedRow[] = [
     type: types[0],
     supplier: suppliers[0],
     port: ports[0],
-    risk: "low",
     intake: "u5",
     supportClaimedBy: "u2",
     invoice: "INV-2026-PARTIAL-7",
@@ -1109,7 +1103,6 @@ const SEED_ROWS: SeedRow[] = [
     type: types[0],
     supplier: suppliers[0],
     port: ports[0],
-    risk: "low",
     intake: "u4",
     swiftUploadedBy: "u7",
     invoice: "INV-2026-PARTIAL-7",
@@ -1231,19 +1224,30 @@ export const REQUESTS: ImportRequest[] = REQUEST_SEED_META.map(
       stage: row.stage,
       createdAt: baseDate.toISOString(),
       progress: progressFor(row.stage),
-      risk: row.risk,
       duplicate: row.duplicate,
       taxNo: row.taxNo ?? profile.taxNo,
+      taxCardExpiry: new Date(baseDate.getTime() + 14 * 30 * 24 * 3600_000).toISOString().slice(0, 10),
       crNo: profile.crNo,
+      crExpiry: new Date(baseDate.getTime() + 20 * 30 * 24 * 3600_000).toISOString().slice(0, 10),
       activity: profile.activity,
       shareholders: profile.shareholders,
+      requestType: index % 3 === 0 ? "طلب مصارفة وتحويل خارجي" : index % 3 === 1 ? "طلب مصارفة آجلة - تسميح جمركي" : "طلب فتح اعتماد",
+      requestCurrency: row.currency,
+      invoiceType: index % 2 === 0 ? "فاتورة تجارية" : "فاتورة أولية",
+      invoiceCurrency: row.currency,
       originCountry: originCountries[index % originCountries.length],
+      quantity: 120 + index * 7,
+      unit: index % 2 === 0 ? "طن" : "كرتون",
       invoiceAmount: Math.round(row.amount / ((row.requestPercent ?? 100) / 100)),
       invoiceDate,
+      supplierLocation: originCountries[index % originCountries.length],
       paymentTerm: row.paymentTerm ?? "كلي",
       requestPercent: row.requestPercent ?? 100,
       shipmentDate,
       shipPort: shipPorts[index % shipPorts.length],
+      arrivalDate: new Date(baseDate.getTime() + 32 * 24 * 3600_000).toISOString().slice(0, 10),
+      incoterm: ["CIF", "FOB", "CFR", "DAP"][index % 4],
+      finalDestination: ["صنعاء", "عدن", "تعز", "المكلا"][index % 4],
       fxSources: index % 2 === 0 ? "التاجر" : "تمويل من البنك",
       yerSources: "إيرادات النشاط التجاري داخل الجمهورية اليمنية",
       coverageMethod: "تحويل بنكي خارجي",
@@ -1453,16 +1457,16 @@ export const AUDIT: AuditLog[] = Array.from({ length: 25 }, (_, i) => ({
 }));
 
 export const MONTHLY = [
-  { m: "يناير", طلبات: 120, مُعتمد: 95, مرفوض: 12 },
-  { m: "فبراير", طلبات: 142, مُعتمد: 110, مرفوض: 18 },
-  { m: "مارس", طلبات: 165, مُعتمد: 130, مرفوض: 20 },
-  { m: "أبريل", طلبات: 138, مُعتمد: 108, مرفوض: 14 },
-  { m: "مايو", طلبات: 178, مُعتمد: 145, مرفوض: 19 },
-  { m: "يونيو", طلبات: 195, مُعتمد: 160, مرفوض: 22 },
-  { m: "يوليو", طلبات: 210, مُعتمد: 178, مرفوض: 21 },
-  { m: "أغسطس", طلبات: 188, مُعتمد: 152, مرفوض: 25 },
-  { m: "سبتمبر", طلبات: 220, مُعتمد: 185, مرفوض: 23 },
-  { m: "أكتوبر", طلبات: 245, مُعتمد: 205, مرفوض: 24 },
+  { m: "يناير", طلبات: 120, مُعتمد: 95, "غير مستوفي": 12 },
+  { m: "فبراير", طلبات: 142, مُعتمد: 110, "غير مستوفي": 18 },
+  { m: "مارس", طلبات: 165, مُعتمد: 130, "غير مستوفي": 20 },
+  { m: "أبريل", طلبات: 138, مُعتمد: 108, "غير مستوفي": 14 },
+  { m: "مايو", طلبات: 178, مُعتمد: 145, "غير مستوفي": 19 },
+  { m: "يونيو", طلبات: 195, مُعتمد: 160, "غير مستوفي": 22 },
+  { m: "يوليو", طلبات: 210, مُعتمد: 178, "غير مستوفي": 21 },
+  { m: "أغسطس", طلبات: 188, مُعتمد: 152, "غير مستوفي": 25 },
+  { m: "سبتمبر", طلبات: 220, مُعتمد: 185, "غير مستوفي": 23 },
+  { m: "أكتوبر", طلبات: 245, مُعتمد: 205, "غير مستوفي": 24 },
 ];
 
 export const CATEGORY_DIST = types.map((name, i) => ({ name, value: [32, 22, 18, 12, 9, 7][i] }));
@@ -1618,7 +1622,7 @@ export function canViewRequest(user: User | null, req: ImportRequest): boolean {
 // ============================================================
 // ROLE-SPECIFIC DISPLAY STATUSES (business-friendly buckets)
 // Internal workflow stages are mapped into a smaller, role-relevant set
-// of statuses. A data-entry user must NOT see raw CBY operational stages
+// of statuses. A data-entry user must NOT see raw committee operational stages
 // (e.g. "executive_voting"); they see "قيد معالجة اللجنة الوطنية لتنظيم وتمويل الواردات" instead.
 // ============================================================
 

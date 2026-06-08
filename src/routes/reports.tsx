@@ -55,7 +55,7 @@ function Reports() {
           { l: "إجمالي الطلبات", v: total.toLocaleString("en-US"), s: `${approved} مُعتمد` },
           { l: "قيمة التمويل", v: `$${(totalValue / 1_000_000).toFixed(1)}M`, s: "+24%" },
           { l: "متوسط زمن المعالجة", v: "3.4 يوم", s: "-12%" },
-          { l: "نسبة الاعتماد", v: `${approvalRate}%`, s: `${rejected} مرفوض` },
+          { l: "نسبة الاعتماد", v: `${approvalRate}%`, s: `${rejected} غير مستوفي` },
           { l: "الفواتير المكررة", v: duplicates.toString(), s: "تنبيه" },
         ].map((k) => (
           <Card key={k.l} className="p-4 shadow-card border-0">
@@ -80,7 +80,7 @@ function Reports() {
               <Legend />
               <Line type="monotone" dataKey="طلبات" stroke="oklch(0.28 0.09 255)" strokeWidth={2.5} dot={{ r: 4 }} />
               <Line type="monotone" dataKey="مُعتمد" stroke="oklch(0.62 0.15 155)" strokeWidth={2.5} dot={{ r: 4 }} />
-              <Line type="monotone" dataKey="مرفوض" stroke="oklch(0.6 0.22 25)" strokeWidth={2} dot={{ r: 3 }} />
+              <Line type="monotone" dataKey="غير مستوفي" stroke="oklch(0.6 0.22 25)" strokeWidth={2} dot={{ r: 3 }} />
             </LineChart>
           </ResponsiveContainer>
         </Card>

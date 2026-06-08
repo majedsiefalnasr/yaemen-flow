@@ -45,7 +45,7 @@ export const merchantsCell = cell("merchants", SEED_MERCHANTS);
 export const entitiesCell = cell("entities", ENTITIES);
 
 // Voting
-export type Vote = "approve" | "reject" | "abstain";
+export type Vote = "approve" | "reject";
 export type VoteRecord = {
   requestId: string;
   voterId: string;
@@ -59,7 +59,7 @@ export type FinalizationRecord = {
   result: "approved" | "rejected";
   finalizedBy: string;
   finalizedAt: string;
-  tally: { approve: number; reject: number; abstain: number };
+  tally: { approve: number; reject: number };
   managerVoteWeighted: boolean;
 };
 
@@ -150,8 +150,6 @@ export const docRulesCell = cell<DocRule[]>("docRules", DEFAULT_DOC_RULES);
 export type Permission =
   | "request.create"
   | "request.review"
-  | "request.approve"
-  | "request.reject"
   | "swift.upload"
   | "voting.cast"
   | "voting.finalize"
@@ -167,8 +165,6 @@ export type Permission =
 export const PERMISSION_LABELS: Record<Permission, string> = {
   "request.create": "إنشاء طلب تمويل",
   "request.review": "مراجعة الطلبات",
-  "request.approve": "اعتماد الطلبات",
-  "request.reject": "رفض الطلبات",
   "swift.upload": "رفع وثيقة السويفت",
   "voting.cast": "التصويت على الطلبات",
   "voting.finalize": "إغلاق التصويت ونشر القرار",
@@ -186,18 +182,16 @@ export const PERMISSION_LABELS: Record<Permission, string> = {
 export const BANK_ONLY_PERMS: Permission[] = [
   "request.create",
   "request.review",
-  "request.approve",
-  "request.reject",
   "swift.upload",
 ];
 
-// الصلاحيات المتاحة لأدوار اللجنة الوطنية لتنظيم وتمويل الواردات (CBY) — تستثني صلاحيات تشغيل البنوك التجارية.
-export const CBY_PERMS: Permission[] = (Object.keys(PERMISSION_LABELS) as Permission[]).filter(
+// الصلاحيات المتاحة لأدوار اللجنة الوطنية لتنظيم وتمويل الواردات — تستثني صلاحيات تشغيل البنوك التجارية.
+export const COMMITTEE_PERMS: Permission[] = (Object.keys(PERMISSION_LABELS) as Permission[]).filter(
   (p) => !BANK_ONLY_PERMS.includes(p),
 );
 
 const DEFAULT_ROLE_PERMS: Record<Role, Permission[]> = {
-  // مسؤول النظام (CBY)
+  // مسؤول نظام اللجنة الوطنية
   platform_admin: [
     "reports.view",
     "audit.view",
@@ -225,7 +219,7 @@ const DEFAULT_ROLE_PERMS: Record<Role, Permission[]> = {
   // موظف السويفت بالبنك
   bank_swift: ["swift.upload"],
   // عضو اللجنة المساندة
-  support_member: ["request.approve", "request.reject", "audit.view"],
+  support_member: ["request.review", "audit.view"],
   // عضو اللجنة التنفيذية
   executive_member: ["voting.cast", "reports.view", "audit.view"],
   // مدير اللجنة التنفيذية — يرث صلاحيات العضو + إغلاق التصويت + إصدار تأكيد المصارفة الخارجية
@@ -364,7 +358,7 @@ export function castVote(req: ImportRequest, voterId: string, vote: Vote, justif
 function commitFinalization(
   req: ImportRequest,
   result: "approved" | "rejected",
-  counts: { approve: number; reject: number; abstain: number },
+  counts: { approve: number; reject: number },
   weighted: boolean,
   managerId: string,
   reason: string,
@@ -393,11 +387,11 @@ function commitFinalization(
     ref: req.ref,
     fromStage: "executive_voting",
     toStage: result === "approved" ? "executive_approved" : "executive_rejected",
-    notes: `${result} (${counts.approve}/${counts.reject}/${counts.abstain})`,
+    notes: `${result} (${counts.approve}/${counts.reject})`,
   });
   notify({
     title: "صدر قرار اللجنة التنفيذية",
-    body: `${req.ref}: ${result === "approved" ? "اعتماد" : "رفض"}${weighted ? " — بصوت المدير الحاسم" : ""}`,
+    body: `${req.ref}: ${result === "approved" ? "اعتماد" : "غير مستوفي للشروط"}${weighted ? " — بصوت المدير الحاسم" : ""}`,
     audience: "all",
     href: `/requests/${req.id}`,
   });
@@ -406,7 +400,7 @@ function commitFinalization(
 
 export function tally(requestId: string) {
   const votes = votesCell.get().filter((v) => v.requestId === requestId);
-  const counts = { approve: 0, reject: 0, abstain: 0 };
+  const counts = { approve: 0, reject: 0 };
   votes.forEach((v) => counts[v.vote]++);
   return { counts, votes };
 }
@@ -458,7 +452,7 @@ export function finalizeVoting(
     const managerVote = votesCell
       .get()
       .find((v) => v.requestId === req.id && v.voterId === managerId);
-    if (managerVote && managerVote.vote !== "abstain") {
+    if (managerVote) {
       weighted = true;
       result = managerVote.vote === "approve" ? "approved" : "rejected";
     } else {

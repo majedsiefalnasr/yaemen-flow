@@ -7,8 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { auth, DEMO_USERS, ROLE_LABELS } from "@/lib/mock";
 import { cn } from "@/lib/utils";
-import ncrfiLogoText from "@/assets/ncrfi-logo-text.png.asset.json";
-import ncrfiLogoMark from "@/assets/ncrfi-logo-mark.png.asset.json";
+import ncrfiLogoMark from "@/assets/ncrfi-logo-mark.png";
 
 export const Route = createFileRoute("/login")({ component: Login });
 
@@ -46,15 +45,15 @@ function Login() {
         <div className="relative">
           <div className="flex items-center gap-4">
             <div className="grid h-16 w-16 place-items-center rounded-2xl bg-white p-1.5">
-              <img src={ncrfiLogoMark.url} alt="شعار اللجنة الوطنية" className="h-full w-full object-contain" />
+              <img src={ncrfiLogoMark} alt="شعار اللجنة الوطنية" className="h-full w-full object-contain" />
             </div>
             <div className="font-bold text-lg leading-tight">اللجنة الوطنية لتنظيم وتمويل الواردات</div>
           </div>
         </div>
-        <div className="relative space-y-6">
-          <div className="rounded-2xl bg-white/95 p-8 shadow-2xl">
-            <img src={ncrfiLogoText.url} alt="اللجنة الوطنية لتنظيم وتمويل الواردات" className="w-full h-auto object-contain" />
-          </div>
+        <div className="relative mx-auto max-w-3xl">
+          <h1 className="mt-8 text-5xl font-bold leading-tight text-white">
+            منصة الطلبات باللجنة الوطنية لتنظيم وتمويل الواردات
+          </h1>
         </div>
         <div className="relative text-xs text-white/50">
           محمي بأعلى معايير الأمن السيبراني · ISO 27001

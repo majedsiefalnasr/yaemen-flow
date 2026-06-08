@@ -189,7 +189,7 @@ export function SwiftUploadForm({ requestId, mode = "page", onSent }: SwiftUploa
           <div className="space-y-2">
             <Label>رقم مرجع السويفت (MT103/MT202)</Label>
             <Input
-              placeholder="مثل: 25CBY2025XX"
+              placeholder="مثل: 25NCRFI2025XX"
               value={reference}
               onChange={(e) => setReference(e.target.value)}
             />
