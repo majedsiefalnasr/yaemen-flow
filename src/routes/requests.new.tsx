@@ -163,18 +163,40 @@ function NewRequest() {
       setStep(0);
       return;
     }
+    // التحقق من نسبة الطلب بحسب شرط الدفع المبدئي
+    const pct = Number(form.requestPercent) || 0;
+    if (form.paymentTerm === "كلي" && pct !== 100) {
+      toast.error("في حالة الدفع الكلي يجب أن تكون النسبة 100%");
+      setStep(0);
+      return;
+    }
+    if (form.paymentTerm === "جزئي" && (pct < 5 || pct >= 100)) {
+      toast.error("في حالة الدفع الجزئي يجب أن تكون النسبة بين 5% و 99%");
+      setStep(0);
+      return;
+    }
     // منع التكرار: نفس الرقم الضريبي + رقم الفاتورة لا يُسمح به
-    // (مرحلة لاحقة: السماح بالفواتير الجزئية إذا لم يصل المجموع إلى 100%).
+    // مع السماح بالفواتير الجزئية إذا لم يصل مجموع النسب إلى 100%.
     const merchant = allMerchants.find((m) => m.name === form.importer);
     const taxId = (form.taxNo || merchant?.tax || "").trim();
     if (taxId && form.invoice.trim()) {
-      const dup = requestsCell.get().some(
+      const siblings = requestsCell.get().filter(
         (r) =>
           (r.taxNo ?? "").trim() === taxId &&
-          r.invoice.trim() === form.invoice.trim(),
+          r.invoice.trim() === form.invoice.trim() &&
+          r.stage !== "executive_rejected" &&
+          r.stage !== "support_rejected" &&
+          r.stage !== "bank_rejected",
       );
-      if (dup) {
-        toast.error("يوجد طلب سابق بنفس الرقم الضريبي ورقم الفاتورة — لا يُسمح بالتكرار");
+      const fullExists = siblings.some(
+        (r) => (r.paymentTerm ?? (r.requestPercent === 100 ? "كلي" : undefined)) === "كلي",
+      );
+      const sumExisting = siblings.reduce((acc, r) => acc + (r.requestPercent ?? 0), 0);
+      if (fullExists || sumExisting + pct > 100) {
+        toast.error(
+          `لا يمكن الحفظ: مجموع نسب الطلبات الحالية لهذه الفاتورة ${sumExisting}% ` +
+            `وإضافة ${pct}% يتجاوز 100% أو يوجد طلب كلي مسبق.`,
+        );
         setStep(0);
         return;
       }
