@@ -669,6 +669,16 @@ function RequestDetail() {
             </TabsContent>
 
             <TabsContent value="actors" className="mt-4">
+              {/* placeholder anchor */}
+              <></>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </div>
+    </div>
+  );
+}
+/* duplicate removed */
               <Card className="p-5 shadow-card border-0 space-y-3 text-sm">
                 <ActorRow label="أنشأ الطلب" userId={req.createdBy ?? req.intakeUserId} />
                 <ActorRow
