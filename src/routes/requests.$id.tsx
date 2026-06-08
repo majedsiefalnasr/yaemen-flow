@@ -19,7 +19,6 @@ import {
   Building2,
   User,
   Calendar,
-  TrendingUp,
   Upload,
   FileSignature,
   Lock,
