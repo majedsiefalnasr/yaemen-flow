@@ -684,7 +684,7 @@ function Step4({ form, uploads, setUploads }: {
   );
 }
 
-function Step4({ form }: { form: FormState }) {
+function Step5({ form }: { form: FormState }) {
   return (
     <div className="space-y-6">
       <h3 className="font-semibold">مراجعة الطلب قبل الإرسال</h3>
