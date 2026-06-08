@@ -1,6 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { Search, Filter, Download, FilePlus2, AlertTriangle, Lock, Vote } from "lucide-react";
+import { Search, Filter, Download, FilePlus2, AlertTriangle, Lock, Vote, Copy } from "lucide-react";
 import { DEMO_USERS } from "@/lib/mock";
 import { PageHeader } from "@/components/layout/AppShell";
 import { Card } from "@/components/ui/card";
@@ -25,6 +25,7 @@ const CAN_CREATE_ROLES = ["bank_intake", "bank_admin"] as const;
 
 function RequestsList() {
   const { user } = useAuth();
+  const nav = useNavigate();
   const isEntityScoped = !!user && (ENTITY_SCOPED_ROLES as readonly string[]).includes(user.role);
   const isCby = !!user && (CBY_ROLES as readonly string[]).includes(user.role);
   const canCreate = !!user && (CAN_CREATE_ROLES as readonly string[]).includes(user.role);
@@ -35,6 +36,68 @@ function RequestsList() {
   const [bankFilter, setBankFilter] = useState<string>("all");
 
   const ALL_REQUESTS = requestsCell.use();
+
+  /** نتيجة اللجنة التنفيذية بعد إقفال التصويت: مستوفي/غير مستوفي. */
+  function resultLabel(stage: string) {
+    if (stage === "executive_approved" || stage === "swift_attached" ||
+        stage === "customs_released" || stage === "completed") {
+      return { text: "مستوفي الشروط", cls: "bg-success/15 text-success" };
+    }
+    if (stage === "executive_rejected") {
+      return { text: "غير مستوفي للشروط", cls: "bg-destructive/15 text-destructive" };
+    }
+    return null;
+  }
+
+  /**
+   * تكرار الطلب — ينسخ المعلومات الأساسية والفاتورة والشحن والمرفقات فقط،
+   * بحالة "مسودة" بدون تاريخ/تصويت/قرارات/ملاحظات.
+   */
+  function duplicateRequest(id: string) {
+    const src = requestsCell.get().find((r) => r.id === id);
+    if (!src || !user) return;
+    const newId = `r_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+    const newRef = `IMP-${new Date().getFullYear()}-${Math.floor(2000 + Math.random() * 7000)}`;
+    requestsCell.set((prev) => [
+      {
+        // المعلومات الأساسية + الفاتورة + الشحن + المرفقات فقط
+        id: newId,
+        ref: newRef,
+        importer: src.importer,
+        entityId: src.entityId,
+        bank: src.bank,
+        amount: src.amount,
+        currency: src.currency,
+        type: src.type,
+        supplier: src.supplier,
+        invoice: "",
+        port: src.port,
+        stage: "draft",
+        createdAt: new Date().toISOString(),
+        progress: 5,
+        risk: "low",
+        duplicate: false,
+        intakeUserId: user.id,
+        createdBy: user.id,
+        lastUpdatedBy: user.id,
+        documents: src.documents,
+        activity: src.activity,
+        taxNo: src.taxNo,
+        crNo: src.crNo,
+        originCountry: src.originCountry,
+        invoiceAmount: src.invoiceAmount,
+        paymentTerms: src.paymentTerms,
+        shipPort: src.shipPort,
+        shareholders: src.shareholders,
+        yerSources: src.yerSources,
+        fxSources: src.fxSources,
+        coverageMethod: src.coverageMethod,
+      },
+      ...prev,
+    ]);
+    nav({ to: "/requests/$id", params: { id: newId } });
+  }
+
   // Queue scoping: only stages relevant to the user's role (actionable).
   const scoped = queueRequestsFor(user, ALL_REQUESTS);
 
@@ -145,8 +208,9 @@ function RequestsList() {
               <col className="w-[110px]" />
               <col className="w-[130px]" />
               <col className="w-[180px]" />
+              <col className="w-[140px]" />
               <col className="w-[120px]" />
-              <col className="w-[100px]" />
+              <col className="w-[120px]" />
             </colgroup>
             <thead className="bg-muted/50">
               <tr className="text-right text-xs text-muted-foreground">
@@ -155,6 +219,7 @@ function RequestsList() {
                 <th className="px-4 py-3 font-medium">النوع</th>
                 <th className="px-4 py-3 font-medium">المبلغ</th>
                 <th className="px-4 py-3 font-medium">المرحلة</th>
+                <th className="px-4 py-3 font-medium">النتيجة</th>
                 <th className="px-4 py-3 font-medium">التقدم</th>
                 <th className="px-4 py-3 font-medium sticky left-0 bg-muted/50 z-10 shadow-[6px_0_8px_-6px_rgba(0,0,0,0.12)]">إجراء</th>
               </tr>
@@ -199,6 +264,14 @@ function RequestsList() {
                       return <Badge className={cn("font-normal whitespace-nowrap", ds.color)}>{ds.label}</Badge>;
                     })()}
                   </td>
+                  <td className="px-4 py-3 align-top whitespace-nowrap">
+                    {(() => {
+                      const res = resultLabel(r.stage);
+                      return res
+                        ? <Badge className={cn("font-normal", res.cls)}>{res.text}</Badge>
+                        : <span className="text-[10px] text-muted-foreground">—</span>;
+                    })()}
+                  </td>
                   <td className="px-4 py-3 align-top">
                     {(() => {
                       const p = user ? progressForRole(r.stage, user.role) : r.progress;
@@ -209,9 +282,21 @@ function RequestsList() {
                     })()}
                   </td>
                   <td className="px-4 py-3 align-top sticky left-0 bg-card z-10 shadow-[6px_0_8px_-6px_rgba(0,0,0,0.12)]">
-                    <Button asChild variant="ghost" size="sm">
-                      <Link to="/requests/$id" params={{ id: r.id }}>عرض</Link>
-                    </Button>
+                    <div className="flex gap-1">
+                      <Button asChild variant="ghost" size="sm">
+                        <Link to="/requests/$id" params={{ id: r.id }}>عرض</Link>
+                      </Button>
+                      {canCreate && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          title="تكرار الطلب (نسخ المعلومات الأساسية فقط)"
+                          onClick={() => duplicateRequest(r.id)}
+                        >
+                          <Copy className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
